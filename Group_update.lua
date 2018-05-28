@@ -3,7 +3,7 @@ print("----EF Group_update.lua init")
 function ElFramo.Group_update()
     --print("ElFramo.Group_update entered")
     local pairs,ipairs=pairs,ipairs
-    
+    ElFramo.NametoID={}
     local gtype--WILL SAVE THE GROUP TYPE FOR THIS FUNCTION FOR EASY ACCESS
     
     --CHECKS WHETHER IN A RAID OR NOT + SAVES
@@ -19,32 +19,44 @@ function ElFramo.Group_update()
     
     --CREATE GROUP DICT
     if gtype=="raid" then
-  
+      
       for i=1,nMembers do
-        --print("loop: member "..tostring(i))
+        local name=GetRaidRosterInfo(i)
+        ElFramo.NameToRaidRosterIndex[name]=i
+      end
+      
+      for i=1,nMembers do
+        local id=ElFramo.Unitid(i)
+        local name=GetUnitName(id,true)
         ElFramo.Group[i]={}
-        local name,_,subgroup,_,class,_,_,_,_,_,_,role=GetRaidRosterInfo(i) --does not work if solo
+        local _,_,subgroup,_,class,_,_,_,_,_,_,role=GetRaidRosterInfo(ElFramo.NameToRaidRosterIndex[name]) --does not work if solo
         ElFramo.Group[i].name=name                                                                      
         ElFramo.Group[i].subgroup=subgroup
         ElFramo.Group[i].class=class
         ElFramo.Group[i].role=role
-        
+        --ElFramo.NametoID[name]=i       
       end --end of for i=1,nMembers
 
     end --end of if gtype==raid
    
    
     if gtype=="party" then
-    
+      
       for i=1,nMembers do
-        --print("loop: member "..tostring(i))
+        local name=GetRaidRosterInfo(i)
+        ElFramo.NameToRaidRosterIndex[name]=i
+      end
+      
+      for i=1,nMembers do
+        local id=ElFramo.Unitid(i)
+        local name=GetUnitName(id,true)
         ElFramo.Group[i]={}
-        local name,_,subgroup,_,class,_,_,_,_,_,_,role=GetRaidRosterInfo(i) --does not work if solo
-        ElFramo.Group[i].name=name
+        local _,_,subgroup,_,class,_,_,_,_,_,_,role=GetRaidRosterInfo(ElFramo.NameToRaidRosterIndex[name]) --does not work if solo
+        ElFramo.Group[i].name=name                                                                      
         ElFramo.Group[i].subgroup=subgroup
-        ElFramo.Group[i].class=class  
+        ElFramo.Group[i].class=class
         ElFramo.Group[i].role=role
-        
+        --ElFramo.NametoID[name]=i
       end --end of for i=1,nMembers
 
     end --end of if gtype==party
@@ -54,7 +66,10 @@ function ElFramo.Group_update()
       ElFramo.Group[1].name=UnitName("player")
       ElFramo.Group[1].subgroup=1
       ElFramo.Group[1].class=UnitClass("player")
-      ElFramo.Group[1].role=GetSpecializationRole(GetSpecialization())
+      if GetSpecialization() then --somehow necessary to not have a lua error on first login
+      ElFramo.Group[1].role=GetSpecializationRole(GetSpecialization()) end 
+      --ElFramo.NametoID[tostring(name)]=1
+
     end
     
   --print("Group_update done")
