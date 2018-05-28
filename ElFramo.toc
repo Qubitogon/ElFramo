@@ -1,0 +1,18 @@
+## Interface: 70100
+## Title: ElFramo
+## Notes: Mierihn is gay
+## Author: Gay
+## Version: v0.1
+## DefaultState: enabled
+
+ElFramo.lua
+Misc_tables.lua
+Misc_functions.lua
+Group_update.lua
+Tracker_update.lua
+Frames_update.lua
+
+
+Final.lua
+
+Test.lua
