@@ -9,14 +9,64 @@ ElFramo.Tracker={}
 ElFramo.Frames={}
 ElFramo.Para={}
 ElFramo.Para.Frames={}
+ElFramo.Para.Frames.Family={}
 
------------------TESTING PURPOSE
 
-ElFramo.Para.Frames.width=100
-ElFramo.Para.Frames.height=100
-ElFramo.Para.Frames.spacing=0.1
-ElFramo.Para.Frames.maxinline=5 
-ElFramo.Para.Frames.bygroup=false
+function ElFramo.deepcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[ElFramo.deepcopy(orig_key)] = ElFramo.deepcopy(orig_value)
+        end
+        setmetatable(copy, ElFramo.deepcopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
+--default testing profile
+local defaultpara={}
+defaultpara.Frames={}
+defaultpara.Frames.Family={}
+defaultpara.Frames.Family.count=1
+defaultpara.Frames.Family[1]={}
+defaultpara.Frames.Family[1].name="ReM family"
+defaultpara.Frames.Family[1].Xpos=0
+defaultpara.Frames.Family[1].Ypos=0
+defaultpara.Frames.Family[1].Height=50
+defaultpara.Frames.Family[1].Width=50
+defaultpara.Frames.Family[1].Anchor="CENTER"
+defaultpara.Frames.Family[1].AnchorTo="CENTER"
+defaultpara.Frames.Family[1].smart=false
+defaultpara.Frames.Family[1].count=1
+defaultpara.Frames.Family[1][1]={}
+defaultpara.Frames.Family[1][1].type="name"
+defaultpara.Frames.Family[1][1].arg1="buff"
+defaultpara.Frames.Family[1][1].arg2="Renewing Mist"
+defaultpara.Frames.Family[1][1].Xpos=0
+defaultpara.Frames.Family[1][1].Ypos=0
+defaultpara.Frames.Family[1][1].Height=30
+defaultpara.Frames.Family[1][1].Width=30
+defaultpara.Frames.Family[1][1].Anchor="CENTER"
+defaultpara.Frames.Family[1][1].AnchorTo="CENTER"
+defaultpara.Frames.Family[1][1].cdwheel=true
+defaultpara.Frames.Family[1][1].cdreverse=true
+defaultpara.Frames.Family[1][1].hastexture=true
+defaultpara.Frames.Family[1][1].texture=627487
+defaultpara.Frames.Family[1][1].hastext=true
+--defaultpara.Frames.Family[1][1].isShown=false  --put that in vis.frames instead, makes more sense to me
+
+defaultpara.Frames.width=100
+defaultpara.Frames.height=100
+defaultpara.Frames.spacing=0.1
+defaultpara.Frames.maxinline=5 
+defaultpara.Frames.bygroup=false
+
+
+ElFramo.Para=ElFramo.deepcopy(defaultpara)
 
 -----------------
 
@@ -24,7 +74,8 @@ ElFramo.Para.Frames.bygroup=false
 function ElFramo.UpdateFrame_update()
     ElFramo.Tracker_update() 
     ElFramo.Frames_update_health_of(1)
-    ElFramo.Frames.update_ReM(1)
+    ElFramo.Frames.update_Families(1)
+--    ElFramo.Frames.update_Icon(1,1,1)
 
     --print("done")
     --ElFramo.Frames_update_health_of(2)
@@ -124,66 +175,133 @@ function ElFramo.FirstDraw_Frames()
     vis.Health:SetDrawLayer("BACKGROUND",-3)
 
     --vis.ReM:SetDrawLayer("BACKGROUND")
-    vis.ReM:SetPoint("CENTER",0,0)
-    vis.ReM:SetHeight(30)
-    vis.ReM:SetWidth(30)
-    vis.ReM:SetAlpha(1)
-    
-    vis.ReMIcon:SetDrawLayer("BACKGROUND")
-    vis.ReMIcon:SetAllPoints()
-    --vis.ReMIcon:SetPoint("CENTER",0,0)
-    --vis.ReMIcon:SetHeight(30)
-    --vis.ReMIcon:SetWidth(30)
-    vis.ReMIcon:SetAlpha(1)
-    vis.ReMIcon:SetDrawLayer("BACKGROUND",-2)
-    vis.ReMIcon:SetTexture(627487)
-    
-    vis.ReMCD:SetPoint("CENTER",0,0)
-    vis.ReMCD:SetReverse(true)
-    --vis.ReMCD:SetHeight(40)
-    --vis.ReMCD:SetWidth(40)
-    --vis.ReMCD:SetDrawLayer("BACKGROUND",0)
+
     
     
   end --end of for i=1,30 (all frames) (could be 1,1 for now for testing purposes)
   print("First_DrawFrames done")
 end --end of function FirstDraw_Frames
 
-ElFramo.ReMShown=false
 
-function ElFramo.Frames.update_ReM(n)
+function ElFramo.CreateFamilyFrames()
+
+  local para=ElFramo.Para.Frames
+  local vis=ElFramo.Frames.Visual
   
+  for i=1,30 do --loops through all party frames
+    vis[i].Family={}
+    for j=1,para.Family.count do 
+      vis[i].Family[j]={}
+      vis[i].Family[j].Frame=CreateFrame("Frame",para.Family[j].name,vis[i].Frame)
+      vis[i].Family[j].Frame:SetPoint(para.Family[j].Anchor,vis[i].Frame,para.Family[j].AnchorTo,para.Family[j].Xpos,para.Family[j].Ypos)
+--      vis[i].Family[j].Frame:SetPoint("TOPLEFT",vis[i].Frame,"TOPLEFT")
+      vis[i].Family[j].Frame:SetHeight(para.Family[j].Height)
+      vis[i].Family[j].Frame:SetWidth(para.Family[j].Width)
+--      vis[i].Family[j].Frame:SetAllPoints()
+      
+      for k=1,para.Family[j].count do
+        
+        vis[i].Family[j][k]={}
+        vis[i].Family[j][k].isShown=false
+        vis[i].Family[j][k].Frame=CreateFrame("Frame",nil,vis[i].Family[j].Frame)
+        vis[i].Family[j][k].Frame:SetPoint(para.Family[j][k].Anchor,vis[i].Family[j].Frame,para.Family[j][k].AnchorTo,para.Family[j][k].Xpos,para.Family[j][k].Ypos)
+--        vis[i].Family[j][k].Frame:SetPoint("CENTER",vis[i].Family[j],"CENTER")
+        vis[i].Family[j][k].Frame:SetHeight(para.Family[j][k].Height)
+        vis[i].Family[j][k].Frame:SetWidth(para.Family[j][k].Width)
+        vis[i].Family[j][k].Frame:Hide()
+        
+        if para.Family[j][k].hastexture then 
+--          vis[i].Family[j][k].Texture=vis[i].Family[j][k].Frame:CreateTexture()   
+          vis[i].Family[j][k].Texture=vis[i].Family[j][k].Frame:CreateTexture()     
+          vis[i].Family[j][k].Texture:SetAllPoints()
+          vis[i].Family[j][k].Texture:SetDrawLayer("BACKGROUND",-2)
+          vis[i].Family[j][k].Texture:SetTexture(para.Family[j][k].texture)
+        end --end of if para.Family.hastexture
+--defaultpara.Frames.Family[1][1].cdwheel=true        
+        if para.Family[j][k].cdwheel then 
+          vis[i].Family[j][k].CDFrame=CreateFrame("Cooldown",nil,vis[i].Family[j][k].Frame,"CooldownFrameTemplate") 
+          if para.Family[j][k].cdreverse then vis[i].Family[j][k].CDFrame:SetReverse(true) end
+          vis[i].Family[j][k].CDFrame:SetAllPoints()
+        end --end of if para.Family[][].cdwheel
+        
+        
+      end --end of for k=1,Family[j].count
+    end --end of for j=1,FamilyCount
+  end -- end of for i=1,30
+end --end of CreateFamilyFrames
+
+
+function ElFramo.Frames.update_Icon(n,j,k)
+
   local trk=ElFramo.Tracker[n]
+  local para=ElFramo.Para.Frames
+  local parafam=para.Family[j][k]
+  local vis=ElFramo.Frames.Visual
   local found=false
   local dur=0
   local ind=0
   local t=GetTime()
   
-  for i=1,trk.buffs.count do if trk.buffs[i].name=="Renewing Mist" then found=true; ind=i end end 
-  
-  if found and not ElFramo.ReMShown then
-    ElFramo.Frames.Visual[n].ReM:Show()
-    dur=trk.buffs[ind].duration
-    ElFramo.Frames.Visual[n].ReMCD:SetCooldown(GetTime(),dur)
-    ElFramo.ReMShown=true
-    print("Set the CD")
-    
-  elseif found and ElFramo.ReMShown then 
-  
-    local a=1 --do nothing for now 
-    
-  elseif not found and ElFramo.ReMShown then
-    ElFramo.Frames.Visual[n].ReM:Hide()
-    ElFramo.ReMShown=false
+  if parafam.type=="name" then
+    --print(parafam.arg1)
+    if parafam.arg1=="buff" then for i=1,trk.buffs.count do if trk.buffs[i].name==parafam.arg2 then found=true; ind=i;  end end 
+    elseif arg1=="debuff" then found=false end --NYI
       
-  end
+      
+      local isShown=vis[n].Family[j][k].Frame:IsShown()
+      --print(isShown)
+      
+      if found and not isShown then
+      
+        vis[n].Family[j][k].Frame:Show()
+        dur=trk.buffs[ind].duration
+        if parafam.cdwheel then vis[n].Family[j][k].CDFrame:SetCooldown(GetTime(),dur) end
+        print("Set the CD")
+        
+      elseif found and isShown then 
+      
+        dur=trk.buffs[ind].duration
+        if parafam.cdwheel then vis[n].Family[j][k].CDFrame:SetCooldown( trk.buffs[ind].expirationTime-dur ,dur) end
+        
+      elseif not found and isShown then
+      
+        vis[n].Family[j][k].Frame:Hide()
+          
+      end
+  --print(dur)  
+  end --end of f para.Family[j][k]=="name"
+  
+  
+end--end of functon update_Icon
 
-  --print(dur)
+function ElFramo.Frames.update_Family(n,j)
+  local para=ElFramo.Para.Frames
+  local update_Icon=ElFramo.Frames.update_Icon
+  
+  for k=1,para.Family[j].count do update_Icon(n,j,k) end 
   
 end
- 
- 
- 
+
+function ElFramo.Frames.update_Families(n)
+
+  local para=ElFramo.Para.Frames
+  local update_Family=ElFramo.Frames.update_Family
+  
+  for j=1,para.Family.count do update_Family(n,j) end 
+  
+end
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
