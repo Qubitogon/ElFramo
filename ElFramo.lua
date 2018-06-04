@@ -9,7 +9,6 @@ ElFramo.Tracker={}
 ElFramo.Frames={}
 ElFramo.Para={}
 ElFramo.Para.Frames={}
-ElFramo.Buckets={}
 
 -----------------TESTING PURPOSE
 
@@ -25,6 +24,8 @@ ElFramo.Para.Frames.bygroup=false
 function ElFramo.UpdateFrame_update()
     ElFramo.Tracker_update() 
     ElFramo.Frames_update_health_of(1)
+    ElFramo.Frames.update_ReM(1)
+
     --print("done")
     --ElFramo.Frames_update_health_of(2)
 end
@@ -33,7 +34,6 @@ function ElFramo.GroupFrame_eventHandler(self,event,...)
     print(event)
     ElFramo.Group_update()
     ElFramo.Group_FrameUpdate()
-    
 end --end of function ElFrame.GroupFrame_eventHandler
 
 function ElFramo.FirstDraw_Frames()
@@ -50,6 +50,7 @@ function ElFramo.FirstDraw_Frames()
   ElFramo.Frames.Visual.Main:SetHeight(200)
 
   ElFramo.Frames.Visual.Main:Show()
+  
 
   ElFramo.Frames.Update=CreateFrame("Frame","UpdateFrame",UIParent) --This frame is only there to have an OnUpdate event (triggered every frame)
 
@@ -84,7 +85,15 @@ function ElFramo.FirstDraw_Frames()
     ElFramo.Frames.Visual[i].Health=ElFramo.Frames.Visual[i].Frame:CreateTexture()
     ElFramo.Frames.Visual[i].Background=ElFramo.Frames.Visual[i].Frame:CreateTexture()
     
-    ElFramo.Frames.Visual[i].Frame:Hide()
+    
+    --TESTING ICONS
+    --ElFramo.Frames.Visual[i].ReM=CreateFrame("Frame",nil,ElFramo.Frames.Visual[i])
+    ElFramo.Frames.Visual[i].ReM=CreateFrame("Frame",nil,ElFramo.Frames.Visual[i].Frame,UIParent)
+    ElFramo.Frames.Visual[i].ReMIcon=ElFramo.Frames.Visual[i].ReM:CreateTexture()
+    ElFramo.Frames.Visual[i].ReMCD=CreateFrame("Cooldown",nil,ElFramo.Frames.Visual[i].ReM,"CooldownFrameTemplate")
+    
+    
+    ElFramo.Frames.Visual[i].ReM:Hide()
     
     local vis=ElFramo.Frames.Visual[i]
     
@@ -114,12 +123,67 @@ function ElFramo.FirstDraw_Frames()
     vis.Health:SetColorTexture(0.5,0.8,0.5)
     vis.Health:SetDrawLayer("BACKGROUND",-3)
 
+    --vis.ReM:SetDrawLayer("BACKGROUND")
+    vis.ReM:SetPoint("CENTER",0,0)
+    vis.ReM:SetHeight(30)
+    vis.ReM:SetWidth(30)
+    vis.ReM:SetAlpha(1)
+    
+    vis.ReMIcon:SetDrawLayer("BACKGROUND")
+    vis.ReMIcon:SetAllPoints()
+    --vis.ReMIcon:SetPoint("CENTER",0,0)
+    --vis.ReMIcon:SetHeight(30)
+    --vis.ReMIcon:SetWidth(30)
+    vis.ReMIcon:SetAlpha(1)
+    vis.ReMIcon:SetDrawLayer("BACKGROUND",-2)
+    vis.ReMIcon:SetTexture(627487)
+    
+    vis.ReMCD:SetPoint("CENTER",0,0)
+    vis.ReMCD:SetReverse(true)
+    --vis.ReMCD:SetHeight(40)
+    --vis.ReMCD:SetWidth(40)
+    --vis.ReMCD:SetDrawLayer("BACKGROUND",0)
+    
     
   end --end of for i=1,30 (all frames) (could be 1,1 for now for testing purposes)
   print("First_DrawFrames done")
 end --end of function FirstDraw_Frames
 
+ElFramo.ReMShown=false
 
+function ElFramo.Frames.update_ReM(n)
+  
+  local trk=ElFramo.Tracker[n]
+  local found=false
+  local dur=0
+  local ind=0
+  local t=GetTime()
+  
+  for i=1,trk.buffs.count do if trk.buffs[i].name=="Renewing Mist" then found=true; ind=i end end 
+  
+  if found and not ElFramo.ReMShown then
+    ElFramo.Frames.Visual[n].ReM:Show()
+    dur=trk.buffs[ind].duration
+    ElFramo.Frames.Visual[n].ReMCD:SetCooldown(GetTime(),dur)
+    ElFramo.ReMShown=true
+    print("Set the CD")
+    
+  elseif found and ElFramo.ReMShown then 
+  
+    local a=1 --do nothing for now 
+    
+  elseif not found and ElFramo.ReMShown then
+    ElFramo.Frames.Visual[n].ReM:Hide()
+    ElFramo.ReMShown=false
+      
+  end
+
+  --print(dur)
+  
+end
+ 
+ 
+ 
 
 
 
