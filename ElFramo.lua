@@ -1,26 +1,26 @@
-print("----EF ElFramo.lua init")
---local testvar="ElFramo.lua initiated me locally"
---globvar="ElFramo.lua initiated me globally"
+print("----EF elFramo.lua init")
+--local testvar="elFramo.lua initiated me locally"
+--globvar="elFramo.lua initiated me globally"
 
 --------------------INITIALISING NEEDED GLOBAL VARIABLES
-ElFramo={}
-ElFramo.Group={}
-ElFramo.Tracker={}
-ElFramo.Frames={}
-ElFramo.Para={}
-ElFramo.Para.Frames={}
-ElFramo.Para.Frames.Family={}
+elFramo={}
+elFramo.group={}
+elFramo.tracker={}
+elFramo.frames={}
+elFramo.para={}
+elFramo.para.frames={}
+elFramo.para.frames.family={}
 
 
-function ElFramo.deepcopy(orig)
+function elFramo.deepcopy(orig)
     local orig_type = type(orig)
     local copy
     if orig_type == 'table' then
         copy = {}
         for orig_key, orig_value in next, orig, nil do
-            copy[ElFramo.deepcopy(orig_key)] = ElFramo.deepcopy(orig_value)
+            copy[elFramo.deepcopy(orig_key)] = elFramo.deepcopy(orig_value)
         end
-        setmetatable(copy, ElFramo.deepcopy(getmetatable(orig)))
+        setmetatable(copy, elFramo.deepcopy(getmetatable(orig)))
     else -- number, string, boolean, etc
         copy = orig
     end
@@ -28,96 +28,148 @@ function ElFramo.deepcopy(orig)
 end
 
 --default testing profile
-local defaultpara={}
-defaultpara.Frames={}
-defaultpara.Frames.Family={}
-defaultpara.Frames.Family.count=1
-defaultpara.Frames.Family[1]={}
-defaultpara.Frames.Family[1].name="ReM family"
-defaultpara.Frames.Family[1].Xpos=0
-defaultpara.Frames.Family[1].Ypos=0
-defaultpara.Frames.Family[1].Height=50
-defaultpara.Frames.Family[1].Width=50
-defaultpara.Frames.Family[1].Anchor="CENTER"
-defaultpara.Frames.Family[1].AnchorTo="CENTER"
-defaultpara.Frames.Family[1].smart=false
-defaultpara.Frames.Family[1].count=1
-defaultpara.Frames.Family[1][1]={}
-defaultpara.Frames.Family[1][1].type="name"
-defaultpara.Frames.Family[1][1].arg1="buff"
-defaultpara.Frames.Family[1][1].arg2="Renewing Mist"
-defaultpara.Frames.Family[1][1].Xpos=0
-defaultpara.Frames.Family[1][1].Ypos=0
-defaultpara.Frames.Family[1][1].Height=30
-defaultpara.Frames.Family[1][1].Width=30
-defaultpara.Frames.Family[1][1].Anchor="CENTER"
-defaultpara.Frames.Family[1][1].AnchorTo="CENTER"
-defaultpara.Frames.Family[1][1].cdwheel=true
-defaultpara.Frames.Family[1][1].cdreverse=true
-defaultpara.Frames.Family[1][1].hastexture=true
-defaultpara.Frames.Family[1][1].texture=627487
-defaultpara.Frames.Family[1][1].hastext=true
---defaultpara.Frames.Family[1][1].isShown=false  --put that in vis.frames instead, makes more sense to me
+--elFramo.ClassTable={Druid="DRUID",Monk="MONK",Paladin="PALADIN", Priest="PRIEST", Rogue="ROGUE",Mage="MAGE",Warlock="WARLOCK",Hunter="HUNTER",Shaman="SHAMAN"}
 
-defaultpara.Frames.width=100
-defaultpara.Frames.height=100
-defaultpara.Frames.spacing=0.1
-defaultpara.Frames.maxinline=5 
-defaultpara.Frames.bygroup=false
+local defaultpara={frames={family={count=1, 
+                                   [1]={name="ReM family", 
+                                        xpos=0, 
+                                        ypos=0,
+                                        height=50,
+                                        width=50,
+                                        anchor="CENTER",
+                                        anchorTo="CENTER",
+                                        smart=false,
+                                        count=1,
+                                        [1]={type="name",
+                                             arg1="buff",
+                                             arg2="Renewing Mist",
+                                             xpos=0,
+                                             ypos=0,
+                                             height=30,
+                                             width=30,
+                                             anchor="CENTER",
+                                             anchorTo="CENTER",
+                                             cdWheel=true,
+                                             cdReverse=true,
+                                             hasTexture=true,
+                                             texture=627487,
+                                             hasText=true,
+                                             },--end of Family[1][1]=
+                                        [2]={type="name",
+                                             arg1="buff",
+                                             arg2="Soothing Mist",
+                                             xpos=40,
+                                             ypos=0,
+                                             height=30,
+                                             width=30,
+                                             anchor="CENTER",
+                                             anchorTo="CENTER",
+                                             cdWheel=true,
+                                             cdReverse=true,
+                                             hasTexture=true,
+                                             texture=606550,
+                                             hasText=true,
+                                             },--end of Family[1][2]=
+                                        },--end of Family[1]=
+                                      
+                                   },--end of Family=
+                           width=100,
+                           height=100,
+                           spacing=0.1,
+                           maxLine=5,
+                           byGroup=false
+                           },--end of Frames=
+                   }--end of defaultpara=
+                                   
+--[[local defaultpara={}  ---DIDNT APPLY NAMING RULES
+defaultpara.frames={}
+defaultpara.frames.family={}
+defaultpara.frames.family.count=1
+defaultpara.frames.family[1]={}
+defaultpara.frames.family[1].name="ReM family"
+defaultpara.frames.family[1].Xpos=0
+defaultpara.frames.family[1].Ypos=0
+defaultpara.frames.family[1].Height=50
+defaultpara.frames.family[1].Width=50
+defaultpara.frames.family[1].Anchor="CENTER"
+defaultpara.frames.family[1].AnchorTo="CENTER"
+defaultpara.frames.family[1].smart=false
+defaultpara.frames.family[1].count=1
+defaultpara.frames.family[1][1]={}
+defaultpara.frames.family[1][1].type="name"
+defaultpara.frames.family[1][1].arg1="buff"
+defaultpara.frames.family[1][1].arg2="Renewing Mist"
+defaultpara.frames.family[1][1].Xpos=0
+defaultpara.frames.family[1][1].Ypos=0
+defaultpara.frames.family[1][1].Height=30
+defaultpara.frames.family[1][1].Width=30
+defaultpara.frames.family[1][1].Anchor="CENTER"
+defaultpara.frames.family[1][1].AnchorTo="CENTER"
+defaultpara.frames.family[1][1].cdWheel=true
+defaultpara.frames.family[1][1].cdReverse=true
+defaultpara.frames.family[1][1].hasTexture=true
+defaultpara.frames.family[1][1].texture=627487
+defaultpara.frames.family[1][1].hastext=true
+--defaultpara.frames.family[1][1].isShown=false  --put that in vis.frames instead, makes more sense to me
+defaultpara.frames.width=100
+defaultpara.frames.height=100
+defaultpara.frames.spacing=0.1
+defaultpara.frames.maxinline=5 
+defaultpara.frames.byGroup=false]]--
 
 
-ElFramo.Para=ElFramo.deepcopy(defaultpara)
+elFramo.para=elFramo.deepcopy(defaultpara)
 
 -----------------
 
 
-function ElFramo.UpdateFrame_update()
-    ElFramo.Tracker_update() 
-    ElFramo.Frames_update_health_of(1)
-    ElFramo.Frames.update_Families(1)
---    ElFramo.Frames.update_Icon(1,1,1)
+function elFramo.updateFrameUpdate()
+    elFramo.trackerUpdate() 
+    elFramo.framesUpdateHealthOf(1)
+    elFramo.frames.updateFamilies(1)
+--    elFramo.frames.updateIcon(1,1,1)
 
     --print("done")
-    --ElFramo.Frames_update_health_of(2)
+    --elFramo.framesUpdateHealthOf(2)
 end
 
-function ElFramo.GroupFrame_eventHandler(self,event,...)
+function elFramo.groupFrameEventHandler(self,event,...)
     print(event)
-    ElFramo.Group_update()
-    ElFramo.Group_FrameUpdate()
-end --end of function ElFrame.GroupFrame_eventHandler
+    elFramo.groupUpdate()
+    elFramo.groupFrameUpdate()
+end --end of function ElFrame.groupFrame_eventHandler
 
-function ElFramo.FirstDraw_Frames()
+function elFramo.FirstDraw_Frames()
   local tostring=tostring
   -------------------------DEFINING NECESSARY FRAMES
-  ElFramo.Frames.Group=CreateFrame("Frame", "GroupFrame", UIParent)
-  ElFramo.Frames.Tracker=CreateFrame("Frame", "TrackerFrame", UIParent)
-  ElFramo.Frames.Visual={}
+  elFramo.frames.group=CreateFrame("Frame", "GroupFrame", UIParent)
+  elFramo.frames.tracker=CreateFrame("Frame", "TrackerFrame", UIParent)
+  elFramo.frames.visual={}
 
-  ElFramo.Frames.Visual.Main=CreateFrame("Frame", "VisualMain", UIParent)
-  ElFramo.Frames.Visual.Main:EnableMouse(true)
-  ElFramo.Frames.Visual.Main:SetPoint("CENTER") 
-  ElFramo.Frames.Visual.Main:SetWidth(200) 
-  ElFramo.Frames.Visual.Main:SetHeight(200)
+  elFramo.frames.visual.main=CreateFrame("Frame", "visualMain", UIParent)
+  elFramo.frames.visual.main:EnableMouse(true)
+  elFramo.frames.visual.main:SetPoint("CENTER") 
+  elFramo.frames.visual.main:SetWidth(200) 
+  elFramo.frames.visual.main:SetHeight(200)
 
-  ElFramo.Frames.Visual.Main:Show()
+  elFramo.frames.visual.main:Show()
   
 
-  ElFramo.Frames.Update=CreateFrame("Frame","UpdateFrame",UIParent) --This frame is only there to have an OnUpdate event (triggered every frame)
+  elFramo.frames.update=CreateFrame("Frame","UpdateFrame",UIParent) --This frame is only there to have an OnUpdate event (triggered every frame)
 
   ------------------------GROUPFRAME EVENT HANDLER 
 
-  ElFramo.Frames.Group:RegisterEvent("PLAYER_ENTERING_WORLD") --Fired whenever a raid is formed or disbanded, players lieaving / joining or when looting rules changes
+  elFramo.frames.group:RegisterEvent("PLAYER_ENTERING_WORLD") --Fired whenever a raid is formed or disbanded, players lieaving / joining or when looting rules changes
                                                              --Also fired when players are being moved around                                                                                                         
-  ElFramo.Frames.Group:RegisterEvent("GROUP_ROSTER_UPDATE")
+  elFramo.frames.group:RegisterEvent("GROUP_ROSTER_UPDATE")
 
-  ElFramo.Frames.Group:SetScript("OnEvent",ElFramo.GroupFrame_eventHandler) --"OnEvent" makes it trigger for all events that were Registered (see RegisterEvent() )
+  elFramo.frames.group:SetScript("OnEvent",elFramo.groupFrame_eventHandler) --"OnEvent" makes it trigger for all events that were Registered (see RegisterEvent() )
 
 
   ----------------------UPDATE FRAME "EVENT" HANDLER
 
 
-  ElFramo.Frames.Tracker:SetScript("OnUpdate",ElFramo.UpdateFrame_update) --cant directly put Tracker_update in there because it's not defined until Group_update.lua launches
+  elFramo.frames.tracker:SetScript("OnUpdate",elFramo.updateFrame_update) --cant directly put Tracker_update in there because it's not defined until Group_update.lua launches
 
 
 
@@ -125,54 +177,50 @@ function ElFramo.FirstDraw_Frames()
   -----------------TEST: CREATE A RAID FRAME (FOR "PLAYER")
   for i=1,30 do
     --print("Creating Frame:"..tostring(1))
-    --local width=ElFramo.Para.Frames.width
-    --local height=ElFramo.Para.Frames.height
+    --local width=elFramo.para.frames.width
+    --local height=elFramo.para.frames.height
     
-    ElFramo.Frames.Visual[i]={} --Might wanna save parameters here as well, maybe position or w/e idk 
-    local FrameName= "Frame"..tostring(i)
+    elFramo.frames.visual[i]={} --Might wanna save parameters here as well, maybe position or w/e idk 
+    local frameName= "Frame"..tostring(i)
     --local HealthName="Health"..tostring(i)
 
-    ElFramo.Frames.Visual[i].Frame=CreateFrame("Button",FrameName,ElFramo.Frames.Visual.Main,"SecureUnitButtonTemplate") --http://wowwiki.wikia.com/wiki/SecureActionButtonTemplate
-    ElFramo.Frames.Visual[i].Health=ElFramo.Frames.Visual[i].Frame:CreateTexture()
-    ElFramo.Frames.Visual[i].Background=ElFramo.Frames.Visual[i].Frame:CreateTexture()
+    elFramo.frames.visual[i].frame=CreateFrame("Button",frameName,elFramo.frames.visual.main,"SecureUnitButtonTemplate") --http://wowwiki.wikia.com/wiki/SecureActionButtonTemplate
+    elFramo.frames.visual[i].health=elFramo.frames.visual[i].frame:CreateTexture()
+    elFramo.frames.visual[i].background=elFramo.frames.visual[i].frame:CreateTexture()
     
     
     --TESTING ICONS
-    --ElFramo.Frames.Visual[i].ReM=CreateFrame("Frame",nil,ElFramo.Frames.Visual[i])
-    ElFramo.Frames.Visual[i].ReM=CreateFrame("Frame",nil,ElFramo.Frames.Visual[i].Frame,UIParent)
-    ElFramo.Frames.Visual[i].ReMIcon=ElFramo.Frames.Visual[i].ReM:CreateTexture()
-    ElFramo.Frames.Visual[i].ReMCD=CreateFrame("Cooldown",nil,ElFramo.Frames.Visual[i].ReM,"CooldownFrameTemplate")
+    --elFramo.frames.visual[i].ReM=CreateFrame("Frame",nil,elFramo.frames.visual[i])
+
+
     
+    local vis=elFramo.frames.visual[i]
     
-    ElFramo.Frames.Visual[i].ReM:Hide()
+    vis.frame:SetFrameStrata("MEDIUM")
+    --vis.frame:SetPoint("TOPLEFT","visualMain","TOPLEFT",(1.1*i-1)*width,0)
+    vis.frame:SetPoint("TOPLEFT","visualMain","TOPLEFT") --Initially we just put all our frames right in the TOPLEFT corner of the main
+    --vis.frame:SetWidth(30)
+    --vis.frame:SetHeight(30)
     
-    local vis=ElFramo.Frames.Visual[i]
-    
-    vis.Frame:SetFrameStrata("MEDIUM")
-    --vis.Frame:SetPoint("TOPLEFT","VisualMain","TOPLEFT",(1.1*i-1)*width,0)
-    vis.Frame:SetPoint("TOPLEFT","VisualMain","TOPLEFT") --Initially we just put all our frames right in the TOPLEFT corner of the main
-    --vis.Frame:SetWidth(30)
-    --vis.Frame:SetHeight(30)
-    
-    --vis.Frame:SetAttribute("type1","target") --http://wowwiki.wikia.com/wiki/SecureActionButtonTemplate
+    --vis.frame:SetAttribute("type1","target") --http://wowwiki.wikia.com/wiki/SecureActionButtonTemplate
                                               --http://www.wowinterface.com/forums/showthread.php?t=29914
-    --vis.Frame:SetAttribute("unit",unitid)
+    --vis.frame:SetAttribute("unit",unitid)
     
-    --RegisterUnitWatch(vis.Frame) --controls the visibility of a protected frame based on whether the unit specified by the frame's "unit" attribute exists
+    --RegisterUnitWatch(vis.frame) --controls the visibility of a protected frame based on whether the unit specified by the frame's "unit" attribute exists
     
-    vis.Background:SetDrawLayer("BACKGROUND") --http://wowwiki.wikia.com/wiki/API_Region_SetPoint
-    vis.Background:SetPoint("TOPLEFT",0,0)
-    vis.Background:SetPoint("BOTTOMRIGHT",0,0)
-    vis.Background:SetAlpha(1)
-    vis.Background:SetColorTexture(0.1,0.1,0.1)
-    vis.Background:SetDrawLayer("BACKGROUND",-4) --goes from -8 to 7, higher means drawn ABOVE
+    vis.background:SetDrawLayer("BACKGROUND") --http://wowwiki.wikia.com/wiki/API_Region_SetPoint
+    vis.background:SetPoint("TOPLEFT",0,0)
+    vis.background:SetPoint("BOTTOMRIGHT",0,0)
+    vis.background:SetAlpha(1)
+    vis.background:SetColorTexture(0.1,0.1,0.1)
+    vis.background:SetDrawLayer("BACKGROUND",-4) --goes from -8 to 7, higher means drawn ABOVE
     
-    vis.Health:SetDrawLayer("BACKGROUND")
-    vis.Health:SetPoint("TOPLEFT",0,0)
-    vis.Health:SetPoint("BOTTOMRIGHT",0,0)
-    vis.Health:SetAlpha(1)
-    vis.Health:SetColorTexture(0.5,0.8,0.5)
-    vis.Health:SetDrawLayer("BACKGROUND",-3)
+    vis.health:SetDrawLayer("BACKGROUND")
+    vis.health:SetPoint("TOPLEFT",0,0)
+    vis.health:SetPoint("BOTTOMRIGHT",0,0)
+    vis.health:SetAlpha(1)
+    vis.health:SetColorTexture(0.5,0.8,0.5)
+    vis.health:SetDrawLayer("BACKGROUND",-3)
 
     --vis.ReM:SetDrawLayer("BACKGROUND")
 
@@ -183,46 +231,46 @@ function ElFramo.FirstDraw_Frames()
 end --end of function FirstDraw_Frames
 
 
-function ElFramo.CreateFamilyFrames()
+function elFramo.createFamilyFrames()
 
-  local para=ElFramo.Para.Frames
-  local vis=ElFramo.Frames.Visual
+  local para=elFramo.para.frames
+  local vis=elFramo.frames.visual
   
   for i=1,30 do --loops through all party frames
-    vis[i].Family={}
-    for j=1,para.Family.count do 
-      vis[i].Family[j]={}
-      vis[i].Family[j].Frame=CreateFrame("Frame",para.Family[j].name,vis[i].Frame)
-      vis[i].Family[j].Frame:SetPoint(para.Family[j].Anchor,vis[i].Frame,para.Family[j].AnchorTo,para.Family[j].Xpos,para.Family[j].Ypos)
---      vis[i].Family[j].Frame:SetPoint("TOPLEFT",vis[i].Frame,"TOPLEFT")
-      vis[i].Family[j].Frame:SetHeight(para.Family[j].Height)
-      vis[i].Family[j].Frame:SetWidth(para.Family[j].Width)
---      vis[i].Family[j].Frame:SetAllPoints()
+    vis[i].family={}
+    for j=1,para.family.count do 
+      vis[i].family[j]={}
+      vis[i].family[j].frame=CreateFrame("Frame",para.family[j].name,vis[i].frame)
+      vis[i].family[j].frame:SetPoint(para.family[j].Anchor,vis[i].frame,para.family[j].AnchorTo,para.family[j].Xpos,para.family[j].Ypos)
+--      vis[i].family[j].frame:SetPoint("TOPLEFT",vis[i].frame,"TOPLEFT")
+      vis[i].family[j].frame:SetHeight(para.family[j].Height)
+      vis[i].family[j].frame:SetWidth(para.family[j].Width)
+--      vis[i].family[j].frame:SetAllPoints()
       
-      for k=1,para.Family[j].count do
+      for k=1,para.family[j].count do
         
-        vis[i].Family[j][k]={}
-        vis[i].Family[j][k].isShown=false
-        vis[i].Family[j][k].Frame=CreateFrame("Frame",nil,vis[i].Family[j].Frame)
-        vis[i].Family[j][k].Frame:SetPoint(para.Family[j][k].Anchor,vis[i].Family[j].Frame,para.Family[j][k].AnchorTo,para.Family[j][k].Xpos,para.Family[j][k].Ypos)
---        vis[i].Family[j][k].Frame:SetPoint("CENTER",vis[i].Family[j],"CENTER")
-        vis[i].Family[j][k].Frame:SetHeight(para.Family[j][k].Height)
-        vis[i].Family[j][k].Frame:SetWidth(para.Family[j][k].Width)
-        vis[i].Family[j][k].Frame:Hide()
+        vis[i].family[j][k]={}
+        vis[i].family[j][k].isShown=false
+        vis[i].family[j][k].frame=CreateFrame("Frame",nil,vis[i].family[j].frame)
+        vis[i].family[j][k].frame:SetPoint(para.family[j][k].Anchor,vis[i].family[j].frame,para.family[j][k].AnchorTo,para.family[j][k].Xpos,para.family[j][k].Ypos)
+--        vis[i].family[j][k].frame:SetPoint("CENTER",vis[i].family[j],"CENTER")
+        vis[i].family[j][k].frame:SetHeight(para.family[j][k].Height)
+        vis[i].family[j][k].frame:SetWidth(para.family[j][k].Width)
+        vis[i].family[j][k].frame:Hide()
         
-        if para.Family[j][k].hastexture then 
---          vis[i].Family[j][k].Texture=vis[i].Family[j][k].Frame:CreateTexture()   
-          vis[i].Family[j][k].Texture=vis[i].Family[j][k].Frame:CreateTexture()     
-          vis[i].Family[j][k].Texture:SetAllPoints()
-          vis[i].Family[j][k].Texture:SetDrawLayer("BACKGROUND",-2)
-          vis[i].Family[j][k].Texture:SetTexture(para.Family[j][k].texture)
-        end --end of if para.Family.hastexture
---defaultpara.Frames.Family[1][1].cdwheel=true        
-        if para.Family[j][k].cdwheel then 
-          vis[i].Family[j][k].CDFrame=CreateFrame("Cooldown",nil,vis[i].Family[j][k].Frame,"CooldownFrameTemplate") 
-          if para.Family[j][k].cdreverse then vis[i].Family[j][k].CDFrame:SetReverse(true) end
-          vis[i].Family[j][k].CDFrame:SetAllPoints()
-        end --end of if para.Family[][].cdwheel
+        if para.family[j][k].hasTexture then 
+--          vis[i].family[j][k].Texture=vis[i].family[j][k].frame:CreateTexture()   
+          vis[i].family[j][k].Texture=vis[i].family[j][k].frame:CreateTexture()     
+          vis[i].family[j][k].Texture:SetAllPoints()
+          vis[i].family[j][k].Texture:SetDrawLayer("BACKGROUND",-2)
+          vis[i].family[j][k].Texture:SetTexture(para.family[j][k].texture)
+        end --end of if para.family.hasTexture
+--defaultpara.frames.family[1][1].cdWheel=true        
+        if para.family[j][k].cdWheel then 
+          vis[i].family[j][k].cdFrame=CreateFrame("Cooldown",nil,vis[i].family[j][k].frame,"CooldownFrameTemplate") 
+          if para.family[j][k].cdReverse then vis[i].family[j][k].cdFrame:SetReverse(true) end
+          vis[i].family[j][k].cdFrame:SetAllPoints()
+        end --end of if para.family[][].cdWheel
         
         
       end --end of for k=1,Family[j].count
@@ -231,65 +279,7 @@ function ElFramo.CreateFamilyFrames()
 end --end of CreateFamilyFrames
 
 
-function ElFramo.Frames.update_Icon(n,j,k)
 
-  local trk=ElFramo.Tracker[n]
-  local para=ElFramo.Para.Frames
-  local parafam=para.Family[j][k]
-  local vis=ElFramo.Frames.Visual
-  local found=false
-  local dur=0
-  local ind=0
-  local t=GetTime()
-  
-  if parafam.type=="name" then
-    --print(parafam.arg1)
-    if parafam.arg1=="buff" then for i=1,trk.buffs.count do if trk.buffs[i].name==parafam.arg2 then found=true; ind=i;  end end 
-    elseif arg1=="debuff" then found=false end --NYI
-      
-      
-      local isShown=vis[n].Family[j][k].Frame:IsShown()
-      --print(isShown)
-      
-      if found and not isShown then
-      
-        vis[n].Family[j][k].Frame:Show()
-        dur=trk.buffs[ind].duration
-        if parafam.cdwheel then vis[n].Family[j][k].CDFrame:SetCooldown(GetTime(),dur) end
-        print("Set the CD")
-        
-      elseif found and isShown then 
-      
-        dur=trk.buffs[ind].duration
-        if parafam.cdwheel then vis[n].Family[j][k].CDFrame:SetCooldown( trk.buffs[ind].expirationTime-dur ,dur) end
-        
-      elseif not found and isShown then
-      
-        vis[n].Family[j][k].Frame:Hide()
-          
-      end
-  --print(dur)  
-  end --end of f para.Family[j][k]=="name"
-  
-  
-end--end of functon update_Icon
-
-function ElFramo.Frames.update_Family(n,j)
-  local para=ElFramo.Para.Frames
-  local update_Icon=ElFramo.Frames.update_Icon
-  
-  for k=1,para.Family[j].count do update_Icon(n,j,k) end 
-  
-end
-
-function ElFramo.Frames.update_Families(n)
-
-  local para=ElFramo.Para.Frames
-  local update_Family=ElFramo.Frames.update_Family
-  
-  for j=1,para.Family.count do update_Family(n,j) end 
-  
-end
 
 
 

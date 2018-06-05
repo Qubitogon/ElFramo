@@ -1,14 +1,14 @@
 print("----Misc_tables.lua init")
-ElFramo.ClassTable={Druid="DRUID",Monk="MONK",Paladin="PALADIN", Priest="PRIEST", Rogue="ROGUE",Mage="MAGE",Warlock="WARLOCK",Hunter="HUNTER",Shaman="SHAMAN"}
+elFramo.classTable={Druid="DRUID",Monk="MONK",Paladin="PALADIN", Priest="PRIEST", Rogue="ROGUE",Mage="MAGE",Warlock="WARLOCK",Hunter="HUNTER",Shaman="SHAMAN"}
 
-ElFramo.RaidRosterIndextoGroupIndex={} --1:1 map from RaidRoster index to index in Group
+elFramo.raidRosterIndextoGroupIndex={} --1:1 map from RaidRoster index to index in Group
 
-ElFramo.NameToRaidRosterIndex={}
+elFramo.nameToRaidRosterIndex={}
 
-ElFramo.PartyIDs={}
-ElFramo.PartyIDs[1]="player"
-for i=2,5 do ElFramo.PartyIDs[i]="party"..tostring(i) end
+elFramo.partyIDs={}
+elFramo.partyIDs[1]="player"
+for i=2,5 do elFramo.partyIDs[i]="party"..tostring(i) end
 
-ElFramo.RaidIDs={}
-for i=1,40 do ElFramo.RaidIDs[i]="raid"..tostring(i) end
+elFramo.raidIDs={}
+for i=1,40 do elFramo.raidIDs[i]="raid"..tostring(i) end
 

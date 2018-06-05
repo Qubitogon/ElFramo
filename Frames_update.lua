@@ -1,70 +1,70 @@
 print("----Frames_update.lua init")
 
-function ElFramo.Frames_update_all()
+function elFramo.framesUpdateAll()
     
    
 end
  
  
-function ElFramo.Frames_update_health_of(n)
+function elFramo.framesUpdateHealthOf(n)
 
-  local width=ElFramo.Para.Frames.width
-  local height=ElFramo.Para.Frames.height
+  local width=elFramo.para.frames.width
+  local height=elFramo.para.frames.height
 
-  local vis=ElFramo.Frames.Visual[n]
-  local trkn=ElFramo.Tracker[n] --SINCE THEY ARE POINTERS, CHANGING tkr IS CHANGING THE GLOBAL DICT
+  local vis=elFramo.frames.visual[n]
+  local trkn=elFramo.tracker[n] --SINCE THEY ARE POINTERS, CHANGING tkr IS CHANGING THE GLOBAL DICT
   
-  local ratio=(trkn.maxhealth-trkn.health)/trkn.maxhealth
+  local ratio=(trkn.maxHealth-trkn.health)/trkn.maxHealth
   
-  vis.Health:SetPoint("TOPLEFT",0,-ratio*height)
+  vis.health:SetPoint("TOPLEFT",0,-ratio*height)
    
 end
 
 
-function ElFramo.Group_FrameUpdate()
+function elFramo.groupFrameUpdate()
   local tostring=tostring
-  local Unitid=ElFramo.Unitid
+  local unitID=elFramo.unitID
   -------------------------DEFINING NECESSARY FRAMES
   
-  local f=ElFramo.Frames
-  local g=ElFramo.Group
+  local f=elFramo.frames
+  local g=elFramo.group
   
   -----------------TEST: CREATE A RAID FRAME (FOR "PLAYER")
   for i=1,g.nMembers do
     
     if not g[i].name then break end --if we reach end of the group members, stop
     
-    local unit=Unitid(i)
-    local para=ElFramo.Para.Frames
+    local unit=unitID(i)
+    local para=elFramo.para.frames
     local spacing=para.spacing
-    local vis=ElFramo.Frames.Visual[i]
-    local linenumber=math.floor(i/para.maxinline)
+    local vis=elFramo.frames.visual[i]
+    local lineNumber=math.floor(i/para.maxInLine)
     --print(linenumber)
-    local r,g,b = GetClassColor(  ElFramo.GetCLASS(g[i].class)  )
+    local r,g,b = GetClassColor(  elFramo.GetCLASS(g[i].class)  )
 
-    vis.Frame:SetPoint("TOPLEFT","VisualMain","TOPLEFT",linenumber*(1+para.spacing)*para.width,(-(1+para.spacing)*(i-1-linenumber*para.maxinline)*para.height))
+    vis.frame:SetPoint("TOPLEFT","VisualMain","TOPLEFT",lineNumber*(1+para.spacing)*para.width,(-(1+para.spacing)*(i-1-linenumber*para.maxInLine)*para.height))
     
-    vis.Frame:SetWidth(para.width)
-    vis.Frame:SetHeight(para.height)
+    vis.frame:SetWidth(para.width)
+    vis.frame:SetHeight(para.height)
     
-    vis.Frame:SetAttribute("type1","target") --http://wowwiki.wikia.com/wiki/SecureActionButtonTemplate
+    vis.frame:SetAttribute("type1","target") --http://wowwiki.wikia.com/wiki/SecureActionButtonTemplate
                                               --http://www.wowinterface.com/forums/showthread.php?t=29914
-    vis.Frame:SetAttribute("unit",unit)
+    vis.frame:SetAttribute("unit",unit)
 
     print("for unit :"..unit)
     
-    RegisterUnitWatch(vis.Frame) --controls the visibility of a protected frame based on whether the unit specified by the frame's "unit" attribute exists
+    RegisterUnitWatch(vis.frame) --controls the visibility of a protected frame based on whether the unit specified by the frame's "unit" attribute exists
     
-    vis.Background:SetPoint("TOPLEFT",0,0)
-    vis.Background:SetPoint("BOTTOMRIGHT",0,0)
+    vis.background:SetPoint("TOPLEFT",0,0)
+    vis.background:SetPoint("BOTTOMRIGHT",0,0)
     
-    vis.Health:SetPoint("TOPLEFT",0,0)
-    vis.Health:SetPoint("BOTTOMRIGHT",0,0)
-    vis.Health:SetColorTexture(r,g,b)
+    vis.health:SetPoint("TOPLEFT",0,0)
+    vis.health:SetPoint("BOTTOMRIGHT",0,0)
+    vis.health:SetColorTexture(r,g,b)
 
     print("color:"..tostring(r).." "..tostring(g).." "..tostring(b).." ")
     
-    ElFramo.Frames.Visual[i].Frame:Show()
+    elFramo.frames.visual[i].frame:Show()
 
     
   end --end of for i=1,g.nMembers
@@ -72,7 +72,65 @@ function ElFramo.Group_FrameUpdate()
 end --end of function Group_FrameUpdate
 
 
+function elFramo.frames.update_Icon(n,j,k)
 
+  local trk=elFramo.tracker[n]
+  local para=elFramo.para.frames
+  local paraFam=para.family[j][k]
+  local vis=elFramo.frames.visual
+  local found=false
+  local dur=0
+  local ind=0
+  local t=GetTime()
+  
+  if paraFam.type=="name" then
+    --print(paraFam.arg1)
+    if paraFam.arg1=="buff" then for i=1,trk.buffs.count do if trk.buffs[i].name==paraFam.arg2 then found=true; ind=i;  end end 
+    elseif arg1=="debuff" then found=false end --NYI
+      
+      
+      local isShown=vis[n].family[j][k].frame:IsShown()
+      --print(isShown)
+      
+      if found and not isShown then
+      
+        vis[n].family[j][k].frame:Show()
+        dur=trk.buffs[ind].duration
+        if paraFam.cdWheel then vis[n].family[j][k].cdFrame:SetCooldown(GetTime(),dur) end
+        print("Set the CD")
+        
+      elseif found and isShown then 
+      
+        dur=trk.buffs[ind].duration
+        if paraFam.cdWheel then vis[n].family[j][k].cdFrame:SetCooldown( trk.buffs[ind].expirationTime-dur ,dur) end
+        
+      elseif not found and isShown then
+      
+        vis[n].family[j][k].frame:Hide()
+          
+      end
+  --print(dur)  
+  end --end of f para.family[j][k]=="name"
+  
+  
+end--end of functon update_Icon
+
+function elFramo.frames.updateFamily(n,j)
+  local para=elFramo.para.frames
+  local updateIcon=elFramo.frames.updateIcon
+  
+  for k=1,para.family[j].count do updateIcon(n,j,k) end 
+  
+end
+
+function elFramo.frames.updateFamilies(n)
+
+  local para=elFramo.para.frames
+  local updateFamily=elFramo.frames.updateFamily
+  
+  for j=1,para.family.count do updateFamily(n,j) end 
+  
+end
 
 
 
