@@ -87,24 +87,24 @@ defaultpara.frames.family={}
 defaultpara.frames.family.count=1
 defaultpara.frames.family[1]={}
 defaultpara.frames.family[1].name="ReM family"
-defaultpara.frames.family[1].Xpos=0
-defaultpara.frames.family[1].Ypos=0
-defaultpara.frames.family[1].Height=50
-defaultpara.frames.family[1].Width=50
-defaultpara.frames.family[1].Anchor="CENTER"
-defaultpara.frames.family[1].AnchorTo="CENTER"
+defaultpara.frames.family[1].xpos=0
+defaultpara.frames.family[1].ypos=0
+defaultpara.frames.family[1].height=50
+defaultpara.frames.family[1].width=50
+defaultpara.frames.family[1].anchor="CENTER"
+defaultpara.frames.family[1].anchorTo="CENTER"
 defaultpara.frames.family[1].smart=false
 defaultpara.frames.family[1].count=1
 defaultpara.frames.family[1][1]={}
 defaultpara.frames.family[1][1].type="name"
 defaultpara.frames.family[1][1].arg1="buff"
 defaultpara.frames.family[1][1].arg2="Renewing Mist"
-defaultpara.frames.family[1][1].Xpos=0
-defaultpara.frames.family[1][1].Ypos=0
-defaultpara.frames.family[1][1].Height=30
-defaultpara.frames.family[1][1].Width=30
-defaultpara.frames.family[1][1].Anchor="CENTER"
-defaultpara.frames.family[1][1].AnchorTo="CENTER"
+defaultpara.frames.family[1][1].xpos=0
+defaultpara.frames.family[1][1].ypos=0
+defaultpara.frames.family[1][1].height=30
+defaultpara.frames.family[1][1].width=30
+defaultpara.frames.family[1][1].anchor="CENTER"
+defaultpara.frames.family[1][1].anchorTo="CENTER"
 defaultpara.frames.family[1][1].cdWheel=true
 defaultpara.frames.family[1][1].cdReverse=true
 defaultpara.frames.family[1][1].hasTexture=true
@@ -139,7 +139,7 @@ function elFramo.groupFrameEventHandler(self,event,...)
     elFramo.groupFrameUpdate()
 end --end of function ElFrame.groupFrame_eventHandler
 
-function elFramo.FirstDraw_Frames()
+function elFramo.firstDrawFrames()
   local tostring=tostring
   -------------------------DEFINING NECESSARY FRAMES
   elFramo.frames.group=CreateFrame("Frame", "GroupFrame", UIParent)
@@ -241,10 +241,10 @@ function elFramo.createFamilyFrames()
     for j=1,para.family.count do 
       vis[i].family[j]={}
       vis[i].family[j].frame=CreateFrame("Frame",para.family[j].name,vis[i].frame)
-      vis[i].family[j].frame:SetPoint(para.family[j].Anchor,vis[i].frame,para.family[j].AnchorTo,para.family[j].Xpos,para.family[j].Ypos)
+      vis[i].family[j].frame:SetPoint(para.family[j].anchor,vis[i].frame,para.family[j].anchorTo,para.family[j].xpos,para.family[j].ypos)
 --      vis[i].family[j].frame:SetPoint("TOPLEFT",vis[i].frame,"TOPLEFT")
-      vis[i].family[j].frame:SetHeight(para.family[j].Height)
-      vis[i].family[j].frame:SetWidth(para.family[j].Width)
+      vis[i].family[j].frame:SetHeight(para.family[j].height)
+      vis[i].family[j].frame:SetWidth(para.family[j].width)
 --      vis[i].family[j].frame:SetAllPoints()
       
       for k=1,para.family[j].count do
@@ -252,10 +252,10 @@ function elFramo.createFamilyFrames()
         vis[i].family[j][k]={}
         vis[i].family[j][k].isShown=false
         vis[i].family[j][k].frame=CreateFrame("Frame",nil,vis[i].family[j].frame)
-        vis[i].family[j][k].frame:SetPoint(para.family[j][k].Anchor,vis[i].family[j].frame,para.family[j][k].AnchorTo,para.family[j][k].Xpos,para.family[j][k].Ypos)
+        vis[i].family[j][k].frame:SetPoint(para.family[j][k].anchor,vis[i].family[j].frame,para.family[j][k].anchorTo,para.family[j][k].xpos,para.family[j][k].ypos)
 --        vis[i].family[j][k].frame:SetPoint("CENTER",vis[i].family[j],"CENTER")
-        vis[i].family[j][k].frame:SetHeight(para.family[j][k].Height)
-        vis[i].family[j][k].frame:SetWidth(para.family[j][k].Width)
+        vis[i].family[j][k].frame:SetHeight(para.family[j][k].height)
+        vis[i].family[j][k].frame:SetWidth(para.family[j][k].width)
         vis[i].family[j][k].frame:Hide()
         
         if para.family[j][k].hasTexture then 

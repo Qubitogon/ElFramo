@@ -93,7 +93,7 @@ function elFramo.trackerUpdate()
     if gType=="party" or gType=="solo" then
       for i=1,nMembers do
 
-        local ID=gType..tostring(i-1)
+        local id=gType..tostring(i-1)
         if i==1 then ID="player" end
         --print(id)
         trk[i]={}
