@@ -1,21 +1,21 @@
 print("----EF Tracker_update.lua init")
-function ElFramo.Tracker_update()
-    local nMembers=ElFramo.Group.nMembers
-    local gtype=ElFramo.Group.type
-    local trk=ElFramo.Tracker --SINCE THEY ARE POINTERS, CHANGING tkr IS CHANGING THE GLOBAL DICT
+function elFramo.trackerUpdate()
+    local nMembers=elFramo.group.nMembers
+    local gType=elFramo.group.type
+    local trk=elFramo.tracker --SINCE THEY ARE POINTERS, CHANGING tkr IS CHANGING THE GLOBAL DICT
                               
     local pairs,ipairs=pairs,ipairs
     
-    if gtype=="raid" then  
+    if gType=="raid" then  
       for i=1,nMembers do
-        local id=gtype..tostring(i)
+        local id=gType..tostring(i)
         
         trk[i]={}
         trk[i].health=UnitHealth(id)
-        trk[i].maxhealth=UnitHealthMax(id)
+        trk[i].maxHealth=UnitHealthMax(id)
         trk[i].power=UnitPower(id)
-        trk[i].maxpower=UnitPowerMax(id)
-        _,trk[i].powertype=UnitPowerType(id)
+        trk[i].maxPower=UnitPowerMax(id)
+        _,trk[i].powerType=UnitPowerType(id)
         
         
         trk[i].range=UnitInRange(id)
@@ -33,7 +33,7 @@ function ElFramo.Tracker_update()
         
         for j=1,40 do
           --NOTE THAT IN BFA UnitBuff() HAS NO "rank" ARGUMENT ANY MORE, SO ALL OUTPUTS SLIDE DOWN BY 1
-          local name,icon,count,mtype,dur,expt,source,cansteal,_,spellid,_,boss=UnitBuff(id,j)
+          local name,icon,count,mType,dur,expT,source,canSteal,_,spellID,_,boss=UnitBuff(id,j)
           if not name then break 
           else 
             trk[i].buffs.count=trk[i].buffs.count+1
@@ -42,12 +42,12 @@ function ElFramo.Tracker_update()
             trk[i].buffs[j].name=name
             trk[i].buffs[j].icon=icon
             trk[i].buffs[j].count=count
-            trk[i].buffs[j].mtype=mtype
+            trk[i].buffs[j].mType=mType
             trk[i].buffs[j].duration=dur
-            trk[i].buffs[j].expirationTime=expt
+            trk[i].buffs[j].expirationTime=expT
             trk[i].buffs[j].source=source
-            trk[i].buffs[j].cansteal=cansteal
-            trk[i].buffs[j].spellid=spellid
+            trk[i].buffs[j].canSteal=canSteal
+            trk[i].buffs[j].spellID=spellID
             trk[i].buffs[j].boss=boss
         
           end --end of if not name "" else
@@ -61,7 +61,7 @@ function ElFramo.Tracker_update()
         trk[i].debuffs.count=0 --counts how many buffs they have
         for j=1,40 do
           --NOTE THAT IN BFA UnitDebuff() HAS NO "rank" ARGUMENT ANY MORE, SO ALL OUTPUTS SLIDE DOWN BY 1
-          local name,icon,count,mtype,dur,expt,source,cansteal,_,spellid,_,boss=UnitDebuff(id,j)
+          local name,icon,count,mType,dur,expT,source,canSteal,_,spellID,_,boss=UnitDebuff(id,j)
           if not name then break
           else 
             trk[i].debuffs.count=trk[i].debuffs.count+1
@@ -70,12 +70,12 @@ function ElFramo.Tracker_update()
             trk[i].debuffs[j].name=name
             trk[i].debuffs[j].icon=icon
             trk[i].debuffs[j].count=count
-            trk[i].debuffs[j].mtype=mtype
+            trk[i].debuffs[j].mType=mType
             trk[i].debuffs[j].duration=dur
-            trk[i].debuffs[j].expirationTime=expt
+            trk[i].debuffs[j].expirationTime=expT
             trk[i].debuffs[j].source=source
-            trk[i].debuffs[j].cansteal=cansteal
-            trk[i].debuffs[j].spellid=spellid
+            trk[i].debuffs[j].canSteal=canSteal
+            trk[i].debuffs[j].spellID=spellID
             trk[i].debuffs[j].boss=boss
         
           end --end of if not name "" else
@@ -90,18 +90,18 @@ function ElFramo.Tracker_update()
    
 
    
-    if gtype=="party" or gtype=="solo" then
+    if gType=="party" or gType=="solo" then
       for i=1,nMembers do
 
-        local id=gtype..tostring(i-1)
-        if i==1 then id="player" end
+        local ID=gType..tostring(i-1)
+        if i==1 then ID="player" end
         --print(id)
         trk[i]={}
         trk[i].health=UnitHealth(id)
-        trk[i].maxhealth=UnitHealthMax(id)
+        trk[i].maxHealth=UnitHealthMax(id)
         trk[i].power=UnitPower(id)
-        trk[i].maxpower=UnitPowerMax(id)
-        _,trk[i].powertype=UnitPowerType(id)
+        trk[i].maxPower=UnitPowerMax(id)
+        _,trk[i].powerType=UnitPowerType(id)
         
         
         trk[i].range=UnitInRange(id)
@@ -120,7 +120,7 @@ function ElFramo.Tracker_update()
         
         for j=1,40 do
           --NOTE THAT IN BFA UnitBuff() HAS NO "rank" ARGUMENT ANY MORE, SO ALL OUTPUTS SLIDE DOWN BY 1
-          local name,icon,count,mtype,dur,expt,source,cansteal,_,spellid,_,boss=UnitBuff(id,j)
+          local name,icon,count,mType,dur,expT,source,canSteal,_,spellID,_,boss=UnitBuff(id,j)
           if not name then break 
           else 
             trk[i].buffs.count=trk[i].buffs.count+1
@@ -129,12 +129,12 @@ function ElFramo.Tracker_update()
             trk[i].buffs[j].name=name
             trk[i].buffs[j].icon=icon
             trk[i].buffs[j].count=count
-            trk[i].buffs[j].mtype=mtype
+            trk[i].buffs[j].mType=mType
             trk[i].buffs[j].duration=dur
-            trk[i].buffs[j].expirationTime=expt
+            trk[i].buffs[j].expirationTime=expT
             trk[i].buffs[j].source=source
-            trk[i].buffs[j].cansteal=cansteal
-            trk[i].buffs[j].spellid=spellid
+            trk[i].buffs[j].canSteal=canSteal
+            trk[i].buffs[j].spellID=spellID
             trk[i].buffs[j].boss=boss
         
           end --end of if not name "" else
@@ -148,7 +148,7 @@ function ElFramo.Tracker_update()
         trk[i].debuffs.count=0 --counts how many buffs they have
         for j=1,40 do
           --NOTE THAT IN BFA UnitDebuff() HAS NO "rank" ARGUMENT ANY MORE, SO ALL OUTPUTS SLIDE DOWN BY 1
-          local name,icon,count,mtype,dur,expt,source,cansteal,_,spellid,_,boss=UnitDebuff(id,j)
+          local name,icon,count,mType,dur,expT,source,canSteal,_,spellID,_,boss=UnitDebuff(id,j)
           if not name then break
           else 
             trk[i].debuffs.count=trk[i].debuffs.count+1
@@ -157,12 +157,12 @@ function ElFramo.Tracker_update()
             trk[i].debuffs[j].name=name
             trk[i].debuffs[j].icon=icon
             trk[i].debuffs[j].count=count
-            trk[i].debuffs[j].mtype=mtype
+            trk[i].debuffs[j].mType=mType
             trk[i].debuffs[j].duration=dur
-            trk[i].debuffs[j].expirationTime=expt
+            trk[i].debuffs[j].expirationTime=expT
             trk[i].debuffs[j].source=source
-            trk[i].debuffs[j].cansteal=cansteal
-            trk[i].debuffs[j].spellid=spellid
+            trk[i].debuffs[j].canSteal=canSteal
+            trk[i].debuffs[j].spellID=spellID
             trk[i].debuffs[j].boss=boss
         
           end --end of if not name "" else
@@ -179,24 +179,24 @@ function ElFramo.Tracker_update()
 end --end of function Tracker_update
   
   
-function ElFramo.Tracker_output() --used merely for debugging, outputs the entire array in the chat along with possible errors
+function elFramo.trackerOutput() --used merely for debugging, outputs the entire array in the chat along with possible errors
   
-  print("ElFramo.Tracker_output entered")
+  print("elFramo.trackerOutput entered")
   
-  if not ElFramo.Tracker then print("ElFramo.Tracker is nil"); return end 
+  if not elFramo.tracker then print("elFramo.tracker is nil"); return end 
   
-  if not ElFramo.Group then print("ElFramo.Group is nil"); return end
+  if not elFramo.group then print("elFramo.group is nil"); return end
   
-  if not ElFramo.Group.type then print("ElFramo.Group.type is nil"); return end 
+  if not elFramo.group.type then print("elFramo.group.type is nil"); return end 
   
-  if not ElFramo.Group.nMembers then print("ElFramo.Group.nMembers is nil"); return end 
+  if not elFramo.group.nMembers then print("elFramo.group.nMembers is nil"); return end 
   
-  if not ElFramo.Tracker[1] then print("ElFramo.Tracker[1] is nil"); return end 
+  if not elFramo.tracker[1] then print("elFramo.tracker[1] is nil"); return end 
   
   
-  local g=ElFramo.Group
+  local g=elFramo.group
 
-  local t=ElFramo.Tracker
+  local t=elFramo.tracker
   
   
   --local hs="" --helping string
