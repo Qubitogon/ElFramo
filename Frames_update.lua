@@ -40,9 +40,9 @@ function elFramo.groupFrameUpdate()
     local vis=elFramo.frames.visual[i]
     local lineNumber=math.floor(i/para.maxInLine)
     --print(linenumber)
-    local r,g,b = GetClassColor(  elFramo.GetCLASS(g[i].class)  )
+    local r,g,b = GetClassColor(  elFramo.getCLASS(g[i].class)  )
 
-    vis.frame:SetPoint("TOPLEFT","VisualMain","TOPLEFT",lineNumber*(1+para.spacing)*para.width,(-(1+para.spacing)*(i-1-linenumber*para.maxInLine)*para.height))
+    vis.frame:SetPoint("TOPLEFT","visualMain","TOPLEFT",lineNumber*(1+para.spacing)*para.width,(-(1+para.spacing)*(i-1-lineNumber*para.maxInLine)*para.height))
     
     vis.frame:SetWidth(para.width)
     vis.frame:SetHeight(para.height)
@@ -72,12 +72,12 @@ function elFramo.groupFrameUpdate()
 end --end of function Group_FrameUpdate
 
 
-function elFramo.frames.update_Icon(n,j,k)
+function elFramo.frames.updateIcon(n,j,k)
 
   local trk=elFramo.tracker[n]
   local para=elFramo.para.frames
   local paraFam=para.family[j][k]
-  local vis=elFramo.frames.visual
+  local vis=elFramo.frames.visual[n]
   local found=false
   local dur=0
   local ind=0
@@ -89,39 +89,83 @@ function elFramo.frames.update_Icon(n,j,k)
     elseif arg1=="debuff" then found=false end --NYI
       
       
-      local isShown=vis[n].family[j][k].frame:IsShown()
+      local isShown=vis.family[j][k].frame:IsShown()
       --print(isShown)
       
       if found and not isShown then
       
-        vis[n].family[j][k].frame:Show()
+        vis.family[j][k].frame:Show()
         dur=trk.buffs[ind].duration
-        if paraFam.cdWheel then vis[n].family[j][k].cdFrame:SetCooldown(GetTime(),dur) end
+        if paraFam.cdWheel then vis.family[j][k].cdFrame:SetCooldown(GetTime(),dur) end
         print("Set the CD")
         
       elseif found and isShown then 
       
         dur=trk.buffs[ind].duration
-        if paraFam.cdWheel then vis[n].family[j][k].cdFrame:SetCooldown( trk.buffs[ind].expirationTime-dur ,dur) end
+        if paraFam.cdWheel then vis.family[j][k].cdFrame:SetCooldown( trk.buffs[ind].expirationTime-dur ,dur) end
         
       elseif not found and isShown then
       
-        vis[n].family[j][k].frame:Hide()
+        vis.family[j][k].frame:Hide()
           
       end
   --print(dur)  
   end --end of f para.family[j][k]=="name"
-  
-  
+
 end--end of functon update_Icon
+
 
 function elFramo.frames.updateFamily(n,j)
   local para=elFramo.para.frames
+  local paraFam=para.family[j]
   local updateIcon=elFramo.frames.updateIcon
+  local vis=elFramo.frames.visual[n]
+
+  if not paraFam.smart then 
   
-  for k=1,para.family[j].count do updateIcon(n,j,k) end 
-  
+    for k=1,paraFam.count do updateIcon(n,j,k) end 
+    
+  else --if not para.family.smart
+    
+    local trk=elFramo.tracker[n]
+    local tbl=elFramo.tracker[n][paraFam.arg1.."s"]  --paraFam.arg1 = "buff" / "debuff"
+        
+    if paraFam.type=="blackList" then 
+      
+      for m=1,min(#tbl,paraFam.maxCount) do --either reach maximum in smart group, or end of buffs/debuffs
+        
+        
+        
+      end
+      
+      
+    end --end of para.family.type=="blackList"
+    
+  end --end of  if not para.family.smart else  
 end
+
+--[[                                  [3]={name="All smart", 
+                                        xpos=0, 
+                                        ypos=-50,
+                                        height=50,
+                                        width=50,
+                                        anchor="CENTER",
+                                        anchorTo="CENTER",
+                                        smart=true,
+                                        maxCount=3,
+                                        type="blackList",
+                                        arg1="buff",
+                                        arg2="buff",
+                                        smartIcons=true,
+                                        } ]]--
+
+
+
+
+
+
+
+
 
 function elFramo.frames.updateFamilies(n)
 

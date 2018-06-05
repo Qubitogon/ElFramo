@@ -1,9 +1,9 @@
 print("----EF Tracker_update.lua init")
 function elFramo.trackerUpdate()
+    --print("got called")
     local nMembers=elFramo.group.nMembers
     local gType=elFramo.group.type
     local trk=elFramo.tracker --SINCE THEY ARE POINTERS, CHANGING tkr IS CHANGING THE GLOBAL DICT
-                              
     local pairs,ipairs=pairs,ipairs
     
     if gType=="raid" then  
@@ -92,9 +92,8 @@ function elFramo.trackerUpdate()
    
     if gType=="party" or gType=="solo" then
       for i=1,nMembers do
-
         local id=gType..tostring(i-1)
-        if i==1 then ID="player" end
+        if i==1 then id="player" end
         --print(id)
         trk[i]={}
         trk[i].health=UnitHealth(id)

@@ -30,7 +30,7 @@ end
 --default testing profile
 --elFramo.ClassTable={Druid="DRUID",Monk="MONK",Paladin="PALADIN", Priest="PRIEST", Rogue="ROGUE",Mage="MAGE",Warlock="WARLOCK",Hunter="HUNTER",Shaman="SHAMAN"}
 
-local defaultpara={frames={family={count=1, 
+local defaultpara={frames={family={count=3, 
                                    [1]={name="MW test family", 
                                         xpos=0, 
                                         ypos=0,
@@ -40,7 +40,8 @@ local defaultpara={frames={family={count=1,
                                         anchorTo="CENTER",
                                         smart=false,
                                         count=2,
-                                        [1]={type="name",
+                                        [1]={name="ReM",
+                                             type="name",
                                              arg1="buff",
                                              arg2="Renewing Mist",
                                              xpos=0,
@@ -55,7 +56,8 @@ local defaultpara={frames={family={count=1,
                                              texture=627487,
                                              hasText=true,
                                              },--end of Family[1][1]=
-                                        [2]={type="name",
+                                        [2]={name="SooM",
+                                             type="name",
                                              arg1="buff",
                                              arg2="Soothing Mist",
                                              xpos=40,
@@ -72,11 +74,73 @@ local defaultpara={frames={family={count=1,
                                              },--end of Family[1][2]=
                                         },--end of Family[1]=
                                       
+                                   [2]={name="MW test family 2", 
+                                        xpos=0, 
+                                        ypos=50,
+                                        height=50,
+                                        width=50,
+                                        anchor="CENTER",
+                                        anchorTo="CENTER",
+                                        smart=false,
+                                        count=2,
+                                        [1]={name="LC",
+                                             type="name",
+                                             arg1="buff",
+                                             arg2="Life Cocoon",
+                                             xpos=0,
+                                             ypos=0,
+                                             height=30,
+                                             width=30,
+                                             anchor="CENTER",
+                                             anchorTo="CENTER",
+                                             cdWheel=true,
+                                             cdReverse=true,
+                                             hasTexture=true,
+                                             texture=627485,
+                                             hasText=true,
+                                             },--end of Family[1][1]=
+                                        [2]={name="EnM",
+                                             type="name",
+                                             arg1="buff",
+                                             arg2="Enveloping Mist",
+                                             xpos=40,
+                                             ypos=0,
+                                             height=30,
+                                             width=30,
+                                             anchor="CENTER",
+                                             anchorTo="CENTER",
+                                             cdWheel=true,
+                                             cdReverse=true,
+                                             hasTexture=true,
+                                             texture=775461,
+                                             hasText=true,
+                                             },--end of Family[1][2]=
+                                        },--end of Family[1]=
+                                   
+                                   [3]={name="All smart", 
+                                        xpos=0, 
+                                        ypos=-50,
+                                        height=30,
+                                        width=30,
+                                        anchor="CENTER",
+                                        anchorTo="CENTER",
+                                        smart=true,
+                                        maxCount=3,
+                                        type="blackList",
+                                        arg1="buff",
+                                        arg2=nil, --has a blacklist array 
+                                        smartIcons=true,
+                                        grow="right",
+                                        growAnchor="LEFT",
+                                        growAnchorTo="LEFT",
+                                        cdReverse=true,
+                                        cdWheel=true,
+                                        }--end of Family[3]=
                                    },--end of Family=
                            width=100,
                            height=100,
                            spacing=0.1,
-                           maxLine=5,
+                           maxInLine=5,
                            byGroup=false
                            },--end of Frames=
                    }--end of defaultpara=
@@ -155,7 +219,7 @@ function elFramo.firstDrawFrames()
   elFramo.frames.visual.main:Show()
   
 
-  elFramo.frames.update=CreateFrame("Frame","UpdateFrame",UIParent) --This frame is only there to have an OnUpdate event (triggered every frame)
+  elFramo.frames.update=CreateFrame("Frame","updateFrame",UIParent) --This frame is only there to have an OnUpdate event (triggered every frame)
 
   ------------------------GROUPFRAME EVENT HANDLER 
 
@@ -163,13 +227,13 @@ function elFramo.firstDrawFrames()
                                                              --Also fired when players are being moved around                                                                                                         
   elFramo.frames.group:RegisterEvent("GROUP_ROSTER_UPDATE")
 
-  elFramo.frames.group:SetScript("OnEvent",elFramo.groupFrame_eventHandler) --"OnEvent" makes it trigger for all events that were Registered (see RegisterEvent() )
+  elFramo.frames.group:SetScript("OnEvent",elFramo.groupFrameEventHandler) --"OnEvent" makes it trigger for all events that were Registered (see RegisterEvent() )
 
 
   ----------------------UPDATE FRAME "EVENT" HANDLER
 
 
-  elFramo.frames.tracker:SetScript("OnUpdate",elFramo.updateFrame_update) --cant directly put Tracker_update in there because it's not defined until Group_update.lua launches
+  elFramo.frames.tracker:SetScript("OnUpdate",elFramo.updateFrameUpdate) --cant directly put Tracker_update in there because it's not defined until Group_update.lua launches
 
 
 
@@ -236,9 +300,13 @@ function elFramo.createFamilyFrames()
   local para=elFramo.para.frames
   local vis=elFramo.frames.visual
   
+  --NEED TO CREATE BLACKLIST TYPE FRAME HERE AS WELL PROPERLY, SO FAR ONLY NON-SMART WITH "NAME" ICONS
+  
   for i=1,30 do --loops through all party frames
     vis[i].family={}
     for j=1,para.family.count do 
+    
+    
       vis[i].family[j]={}
       vis[i].family[j].frame=CreateFrame("Frame",para.family[j].name,vis[i].frame)
       vis[i].family[j].frame:SetPoint(para.family[j].anchor,vis[i].frame,para.family[j].anchorTo,para.family[j].xpos,para.family[j].ypos)
@@ -247,37 +315,65 @@ function elFramo.createFamilyFrames()
       vis[i].family[j].frame:SetWidth(para.family[j].width)
 --      vis[i].family[j].frame:SetAllPoints()
       
-      for k=1,para.family[j].count do
+      if not para.family[j].smart then 
+        for k=1,para.family[j].count do
+          
+          vis[i].family[j][k]={}
+          vis[i].family[j][k].isShown=false
+          vis[i].family[j][k].frame=CreateFrame("Frame",nil,vis[i].family[j].frame)
+          vis[i].family[j][k].frame:SetPoint(para.family[j][k].anchor,vis[i].family[j].frame,para.family[j][k].anchorTo,para.family[j][k].xpos,para.family[j][k].ypos)
+  --        vis[i].family[j][k].frame:SetPoint("CENTER",vis[i].family[j],"CENTER")
+          vis[i].family[j][k].frame:SetHeight(para.family[j][k].height)
+          vis[i].family[j][k].frame:SetWidth(para.family[j][k].width)
+          vis[i].family[j][k].frame:Hide()
+          
+          if para.family[j][k].hasTexture then 
+  --          vis[i].family[j][k].Texture=vis[i].family[j][k].frame:CreateTexture()   
+            vis[i].family[j][k].Texture=vis[i].family[j][k].frame:CreateTexture()     
+            vis[i].family[j][k].Texture:SetAllPoints()
+            vis[i].family[j][k].Texture:SetDrawLayer("BACKGROUND",-2)
+            vis[i].family[j][k].Texture:SetTexture(para.family[j][k].texture)
+          end --end of if para.family.hasTexture
+  --defaultpara.frames.family[1][1].cdWheel=true        
+          if para.family[j][k].cdWheel then 
+            vis[i].family[j][k].cdFrame=CreateFrame("Cooldown",nil,vis[i].family[j][k].frame,"CooldownFrameTemplate") 
+            if para.family[j][k].cdReverse then vis[i].family[j][k].cdFrame:SetReverse(true) end
+            vis[i].family[j][k].cdFrame:SetAllPoints()
+          end --end of if para.family[][].cdWheel
+          
+        end --end of for k=1,Family[j].count
         
-        vis[i].family[j][k]={}
-        vis[i].family[j][k].isShown=false
-        vis[i].family[j][k].frame=CreateFrame("Frame",nil,vis[i].family[j].frame)
-        vis[i].family[j][k].frame:SetPoint(para.family[j][k].anchor,vis[i].family[j].frame,para.family[j][k].anchorTo,para.family[j][k].xpos,para.family[j][k].ypos)
---        vis[i].family[j][k].frame:SetPoint("CENTER",vis[i].family[j],"CENTER")
-        vis[i].family[j][k].frame:SetHeight(para.family[j][k].height)
-        vis[i].family[j][k].frame:SetWidth(para.family[j][k].width)
-        vis[i].family[j][k].frame:Hide()
-        
-        if para.family[j][k].hasTexture then 
---          vis[i].family[j][k].Texture=vis[i].family[j][k].frame:CreateTexture()   
-          vis[i].family[j][k].Texture=vis[i].family[j][k].frame:CreateTexture()     
-          vis[i].family[j][k].Texture:SetAllPoints()
-          vis[i].family[j][k].Texture:SetDrawLayer("BACKGROUND",-2)
-          vis[i].family[j][k].Texture:SetTexture(para.family[j][k].texture)
-        end --end of if para.family.hasTexture
---defaultpara.frames.family[1][1].cdWheel=true        
-        if para.family[j][k].cdWheel then 
-          vis[i].family[j][k].cdFrame=CreateFrame("Cooldown",nil,vis[i].family[j][k].frame,"CooldownFrameTemplate") 
-          if para.family[j][k].cdReverse then vis[i].family[j][k].cdFrame:SetReverse(true) end
-          vis[i].family[j][k].cdFrame:SetAllPoints()
-        end --end of if para.family[][].cdWheel
-        
-        
-      end --end of for k=1,Family[j].count
+      else --if not vis.family.smart else
+        if vis[i].family[j].type=="blackList" and vis[i].family[j].smartIcons then
+          for k=1,para.family[j].maxCount do
+          
+            vis[i].family[j][k]={}
+            vis[i].family[j][k].isShown=false
+            vis[i].family[j][k].frame=CreateFrame("Frame",nil,vis[i].family[j].frame)
+            vis[i].family[j][k].frame:SetPoint(para.family[j].growAnchor,vis[i].family[j].frame,para.family[j].growAnchorTo,0,0)
+  --        vis[i].family[j][k].frame:SetPoint("CENTER",vis[i].family[j],"CENTER")
+            vis[i].family[j][k].frame:SetHeight(para.family[j].height)
+            vis[i].family[j][k].frame:SetWidth(para.family[j].width)
+            vis[i].family[j][k].frame:Hide()
+            
+            vis[i].family[j][k].Texture=vis[i].family[j][k].frame:CreateTexture()     
+            vis[i].family[j][k].Texture:SetAllPoints()
+            vis[i].family[j][k].Texture:SetDrawLayer("BACKGROUND",-2)
+            
+          if para.family[j].cdWheel then 
+            vis[i].family[j][k].cdFrame=CreateFrame("Cooldown",nil,vis[i].family[j][k].frame,"CooldownFrameTemplate") 
+            if para.family[j].cdReverse then vis[i].family[j][k].cdFrame:SetReverse(true) end
+            vis[i].family[j][k].cdFrame:SetAllPoints()
+          end --end of if para.family[][].cdWheel
+ 
+          end --end of for k=1,para.family[j].maxCount
+        end --end of if vis.family.type=="blackList"
+      end--end of if not vis.family.smart else 
+      
+      
     end --end of for j=1,FamilyCount
   end -- end of for i=1,30
-end --end of CreateFamilyFrames
-
+end --end of createFamilyFrames
 
 
 
