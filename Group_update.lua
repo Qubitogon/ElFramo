@@ -1,6 +1,6 @@
 print("----EF Group_update.lua init")
 
-function elFramo.group_update()
+function elFramo.groupUpdate()
     --print("elFramo.group_update entered")
     local pairs,ipairs=pairs,ipairs
     elFramo.nameToID={}
@@ -48,7 +48,7 @@ function elFramo.group_update()
       end
       
       for i=1,nMembers do
-        local id=elFramo.Unitid(i)
+        local id=elFramo.unitID(i)
         local name=GetUnitName(id,true)
         elFramo.group[i]={}
         local _,_,subgroup,_,class,_,_,_,_,_,_,role=GetRaidRosterInfo(elFramo.nameToRaidRosterIndex[name]) --does not work if solo
@@ -76,7 +76,7 @@ function elFramo.group_update()
 end --end of function Group_update
  
 
-function elFramo.group_output() --used merely for debugging, outputs the entire array in the chat along with possible errors
+function elFramo.groupOutput() --used merely for debugging, outputs the entire array in the chat along with possible errors
   
   --print("elFramo.group_output entered")
   
