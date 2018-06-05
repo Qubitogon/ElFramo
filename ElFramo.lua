@@ -31,7 +31,7 @@ end
 --elFramo.ClassTable={Druid="DRUID",Monk="MONK",Paladin="PALADIN", Priest="PRIEST", Rogue="ROGUE",Mage="MAGE",Warlock="WARLOCK",Hunter="HUNTER",Shaman="SHAMAN"}
 
 local defaultpara={frames={family={count=1, 
-                                   [1]={name="ReM family", 
+                                   [1]={name="MW test family", 
                                         xpos=0, 
                                         ypos=0,
                                         height=50,
@@ -39,7 +39,7 @@ local defaultpara={frames={family={count=1,
                                         anchor="CENTER",
                                         anchorTo="CENTER",
                                         smart=false,
-                                        count=1,
+                                        count=2,
                                         [1]={type="name",
                                              arg1="buff",
                                              arg2="Renewing Mist",
