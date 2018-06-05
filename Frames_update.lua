@@ -72,7 +72,65 @@ function ElFramo.Group_FrameUpdate()
 end --end of function Group_FrameUpdate
 
 
+function ElFramo.Frames.update_Icon(n,j,k)
 
+  local trk=ElFramo.Tracker[n]
+  local para=ElFramo.Para.Frames
+  local parafam=para.Family[j][k]
+  local vis=ElFramo.Frames.Visual
+  local found=false
+  local dur=0
+  local ind=0
+  local t=GetTime()
+  
+  if parafam.type=="name" then
+    --print(parafam.arg1)
+    if parafam.arg1=="buff" then for i=1,trk.buffs.count do if trk.buffs[i].name==parafam.arg2 then found=true; ind=i;  end end 
+    elseif arg1=="debuff" then found=false end --NYI
+      
+      
+      local isShown=vis[n].Family[j][k].Frame:IsShown()
+      --print(isShown)
+      
+      if found and not isShown then
+      
+        vis[n].Family[j][k].Frame:Show()
+        dur=trk.buffs[ind].duration
+        if parafam.cdwheel then vis[n].Family[j][k].CDFrame:SetCooldown(GetTime(),dur) end
+        print("Set the CD")
+        
+      elseif found and isShown then 
+      
+        dur=trk.buffs[ind].duration
+        if parafam.cdwheel then vis[n].Family[j][k].CDFrame:SetCooldown( trk.buffs[ind].expirationTime-dur ,dur) end
+        
+      elseif not found and isShown then
+      
+        vis[n].Family[j][k].Frame:Hide()
+          
+      end
+  --print(dur)  
+  end --end of f para.Family[j][k]=="name"
+  
+  
+end--end of functon update_Icon
+
+function ElFramo.Frames.update_Family(n,j)
+  local para=ElFramo.Para.Frames
+  local update_Icon=ElFramo.Frames.update_Icon
+  
+  for k=1,para.Family[j].count do update_Icon(n,j,k) end 
+  
+end
+
+function ElFramo.Frames.update_Families(n)
+
+  local para=ElFramo.Para.Frames
+  local update_Family=ElFramo.Frames.update_Family
+  
+  for j=1,para.Family.count do update_Family(n,j) end 
+  
+end
 
 
 
