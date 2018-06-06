@@ -2,6 +2,22 @@ print("----EF elFramo.lua init")
 --local testvar="elFramo.lua initiated me locally"
 --globvar="elFramo.lua initiated me globally"
 
+---------------------TODO LIST
+--[[
+
+-Make a general CreateFamilyFrame function that creates a frame based on parameters given (i,j,k) 
+---This would allow for dynamic creation of frames for smartGroups, so as to minimise wasted ressources
+-----if not vis[i].family[j][k].frame then CreateFamilyFrame(i,j,k)
+
+-"blacklist" currently is not blacklisting, should be easy to implement inside UpdateFamily(n,j)
+
+-first family needs to be the "void" family, in which all orphan frames go
+
+]]--
+
+
+
+
 --------------------INITIALISING NEEDED GLOBAL VARIABLES
 elFramo={}
 elFramo.group={}
@@ -129,7 +145,7 @@ local defaultpara={frames={family={count=3,
                                         maxCount=20,
                                         type="blackList",
                                         arg1="buff",
-                                        arg2=nil, --has a blacklist array 
+                                        arg2={"Sign of the Warrior","Soothing Mist"}, --has a blacklist array 
                                         smartIcons=true,
                                         grow="right",
                                         growAnchor="LEFT",

@@ -135,16 +135,24 @@ function elFramo.frames.updateFamily(n,j)
     if paraFam.type=="blackList" then 
       
       local m=1
+      local prevCount=vis.family[j].active --this time it's not a pointer because im not indexing prevCount and .active is just a number
+      
+      
       vis.family[j].active=0
       while vis.family[j].active<paraFam.maxCount do --either reach maximum in smart group,
         if m>#tbl then break end  --or end of buffs/debuffs       
+        
+        if not elFramo.isInList(tbl[m].name,paraFam.arg2) then
         vis.family[j].active=vis.family[j].active+1
-        updateFrameTo(n,j,vis.family[j].active,m,paraFam.arg1.."s")         --updateFrameTo also does frame:Show(), but all others need to be hidden!
-        m=m+1        
+        updateFrameTo(n,j,vis.family[j].active,m,paraFam.arg1.."s")         --updateFrameTo also does frame:Show(), but all others need to be hidden! (see above)
+        end --end of if not elFramo.isInList(tbl[m].name,paraFam.arg2)
+        
+        m=m+1    
+        
       end
       
-      for o=vis.family[j].active+1,paraFam.maxCount do
-        if vis.family[j][o].frame:IsShown() then vis.family[j][o].frame:Hide() end 
+      for o=vis.family[j].active+1,prevCount do
+        vis.family[j][o].frame:Hide()
       end
       
     end --end of para.family.type=="blackList"
@@ -166,7 +174,7 @@ function elFramo.updateFrameTo(n,j,k,m,s)
   if not isShown then
     
     vis.frame:Show()   
-    print(trk.duration)
+    --print(trk.duration)
     if paraFam.cdWheel and trk.duration>0 then vis.cdFrame:SetCooldown(GetTime(),trk.duration) end
     vis.texture:SetTexture(trk.icon)
     

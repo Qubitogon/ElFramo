@@ -59,3 +59,25 @@ function elFramo.test(n)
   
   end
 end
+
+function elFramo.isInList(s,lst)
+
+  if not s or not lst then return false end
+  local found=false
+  for i=1,#lst do 
+    if type(lst[i])==type(s) then
+      if lst[i]==s then
+        found=true
+        break
+      end
+    end
+  end
+  return found
+end
+
+
+
+
+
+
+
