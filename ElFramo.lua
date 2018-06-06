@@ -47,7 +47,7 @@ end
 --elFramo.ClassTable={Druid="DRUID",Monk="MONK",Paladin="PALADIN", Priest="PRIEST", Rogue="ROGUE",Mage="MAGE",Warlock="WARLOCK",Hunter="HUNTER",Shaman="SHAMAN"}
 
 local defaultpara={frames={family={count=3, 
-                                   [1]={name="MW test family", 
+                                   [1]={name="void", 
                                         xpos=0, 
                                         ypos=0,
                                         height=50,
@@ -90,7 +90,7 @@ local defaultpara={frames={family={count=3,
                                              },--end of Family[1][2]=
                                         },--end of Family[1]=
                                       
-                                   [2]={name="MW test family 2", 
+                                   [2]={name="MW test family", 
                                         xpos=0, 
                                         ypos=50,
                                         height=50,
@@ -152,6 +152,7 @@ local defaultpara={frames={family={count=3,
                                         growAnchorTo="LEFT",
                                         cdReverse=true,
                                         cdWheel=true,
+                                        ignorePermanents=true,
                                         }--end of Family[3]=
                                    },--end of Family=
                            width=100,
