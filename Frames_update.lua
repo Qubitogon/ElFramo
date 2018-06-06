@@ -83,10 +83,12 @@ function elFramo.frames.updateIcon(n,j,k)
   local ind=0
   local t=GetTime()
   
-  if paraFam.type=="name" then
+  if paraFam.type=="name" then 
+    local arg1=paraFam.arg1.."s"
     --print(paraFam.arg1)
-    if paraFam.arg1=="buff" then for i=1,trk.buffs.count do if trk.buffs[i].name==paraFam.arg2 then found=true; ind=i;  end end 
-    elseif arg1=="debuff" then found=false end --NYI
+    for i=1,trk[arg1].count do 
+    if trk[arg1][i].name==paraFam.arg2 then found=true; ind=i; end 
+    end 
       
       
       local isShown=vis.family[j][k].frame:IsShown()
@@ -95,14 +97,14 @@ function elFramo.frames.updateIcon(n,j,k)
       if found and not isShown then
       
         vis.family[j][k].frame:Show()
-        dur=trk.buffs[ind].duration
+        dur=trk[arg1][ind].duration
         if paraFam.cdWheel then vis.family[j][k].cdFrame:SetCooldown(GetTime(),dur) end
-        print("Set the CD")
+        --print("Set the CD")
         
       elseif found and isShown then 
       
-        dur=trk.buffs[ind].duration
-        if paraFam.cdWheel then vis.family[j][k].cdFrame:SetCooldown( trk.buffs[ind].expirationTime-dur ,dur) end
+        dur=trk[arg1][ind].duration
+        if paraFam.cdWheel then vis.family[j][k].cdFrame:SetCooldown( trk[arg1][ind].expirationTime-dur ,dur) end
         
       elseif not found and isShown then
       
@@ -127,7 +129,7 @@ function elFramo.frames.updateFamily(n,j)
   
     for k=1,paraFam.count do updateIcon(n,j,k) end 
     
-  else --if not para.family.smart
+  else --if not para.family.smart else
     
     local trk=elFramo.tracker[n]
     local tbl=elFramo.tracker[n][paraFam.arg1.."s"]  --paraFam.arg1 = "buff" / "debuff"
@@ -186,30 +188,6 @@ function elFramo.updateFrameTo(n,j,k,m,s)
   end
   
 end
-
-
-
---[[                                  [3]={name="All smart", 
-                                        xpos=0, 
-                                        ypos=-50,
-                                        height=50,
-                                        width=50,
-                                        anchor="CENTER",
-                                        anchorTo="CENTER",
-                                        smart=true,
-                                        maxCount=3,
-                                        type="blackList",
-                                        arg1="buff",
-                                        arg2="buff",
-                                        smartIcons=true,
-                                        } ]]--
-
-
-
-
-
-
-
 
 
 function elFramo.frames.updateFamilies(n)

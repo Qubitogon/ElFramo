@@ -134,8 +134,8 @@ local defaultpara={frames={family={count=3,
                                         },--end of Family[1]=
                                    
                                    [3]={name="All smart", 
-                                        xpos=50, 
-                                        ypos=-50,
+                                        xpos=0, 
+                                        ypos=0,
                                         height=30,
                                         width=30,
                                         spacing=1,
@@ -147,9 +147,9 @@ local defaultpara={frames={family={count=3,
                                         arg1="buff",
                                         arg2={"Sign of the Warrior","Soothing Mist"}, --has a blacklist array 
                                         smartIcons=true,
-                                        grow="right",
-                                        growAnchor="LEFT",
-                                        growAnchorTo="LEFT",
+                                        grow="down",
+                                        growAnchor="TOPLEFT",
+                                        growAnchorTo="TOPLEFT",
                                         cdReverse=true,
                                         cdWheel=true,
                                         ignorePermanents=true,
@@ -163,43 +163,6 @@ local defaultpara={frames={family={count=3,
                            },--end of Frames=
                    }--end of defaultpara=
                                    
---[[local defaultpara={}  ---DIDNT APPLY NAMING RULES
-defaultpara.frames={}
-defaultpara.frames.family={}
-defaultpara.frames.family.count=1
-defaultpara.frames.family[1]={}
-defaultpara.frames.family[1].name="ReM family"
-defaultpara.frames.family[1].xpos=0
-defaultpara.frames.family[1].ypos=0
-defaultpara.frames.family[1].height=50
-defaultpara.frames.family[1].width=50
-defaultpara.frames.family[1].anchor="CENTER"
-defaultpara.frames.family[1].anchorTo="CENTER"
-defaultpara.frames.family[1].smart=false
-defaultpara.frames.family[1].count=1
-defaultpara.frames.family[1][1]={}
-defaultpara.frames.family[1][1].type="name"
-defaultpara.frames.family[1][1].arg1="buff"
-defaultpara.frames.family[1][1].arg2="Renewing Mist"
-defaultpara.frames.family[1][1].xpos=0
-defaultpara.frames.family[1][1].ypos=0
-defaultpara.frames.family[1][1].height=30
-defaultpara.frames.family[1][1].width=30
-defaultpara.frames.family[1][1].anchor="CENTER"
-defaultpara.frames.family[1][1].anchorTo="CENTER"
-defaultpara.frames.family[1][1].cdWheel=true
-defaultpara.frames.family[1][1].cdReverse=true
-defaultpara.frames.family[1][1].hasTexture=true
-defaultpara.frames.family[1][1].texture=627487
-defaultpara.frames.family[1][1].hastext=true
---defaultpara.frames.family[1][1].isShown=false  --put that in vis.frames instead, makes more sense to me
-defaultpara.frames.width=100
-defaultpara.frames.height=100
-defaultpara.frames.spacing=0.1
-defaultpara.frames.maxinline=5 
-defaultpara.frames.byGroup=false]]--
-
-
 elFramo.para=elFramo.deepcopy(defaultpara)
 
 -----------------
@@ -327,11 +290,10 @@ function elFramo.createFamilyFrames()
     
       vis[i].family[j]={}
       vis[i].family[j].frame=CreateFrame("Frame",para.family[j].name,vis[i].frame)
-      vis[i].family[j].frame:SetPoint(para.family[j].anchor,vis[i].frame,para.family[j].anchorTo,para.family[j].xpos,para.family[j].ypos)
---      vis[i].family[j].frame:SetPoint("TOPLEFT",vis[i].frame,"TOPLEFT")
-      vis[i].family[j].frame:SetHeight(para.family[j].height)
-      vis[i].family[j].frame:SetWidth(para.family[j].width)
---      vis[i].family[j].frame:SetAllPoints()
+      --vis[i].family[j].frame:SetPoint(para.family[j].anchor,vis[i].frame,para.family[j].anchorTo,para.family[j].xpos,para.family[j].ypos)
+      --vis[i].family[j].frame:SetHeight(para.family[j].height)
+      --vis[i].family[j].frame:SetWidth(para.family[j].width)
+      vis[i].family[j].frame:SetAllPoints()
       
       if not para.family[j].smart then 
         for k=1,para.family[j].count do
@@ -370,7 +332,7 @@ function elFramo.createFamilyFrames()
             vis[i].family[j][k]={}
             vis[i].family[j][k].isShown=false
             vis[i].family[j][k].frame=CreateFrame("Frame",nil,vis[i].family[j].frame)
-            print(string.format("created vis[%d].family[%d][%d].frame",i,j,k))
+            --print(string.format("created vis[%d].family[%d][%d].frame",i,j,k))
             
             ----------GENERATING X AND Y OFFSET
             local xos
