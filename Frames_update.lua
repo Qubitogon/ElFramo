@@ -120,7 +120,9 @@ function elFramo.frames.updateFamily(n,j)
   local paraFam=para.family[j]
   local updateIcon=elFramo.frames.updateIcon
   local vis=elFramo.frames.visual[n]
-
+  local updateFrameTo=elFramo.updateFrameTo
+  --local incrementSmartFamilyIconCount=elFramo.incrementSmartFamilyIconCount
+  
   if not paraFam.smart then 
   
     for k=1,paraFam.count do updateIcon(n,j,k) end 
@@ -132,17 +134,52 @@ function elFramo.frames.updateFamily(n,j)
         
     if paraFam.type=="blackList" then 
       
-      for m=1,min(#tbl,paraFam.maxCount) do --either reach maximum in smart group, or end of buffs/debuffs
-        
-        
-        
+      local m=1
+      vis.family[j].active=0
+      while vis.family[j].active<paraFam.maxCount do --either reach maximum in smart group,
+        if m>#tbl then break end  --or end of buffs/debuffs       
+        vis.family[j].active=vis.family[j].active+1
+        updateFrameTo(n,j,vis.family[j].active,m,paraFam.arg1.."s")         --updateFrameTo also does frame:Show(), but all others need to be hidden!
+        m=m+1        
       end
       
+      for o=vis.family[j].active+1,paraFam.maxCount do
+        if vis.family[j][o].frame:IsShown() then vis.family[j][o].frame:Hide() end 
+      end
       
     end --end of para.family.type=="blackList"
     
   end --end of  if not para.family.smart else  
 end
+
+
+function elFramo.updateFrameTo(n,j,k,m,s)
+
+  local vis=elFramo.frames.visual[n].family[j][k]
+  --print(n,j,k)
+  local trk=elFramo.tracker[n][s][m]
+  local isShown=vis.frame:IsShown()
+  local para=elFramo.para.frames
+  local paraFam=para.family[j]
+  
+  
+  if not isShown then
+    
+    vis.frame:Show()   
+    print(trk.duration)
+    if paraFam.cdWheel and trk.duration>0 then vis.cdFrame:SetCooldown(GetTime(),trk.duration) end
+    vis.texture:SetTexture(trk.icon)
+    
+  elseif isShown then
+    
+    local dur=trk.duration
+    if paraFam.cdWheel and trk.duration>0 then vis.cdFrame:SetCooldown( trk.expirationTime-dur ,dur) end
+    vis.texture:SetTexture(trk.icon)
+  end
+  
+end
+
+
 
 --[[                                  [3]={name="All smart", 
                                         xpos=0, 

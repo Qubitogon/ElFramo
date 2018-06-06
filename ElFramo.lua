@@ -118,14 +118,15 @@ local defaultpara={frames={family={count=3,
                                         },--end of Family[1]=
                                    
                                    [3]={name="All smart", 
-                                        xpos=0, 
+                                        xpos=50, 
                                         ypos=-50,
                                         height=30,
                                         width=30,
+                                        spacing=1,
                                         anchor="CENTER",
                                         anchorTo="CENTER",
                                         smart=true,
-                                        maxCount=3,
+                                        maxCount=20,
                                         type="blackList",
                                         arg1="buff",
                                         arg2=nil, --has a blacklist array 
@@ -329,10 +330,10 @@ function elFramo.createFamilyFrames()
           
           if para.family[j][k].hasTexture then 
   --          vis[i].family[j][k].Texture=vis[i].family[j][k].frame:CreateTexture()   
-            vis[i].family[j][k].Texture=vis[i].family[j][k].frame:CreateTexture()     
-            vis[i].family[j][k].Texture:SetAllPoints()
-            vis[i].family[j][k].Texture:SetDrawLayer("BACKGROUND",-2)
-            vis[i].family[j][k].Texture:SetTexture(para.family[j][k].texture)
+            vis[i].family[j][k].texture=vis[i].family[j][k].frame:CreateTexture()     
+            vis[i].family[j][k].texture:SetAllPoints()
+            vis[i].family[j][k].texture:SetDrawLayer("BACKGROUND",-2)
+            vis[i].family[j][k].texture:SetTexture(para.family[j][k].texture)
           end --end of if para.family.hasTexture
   --defaultpara.frames.family[1][1].cdWheel=true        
           if para.family[j][k].cdWheel then 
@@ -344,27 +345,71 @@ function elFramo.createFamilyFrames()
         end --end of for k=1,Family[j].count
         
       else --if not vis.family.smart else
-        if vis[i].family[j].type=="blackList" and vis[i].family[j].smartIcons then
+        vis[i].family[j].active=0
+
+        if para.family[j].type=="blackList" and para.family[j].smartIcons then  
           for k=1,para.family[j].maxCount do
           
             vis[i].family[j][k]={}
             vis[i].family[j][k].isShown=false
             vis[i].family[j][k].frame=CreateFrame("Frame",nil,vis[i].family[j].frame)
-            vis[i].family[j][k].frame:SetPoint(para.family[j].growAnchor,vis[i].family[j].frame,para.family[j].growAnchorTo,0,0)
+            print(string.format("created vis[%d].family[%d][%d].frame",i,j,k))
+            
+            ----------GENERATING X AND Y OFFSET
+            local xos
+            local yos
+            if para.family[j].grow=="right" then
+              xos=(k-1)*(para.family[j].width+para.family[j].spacing)
+              yos=0
+            elseif para.family[j].grow=="left" then
+              xos=-(k-1)*(para.family[j].width+para.family[j].spacing)
+              yos=0
+            elseif para.family[j].grow=="up" then 
+              xos=0
+              yos=(k-1)*(para.family[j].height+para.family[j].spacing)
+            elseif para.family[j].grow=="down" then 
+              xos=0
+              yos=-(k-1)*(para.family[j].height+para.family[j].spacing)
+            end         
+ 
+            vis[i].family[j][k].frame:SetPoint(para.family[j].growAnchor,vis[i].family[j].frame,para.family[j].growAnchorTo,xos,yos)
   --        vis[i].family[j][k].frame:SetPoint("CENTER",vis[i].family[j],"CENTER")
             vis[i].family[j][k].frame:SetHeight(para.family[j].height)
             vis[i].family[j][k].frame:SetWidth(para.family[j].width)
             vis[i].family[j][k].frame:Hide()
             
-            vis[i].family[j][k].Texture=vis[i].family[j][k].frame:CreateTexture()     
-            vis[i].family[j][k].Texture:SetAllPoints()
-            vis[i].family[j][k].Texture:SetDrawLayer("BACKGROUND",-2)
+            vis[i].family[j][k].texture=vis[i].family[j][k].frame:CreateTexture()     
+            vis[i].family[j][k].texture:SetAllPoints()
+            vis[i].family[j][k].texture:SetDrawLayer("BACKGROUND",-2)
             
           if para.family[j].cdWheel then 
             vis[i].family[j][k].cdFrame=CreateFrame("Cooldown",nil,vis[i].family[j][k].frame,"CooldownFrameTemplate") 
             if para.family[j].cdReverse then vis[i].family[j][k].cdFrame:SetReverse(true) end
             vis[i].family[j][k].cdFrame:SetAllPoints()
           end --end of if para.family[][].cdWheel
+ 
+          --[[{name="All smart", 
+                                        xpos=0, 
+                                        ypos=-50,
+                                        height=30,
+                                        width=30,
+                                        spacing=10,
+                                        anchor="CENTER",
+                                        anchorTo="CENTER",
+                                        smart=true,
+                                        maxCount=3,
+                                        type="blackList",
+                                        arg1="buff",
+                                        arg2=nil, --has a blacklist array 
+                                        smartIcons=true,
+                                        grow="right",
+                                        growAnchor="LEFT",
+                                        growAnchorTo="LEFT",
+                                        cdReverse=true,
+                                        cdWheel=true,
+                                        }]]
+ 
+ 
  
           end --end of for k=1,para.family[j].maxCount
         end --end of if vis.family.type=="blackList"
