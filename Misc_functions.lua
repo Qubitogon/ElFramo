@@ -76,6 +76,14 @@ function elFramo.isInList(s,lst)
 end
 
 
+function elFramo.toDecimal(f,d)
+  local m=math.pow(10,d)
+  f=f*m
+  f=floor(f)
+  f=f/m
+  return f
+end
+
 
 
 

@@ -101,10 +101,26 @@ function elFramo.frames.updateIcon(n,j,k)
         if paraFam.cdWheel then vis.family[j][k].cdFrame:SetCooldown(GetTime(),dur) end
         --print("Set the CD")
         
+        if paraFam.hasText then
+    
+          if paraFam.textType=="remainingTime" then
+            vis.family[j][k].text:SetText(elFramo.toDecimal(dur,paraFam.textDecimals ))
+          end --end of remainingTime         
+        ---ADD MORE TEXT TYPES HERE           
+        end --end of if paraFam.hasText
+        
       elseif found and isShown then 
       
         dur=trk[arg1][ind].duration
         if paraFam.cdWheel then vis.family[j][k].cdFrame:SetCooldown( trk[arg1][ind].expirationTime-dur ,dur) end
+        
+        if paraFam.hasText then
+    
+          if paraFam.textType=="remainingTime" then
+            vis.family[j][k].text:SetText(elFramo.toDecimal(trk[arg1][ind].expirationTime-GetTime(),paraFam.textDecimals ))
+          end --end of remainingTime         
+        ---ADD MORE TEXT TYPES HERE           
+        end --end of if paraFam.hasText
         
       elseif not found and isShown then
       
@@ -159,6 +175,33 @@ function elFramo.frames.updateFamily(n,j)
       
     end --end of para.family.type=="blackList"
     
+    if paraFam.type=="whiteList" then 
+      
+      local m=1
+      local prevCount=vis.family[j].active --this time it's not a pointer because im not indexing prevCount and .active is just a number
+      
+      
+      vis.family[j].active=0
+      while vis.family[j].active<paraFam.maxCount do --either reach maximum in smart group,
+        if m>#tbl then break end  --or end of buffs/debuffs       
+        
+        if elFramo.isInList(tbl[m].name,paraFam.arg2) then
+        vis.family[j].active=vis.family[j].active+1
+        updateFrameTo(n,j,vis.family[j].active,m,paraFam.arg1.."s")         --updateFrameTo also does frame:Show(), but all others need to be hidden! (see below)
+        end --end of if not elFramo.isInList(tbl[m].name,paraFam.arg2)
+        
+        m=m+1    
+        
+      end
+      
+      for o=vis.family[j].active+1,prevCount do
+        vis.family[j][o].frame:Hide()
+      end
+      
+    end --end of para.family.type=="blackList"
+    
+    
+    
   end --end of  if not para.family.smart else  
 end
 
@@ -180,12 +223,34 @@ function elFramo.updateFrameTo(n,j,k,m,s)
     if paraFam.cdWheel and trk.duration>0 then vis.cdFrame:SetCooldown(GetTime(),trk.duration) end
     vis.texture:SetTexture(trk.icon)
     
+    if paraFam.hasText then
+      
+      if paraFam.textType=="remainingTime" then
+        vis.text:SetText(tostring(trk.duration))
+      end --end of remainingTime
+      
+      ---ADD MORE TEXT TYPES HERE
+      
+    end --end of if paraFam.hasText
+    
   elseif isShown then
     
     local dur=trk.duration
+    
     if paraFam.cdWheel and trk.duration>0 then vis.cdFrame:SetCooldown( trk.expirationTime-dur ,dur) end
     vis.texture:SetTexture(trk.icon)
-  end
+    
+    if paraFam.hasText then
+    
+      if paraFam.textType=="remainingTime" then
+        vis.text:SetText(elFramo.toDecimal(trk.expirationTime-GetTime(),paraFam.textDecimals ))
+      end --end of remainingTime
+      
+      ---ADD MORE TEXT TYPES HERE     
+      
+    end --end of if paraFam.hasText
+    
+  end--end of if not isShown elseif isShow
   
 end
 

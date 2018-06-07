@@ -48,7 +48,7 @@ end
 --default testing profile
 --elFramo.ClassTable={Druid="DRUID",Monk="MONK",Paladin="PALADIN", Priest="PRIEST", Rogue="ROGUE",Mage="MAGE",Warlock="WARLOCK",Hunter="HUNTER",Shaman="SHAMAN"}
 
-local defaultpara={frames={family={count=3, 
+local defaultpara={frames={family={count=4, 
                                    [1]={name="void", 
                                         xpos=0, 
                                         ypos=0,
@@ -73,6 +73,16 @@ local defaultpara={frames={family={count=3,
                                              hasTexture=true,
                                              texture=627487,
                                              hasText=true,
+                                             textType="remainingTime",
+                                             textAnchor="CENTER",
+                                             textAnchorTo="CENTER",
+                                             textXOS=0,
+                                             textYOS=0,
+                                             textFont="Fonts\\ARIALN.ttf",
+                                             textSize=30,
+                                             textColor={0.85,0.85,0.85},
+                                             textAlpha=1,
+                                             textDecimals=0,                                             
                                              },--end of Family[1][1]=
                                         [2]={name="SooM",
                                              type="name",
@@ -89,6 +99,16 @@ local defaultpara={frames={family={count=3,
                                              hasTexture=true,
                                              texture=606550,
                                              hasText=true,
+                                             textType="remainingTime",
+                                             textAnchor="CENTER",
+                                             textAnchorTo="CENTER",
+                                             textXOS=0,
+                                             textYOS=0,
+                                             textFont="Fonts\\ARIALN.ttf",
+                                             textSize=30,
+                                             textColor={0.85,0.85,0.85},
+                                             textAlpha=1,
+                                             textDecimals=0,
                                              },--end of Family[1][2]=
                                         },--end of Family[1]=
                                       
@@ -115,7 +135,7 @@ local defaultpara={frames={family={count=3,
                                              cdReverse=true,
                                              hasTexture=true,
                                              texture=627485,
-                                             hasText=true,
+                                             hasText=false,
                                              },--end of Family[1][1]=
                                         [2]={name="EnM",
                                              type="name",
@@ -131,7 +151,7 @@ local defaultpara={frames={family={count=3,
                                              cdReverse=true,
                                              hasTexture=true,
                                              texture=775461,
-                                             hasText=true,
+                                             hasText=false,
                                              },--end of Family[1][2]=
                                         },--end of Family[1]=
                                    
@@ -144,7 +164,7 @@ local defaultpara={frames={family={count=3,
                                         anchor="CENTER",
                                         anchorTo="CENTER",
                                         smart=true,
-                                        maxCount=20,
+                                        maxCount=7,
                                         type="blackList",
                                         arg1="buff",
                                         arg2={"Sign of the Warrior","Soothing Mist"}, --has a blacklist array 
@@ -155,7 +175,50 @@ local defaultpara={frames={family={count=3,
                                         cdReverse=true,
                                         cdWheel=true,
                                         ignorePermanents=true,
-                                        }--end of Family[3]=
+                                        hasText=true,
+                                        textType="remainingTime", --could be count as well, or duration, or expirationTime I guess?
+                                        textAnchor="CENTER",
+                                        textAnchorTo="CENTER",
+                                        textXOS=0,
+                                        textYOS=0,
+                                        textFont="Fonts\\ARIALN.ttf",
+                                        textSize=30,
+                                        textColor={0.85,0.85,0.85},
+                                        textAlpha=1,
+                                        textDecimals=0,
+                                        },--end of Family[3]=
+                                   [4]={name="Whitelist", 
+                                        xpos=0, 
+                                        ypos=0,
+                                        height=30,
+                                        width=30,
+                                        spacing=1,
+                                        anchor="CENTER",
+                                        anchorTo="CENTER",
+                                        smart=true,
+                                        maxCount=7,
+                                        type="whiteList",
+                                        arg1="buff",
+                                        arg2={"Soothing Mist","Tiger's Lust","Essence Font"}, --has a whitelist array 
+                                        smartIcons=true,
+                                        grow="down",
+                                        growAnchor="TOPRIGHT",
+                                        growAnchorTo="TOPRIGHT",
+                                        cdReverse=true,
+                                        cdWheel=true,
+                                        hasText=true,
+                                        textType="remainingTime",
+                                        textAnchor="CENTER",
+                                        textAnchorTo="CENTER",
+                                        textXOS=0,
+                                        textYOS=0,
+                                        textFont="Fonts\\ARIALN.ttf",
+                                        textSize=30,
+                                        textColor={0.85,0.85,0.85},
+                                        textAlpha=1,
+                                        textDecimals=0,
+                                        --ignorePermanents=true,
+                                        },--end of Family[4]= 
                                    },--end of Family=
                            width=100,
                            height=100,
@@ -323,12 +386,21 @@ function elFramo.createFamilyFrames()
             vis[i].family[j][k].cdFrame:SetAllPoints()
           end --end of if para.family[][].cdWheel
           
+          if para.family[j][k].hasText then
+          
+            vis[i].family[j][k].text=vis[i].family[j][k].frame:CreateFontString(nil,"BACKGROUND",-1) 
+            vis[i].family[j][k].text:SetPoint(para.family[j][k].textAnchor,vis[i].family[j][k].frame,para.family[j][k].textAnchorTo,para.family[j][k].textXOS,para.family[j][k].textYOS)
+            vis[i].family[j][k].text:SetFont(para.family[j][k].textFont,para.family[j][k].textSize)
+            vis[i].family[j][k].text:SetTextColor(para.family[j][k].textColor[1],para.family[j][k].textColor[2],para.family[j][k].textColor[3],para.family[j][k].textAlpha)
+
+          end --end of if para.family[][].hasText
+          
         end --end of for k=1,Family[j].count
         
       else --if not vis.family.smart else
         vis[i].family[j].active=0
 
-        if para.family[j].type=="blackList" and para.family[j].smartIcons then  
+        if (para.family[j].type=="blackList" or para.family[j].type=="whiteList") and para.family[j].smartIcons then  
           for k=1,para.family[j].maxCount do
           
             vis[i].family[j][k]={}
@@ -368,32 +440,28 @@ function elFramo.createFamilyFrames()
             if para.family[j].cdReverse then vis[i].family[j][k].cdFrame:SetReverse(true) end
             vis[i].family[j][k].cdFrame:SetAllPoints()
           end --end of if para.family[][].cdWheel
- 
-          --[[{name="All smart", 
-                                        xpos=0, 
-                                        ypos=-50,
-                                        height=30,
-                                        width=30,
-                                        spacing=10,
-                                        anchor="CENTER",
-                                        anchorTo="CENTER",
-                                        smart=true,
-                                        maxCount=3,
-                                        type="blackList",
-                                        arg1="buff",
-                                        arg2=nil, --has a blacklist array 
-                                        smartIcons=true,
-                                        grow="right",
-                                        growAnchor="LEFT",
-                                        growAnchorTo="LEFT",
-                                        cdReverse=true,
-                                        cdWheel=true,
-                                        }]]
- 
- 
+          
+          if para.family[j].hasText then
+          
+            vis[i].family[j][k].text=vis[i].family[j][k].frame:CreateFontString(nil,"BACKGROUND",-1) 
+            vis[i].family[j][k].text:SetPoint(para.family[j].textAnchor,vis[i].family[j][k].frame,para.family[j].textAnchorTo,para.family[j].textXOS,para.family[j].textYOS)
+            vis[i].family[j][k].text:SetFont(para.family[j].textFont,para.family[j].textSize)
+            vis[i].family[j][k].text:SetTextColor(para.family[j].textColor[1],para.family[j].textColor[2],para.family[j].textColor[3],para.family[j].textAlpha)
+
+          end --end of if para.family[][].hasText
+          
+          --[[                          hasText=true,
+                                        textType="remainingTime",
+                                        textAnchor="CENTER",
+                                        textAnchorTo="CENTER",
+                                        textXOS=0,
+                                        textYOS=0,]]
  
           end --end of for k=1,para.family[j].maxCount
         end --end of if vis.family.type=="blackList"
+        
+      
+        
       end--end of if not vis.family.smart else 
       
       
