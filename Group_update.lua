@@ -28,10 +28,11 @@ function elFramo.groupUpdate()
       for i=1,nMembers do
         local id=elFramo.unitID(i)
         local name=GetUnitName(id,true)
+        print(i,name)
         elFramo.group[i]={}
         local _,_,subgroup,_,class,_,_,_,_,_,_,role=GetRaidRosterInfo(elFramo.nameToRaidRosterIndex[name]) --does not work if solo
         elFramo.group[i].name=name                                                                      
-        elFramo.group[i].subgroup=subgroup
+        elFramo.group[i].subGroup=subgroup
         elFramo.group[i].class=class
         elFramo.group[i].role=role
         --elFramo.nameToID[name]=i       

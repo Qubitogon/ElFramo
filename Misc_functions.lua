@@ -30,9 +30,8 @@ function elFramo.unitID(n)
   local id=""
   if not g then print("Tried to find UnitId but elFramo.group empty"); return end
   
-  if n==1 then id="player" 
-  elseif g.type=="raid" then id="raid"..tostring(n)
-  else id="party"..tostring(n-1) end 
+  if g.type=="party" then if n==1 then id="player" else id="party"..tostring(n-1) end elseif g.type=="raid" then id="raid"..tostring(n) else id="player" end
+  
   
   return id
   

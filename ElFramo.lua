@@ -225,9 +225,15 @@ local defaultpara={frames={family={count=4,
                            spacingRelative=0,
                            spacingAbsolute=10,
                            maxInLine=5,
-                           grow1="right",
-                           grow2="down",
-                           byGroup=false,
+                           grow1="down",
+                           grow2="right",
+                           byGroup=true,
+                           healthTexture="gradient",
+                           gradientOrientation="VERTICAL",
+                           gradientStartColor={0.5,0.5,0.5},
+                           gradientEndColor={0.8,0.8,0.8},
+                           gradientStartAlpha=1,
+                           gradientEndAlpha=1,
                            },--end of Frames=
                    }--end of defaultpara=
                                    
@@ -252,6 +258,7 @@ function elFramo.groupFrameEventHandler(self,event,...)
     --print(event)
     elFramo.groupUpdate()
     elFramo.groupFrameUpdate()
+    elFramo.groupFrameApplyHealthTexture()
 end --end of function ElFrame.groupFrame_eventHandler
 
 function elFramo.firstDrawFrames()

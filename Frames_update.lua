@@ -31,7 +31,88 @@ function elFramo.groupFrameUpdate()
   local para=elFramo.para.frames
   local spacing=para.spacing
   
-  if para.byGroup then 
+  if para.byGroup and g.type=="raid" then
+  
+  local holes=0
+  local j=0
+  local prevLineNumber=0
+  
+    for i=1,g.nMembers do  
+
+      if not g[i].name then break end --if we reach end of the group members, stop     
+      local unit=unitID(i)
+      
+      local vis=elFramo.frames.visual[i]
+      local lineNumber=g[i].subGroup-1
+      if lineNumber>prevLineNumber then holes=holes+lineNumber*5-j; prevLineNumber=lineNumber;  end
+      j=i+holes
+      local r,g,b = GetClassColor(  elFramo.getCLASS(g[i].class)  )
+      --generate offsets based on parameters
+      local xos
+      local yos 
+      
+      if para.grow1=="down" then   
+        yos=-(1+para.spacingRelative)*(para.height+para.spacingAbsolute)*(j-1-lineNumber*para.maxInLine)
+        if para.grow2=="right" then
+          xos=(1+para.spacingRelative)*(para.width+para.spacingAbsolute)*lineNumber
+        elseif para.grow2=="left" then
+          xos=lineNumber*(1+para.spacingRelative)*para.width
+        end
+        
+      elseif para.grow1=="right" then
+        
+        xos=(1+para.spacingRelative)*(para.width+para.spacingAbsolute)*(j-1-lineNumber*para.maxInLine)
+        if para.grow2=="up" then
+          yos=(1+para.spacingRelative)*(para.height+para.spacingAbsolute)*lineNumber
+        elseif para.grow2=="down" then
+          yos=-(1+para.spacingRelative)*(para.height+para.spacingAbsolute)*lineNumber
+        end
+        
+      elseif para.grow1=="up" then   
+      
+        yos=(1+para.spacingRelative)*(para.height+para.spacingAbsolute)*(j-1-lineNumber*para.maxInLine)
+        if para.grow2=="right" then
+          xos=(1+para.spacingRelative)*(para.width+para.spacingAbsolute)*lineNumber
+        elseif para.grow2=="left" then
+          xos=lineNumber*(1+para.spacingRelative)*para.width
+        end
+        
+      elseif para.grow1=="left" then
+        
+        xos=-(1+para.spacingRelative)*(para.width+para.spacingAbsolute)*(j-1-lineNumber*para.maxInLine)
+        if para.grow2=="up" then
+          yos=(1+para.spacingRelative)*(para.height+para.spacingAbsolute)*lineNumber
+        elseif para.grow2=="down" then
+          yos=-(1+para.spacingRelative)*(para.height+para.spacingAbsolute)*lineNumber
+        end
+      end --end of if para.grow1=="down" elseif elseif elseif 
+      
+      
+      vis.frame:SetPoint("TOPLEFT","visualMain","TOPLEFT",xos,yos)
+      
+      vis.frame:SetWidth(para.width)
+      vis.frame:SetHeight(para.height)
+      
+      vis.frame:SetAttribute("type1","target") --http://wowwiki.wikia.com/wiki/SecureActionButtonTemplate
+                                                --http://www.wowinterface.com/forums/showthread.php?t=29914
+      vis.frame:SetAttribute("unit",unit)
+
+      
+      RegisterUnitWatch(vis.frame) --controls the visibility of a protected frame based on whether the unit specified by the frame's "unit" attribute exists
+      
+      vis.background:SetPoint("TOPLEFT",0,0)
+      vis.background:SetPoint("BOTTOMRIGHT",0,0)
+      
+      vis.health:SetPoint("TOPLEFT",0,0)
+      vis.health:SetPoint("BOTTOMRIGHT",0,0)
+      vis.health:SetColorTexture(r,g,b)
+
+      
+      elFramo.frames.visual[i].frame:Show()  
+      
+      
+    end --end of for i=1,g.nMembers
+  
   else
   
     for i=1,g.nMembers do      
@@ -114,6 +195,21 @@ function elFramo.groupFrameUpdate()
   end --end of if para.byGroup else
 end --end of function Group_FrameUpdate
 
+
+function elFramo.groupFrameApplyHealthTexture()
+  
+  local vis=elFramo.frames.visual
+  local g=elFramo.group
+  local para=elFramo.para.frames
+  
+  if para.healthTexture=="gradient" then
+    for n=1,g.nMembers do
+      vis[n].health:SetGradientAlpha(para.gradientOrientation,para.gradientStartColor[1],para.gradientStartColor[2],para.gradientStartColor[3],para.gradientStartAlpha,para.gradientEndColor[1],para.gradientEndColor[2],para.gradientEndColor[3],para.gradientEndAlpha)
+    end
+  end --end of if healthTexture==gradient
+  
+  
+end
 
 function elFramo.frames.updateIcon(n,j,k)
 
