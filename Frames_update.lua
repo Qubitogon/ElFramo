@@ -146,7 +146,7 @@ function elFramo.frames.updateFamily(n,j)
         
         if not elFramo.isInList(tbl[m].name,paraFam.arg2) and not (paraFam.ignorePermanents and tbl[m].duration==0)  then
         vis.family[j].active=vis.family[j].active+1
-        updateFrameTo(n,j,vis.family[j].active,m,paraFam.arg1.."s")         --updateFrameTo also does frame:Show(), but all others need to be hidden! (see above)
+        updateFrameTo(n,j,vis.family[j].active,m,paraFam.arg1.."s")         --updateFrameTo also does frame:Show(), but all others need to be hidden! (see below)
         end --end of if not elFramo.isInList(tbl[m].name,paraFam.arg2)
         
         m=m+1    

@@ -42,8 +42,8 @@ end
 function elFramo.getCLASS(class)
   local a
   if elFramo.classTable[class] then a =elFramo.classTable[class]
-  elseif class=="Death Knight" then a="DEATH KNIGHT" 
-  elseif class=="Demon Hunter" then a="DEMON HUNTER" end 
+  elseif class=="Death Knight" then a="DEATHKNIGHT" 
+  elseif class=="Demon Hunter" then a="DEMONHUNTER" end 
   return a
 end
 

@@ -5,14 +5,16 @@ print("----EF elFramo.lua init")
 ---------------------TODO LIST
 --[[
 
--Make a general CreateFamilyFrame function that creates a frame based on parameters given (i,j,k) 
+((-Make a general CreateFamilyFrame function that creates a frame based on parameters given (i,j,k) 
 ---This would allow for dynamic creation of frames for smartGroups, so as to minimise wasted ressources
------if not vis[i].family[j][k].frame then CreateFamilyFrame(i,j,k)
+-----if not vis[i].family[j][k].frame then CreateFamilyFrame(i,j,k)))
+^deemed unnecessary for now
 
 -"blacklist" currently is not blacklisting, should be easy to implement inside UpdateFamily(n,j)
+^should be mostly resolved, needs testing 
 
 -first family needs to be the "void" family, in which all orphan frames go
-
+^should be mostly done, rest of implementation only possibly when interface is made
 ]]--
 
 
