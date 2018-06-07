@@ -18,7 +18,7 @@ print("----EF elFramo.lua init")
 ]]--
 
 
-
+--@frame/layer shenanigans: https://i.imgur.com/qXWXP8e.png
 
 --------------------INITIALISING NEEDED GLOBAL VARIABLES
 elFramo={}
@@ -222,9 +222,12 @@ local defaultpara={frames={family={count=4,
                                    },--end of Family=
                            width=100,
                            height=100,
-                           spacing=0.1,
+                           spacingRelative=0,
+                           spacingAbsolute=10,
                            maxInLine=5,
-                           byGroup=false
+                           grow1="down",
+                           grow2="right",
+                           byGroup=false,
                            },--end of Frames=
                    }--end of defaultpara=
                                    
@@ -258,10 +261,10 @@ function elFramo.firstDrawFrames()
 
   elFramo.frames.visual.main=CreateFrame("Frame", "visualMain", UIParent)
   elFramo.frames.visual.main:EnableMouse(true)
-  elFramo.frames.visual.main:SetPoint("CENTER") 
+  elFramo.frames.visual.main:SetPoint("CENTER",UIParent,"CENTER",-300,0) 
   elFramo.frames.visual.main:SetWidth(200) 
   elFramo.frames.visual.main:SetHeight(200)
-
+  
   elFramo.frames.visual.main:Show()
   
 
@@ -384,11 +387,12 @@ function elFramo.createFamilyFrames()
             vis[i].family[j][k].cdFrame=CreateFrame("Cooldown",nil,vis[i].family[j][k].frame,"CooldownFrameTemplate") 
             if para.family[j][k].cdReverse then vis[i].family[j][k].cdFrame:SetReverse(true) end
             vis[i].family[j][k].cdFrame:SetAllPoints()
+            vis[i].family[j][k].cdFrame:SetFrameLevel( vis[i].family[j][k].frame:GetFrameLevel() )
           end --end of if para.family[][].cdWheel
           
           if para.family[j][k].hasText then
           
-            vis[i].family[j][k].text=vis[i].family[j][k].frame:CreateFontString(nil,"BACKGROUND",-1) 
+            vis[i].family[j][k].text=vis[i].family[j][k].frame:CreateFontString(nil,"ARTOWRK",-1) 
             vis[i].family[j][k].text:SetPoint(para.family[j][k].textAnchor,vis[i].family[j][k].frame,para.family[j][k].textAnchorTo,para.family[j][k].textXOS,para.family[j][k].textYOS)
             vis[i].family[j][k].text:SetFont(para.family[j][k].textFont,para.family[j][k].textSize)
             vis[i].family[j][k].text:SetTextColor(para.family[j][k].textColor[1],para.family[j][k].textColor[2],para.family[j][k].textColor[3],para.family[j][k].textAlpha)
@@ -426,6 +430,7 @@ function elFramo.createFamilyFrames()
             end         
  
             vis[i].family[j][k].frame:SetPoint(para.family[j].growAnchor,vis[i].family[j].frame,para.family[j].growAnchorTo,xos,yos)
+            --print(vis[i].family[j][k].frame:GetFrameStrata())
   --        vis[i].family[j][k].frame:SetPoint("CENTER",vis[i].family[j],"CENTER")
             vis[i].family[j][k].frame:SetHeight(para.family[j].height)
             vis[i].family[j][k].frame:SetWidth(para.family[j].width)
@@ -439,12 +444,17 @@ function elFramo.createFamilyFrames()
             vis[i].family[j][k].cdFrame=CreateFrame("Cooldown",nil,vis[i].family[j][k].frame,"CooldownFrameTemplate") 
             if para.family[j].cdReverse then vis[i].family[j][k].cdFrame:SetReverse(true) end
             vis[i].family[j][k].cdFrame:SetAllPoints()
+            vis[i].family[j][k].cdFrame:SetFrameLevel( vis[i].family[j][k].frame:GetFrameLevel())
+            --vis[i].family[j][k].cdFrame:SetFrameStrata("BACKGROUND")
+            --print(vis[i].family[j][k].cdFrame:GetFrameLevel())
           end --end of if para.family[][].cdWheel
           
           if para.family[j].hasText then
           
-            vis[i].family[j][k].text=vis[i].family[j][k].frame:CreateFontString(nil,"BACKGROUND",-1) 
+            vis[i].family[j][k].text=vis[i].family[j][k].frame:CreateFontString(nil,"ARTWORK") 
             vis[i].family[j][k].text:SetPoint(para.family[j].textAnchor,vis[i].family[j][k].frame,para.family[j].textAnchorTo,para.family[j].textXOS,para.family[j].textYOS)
+            vis[i].family[j][k].text:SetDrawLayer("OVERLAY",7)
+            
             vis[i].family[j][k].text:SetFont(para.family[j].textFont,para.family[j].textSize)
             vis[i].family[j][k].text:SetTextColor(para.family[j].textColor[1],para.family[j].textColor[2],para.family[j].textColor[3],para.family[j].textAlpha)
 

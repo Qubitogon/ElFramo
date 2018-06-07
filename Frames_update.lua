@@ -28,47 +28,90 @@ function elFramo.groupFrameUpdate()
   
   local f=elFramo.frames
   local g=elFramo.group
+  local para=elFramo.para.frames
+  local spacing=para.spacing
   
-  -----------------TEST: CREATE A RAID FRAME (FOR "PLAYER")
-  for i=1,g.nMembers do
-    
-    if not g[i].name then break end --if we reach end of the group members, stop
-    
-    local unit=unitID(i)
-    local para=elFramo.para.frames
-    local spacing=para.spacing
-    local vis=elFramo.frames.visual[i]
-    local lineNumber=math.floor(i/para.maxInLine)
-    --print(linenumber)
-    local r,g,b = GetClassColor(  elFramo.getCLASS(g[i].class)  )
+  if para.byGroup then 
+  else
+  
+    for i=1,g.nMembers do      
+      if not g[i].name then break end --if we reach end of the group members, stop
+      
+      local unit=unitID(i)
+      
+      local vis=elFramo.frames.visual[i]
+      local lineNumber=math.floor(i/para.maxInLine) --0 when in the first line
+      --print(linenumber)
+      local r,g,b = GetClassColor(  elFramo.getCLASS(g[i].class)  )
+      
+      --generate offsets based on parameters
+      local xos
+      local yos 
+      if para.grow1=="down" then   
+      
+        yos=-(1+para.spacingRelative)*(para.height+para.spacingAbsolute)*(i-1-lineNumber*para.maxInLine)
+        if para.grow2=="right" then
+          xos=(1+para.spacing)*(para.width+para.spacingAbsolute)*lineNumber
+        elseif para.grow2=="left" then
+          xos=lineNumber*(1+para.spacing)*para.width
+        end
+        
+      elseif para.grow1=="right" then
+        
+        xos=(1+para.spacingRelative)*(para.width+para.spacingAbsolute)*(i-1-lineNumber*para.maxInLine)
+        if para.grow2=="up" then
+          yos=(1+para.spacing)*(para.height+para.spacingAbsolute)*lineNumber
+        elseif para.grow2=="down" then
+          yos=-(1+para.spacing)*(para.height+para.spacingAbsolute)*lineNumber
+        end
+        
+      elseif para.grow1=="up" then   
+      
+        yos=(1+para.spacingRelative)*(para.height+para.spacingAbsolute)*(i-1-lineNumber*para.maxInLine)
+        if para.grow2=="right" then
+          xos=(1+para.spacing)*(para.width+para.spacingAbsolute)*lineNumber
+        elseif para.grow2=="left" then
+          xos=lineNumber*(1+para.spacing)*para.width
+        end
+        
+      elseif para.grow1=="left" then
+        
+        xos=-(1+para.spacingRelative)*(para.width+para.spacingAbsolute)*(i-1-lineNumber*para.maxInLine)
+        if para.grow2=="up" then
+          yos=(1+para.spacing)*(para.height+para.spacingAbsolute)*lineNumber
+        elseif para.grow2=="down" then
+          yos=-(1+para.spacing)*(para.height+para.spacingAbsolute)*lineNumber
+        end
+      end --end of if para.grow1=="down" elseif elseif elseif 
+      
+      
+      
+      vis.frame:SetPoint("TOPLEFT","visualMain","TOPLEFT",xos,yos)
+      
+      vis.frame:SetWidth(para.width)
+      vis.frame:SetHeight(para.height)
+      
+      vis.frame:SetAttribute("type1","target") --http://wowwiki.wikia.com/wiki/SecureActionButtonTemplate
+                                                --http://www.wowinterface.com/forums/showthread.php?t=29914
+      vis.frame:SetAttribute("unit",unit)
 
-    vis.frame:SetPoint("TOPLEFT","visualMain","TOPLEFT",lineNumber*(1+para.spacing)*para.width,(-(1+para.spacing)*(i-1-lineNumber*para.maxInLine)*para.height))
-    
-    vis.frame:SetWidth(para.width)
-    vis.frame:SetHeight(para.height)
-    
-    vis.frame:SetAttribute("type1","target") --http://wowwiki.wikia.com/wiki/SecureActionButtonTemplate
-                                              --http://www.wowinterface.com/forums/showthread.php?t=29914
-    vis.frame:SetAttribute("unit",unit)
+      print("for unit :"..unit)
+      
+      RegisterUnitWatch(vis.frame) --controls the visibility of a protected frame based on whether the unit specified by the frame's "unit" attribute exists
+      
+      vis.background:SetPoint("TOPLEFT",0,0)
+      vis.background:SetPoint("BOTTOMRIGHT",0,0)
+      
+      vis.health:SetPoint("TOPLEFT",0,0)
+      vis.health:SetPoint("BOTTOMRIGHT",0,0)
+      vis.health:SetColorTexture(r,g,b)
 
-    print("for unit :"..unit)
-    
-    RegisterUnitWatch(vis.frame) --controls the visibility of a protected frame based on whether the unit specified by the frame's "unit" attribute exists
-    
-    vis.background:SetPoint("TOPLEFT",0,0)
-    vis.background:SetPoint("BOTTOMRIGHT",0,0)
-    
-    vis.health:SetPoint("TOPLEFT",0,0)
-    vis.health:SetPoint("BOTTOMRIGHT",0,0)
-    vis.health:SetColorTexture(r,g,b)
+      print("color:"..tostring(r).." "..tostring(g).." "..tostring(b).." ")
+      
+      elFramo.frames.visual[i].frame:Show()    
+    end --end of for i=1,g.nMembers
 
-    print("color:"..tostring(r).." "..tostring(g).." "..tostring(b).." ")
-    
-    elFramo.frames.visual[i].frame:Show()
-
-    
-  end --end of for i=1,g.nMembers
-
+  end --end of if para.byGroup else
 end --end of function Group_FrameUpdate
 
 
