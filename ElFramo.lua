@@ -225,8 +225,8 @@ local defaultpara={frames={family={count=4,
                            spacingRelative=0,
                            spacingAbsolute=10,
                            maxInLine=5,
-                           grow1="down",
-                           grow2="right",
+                           grow1="right",
+                           grow2="down",
                            byGroup=false,
                            },--end of Frames=
                    }--end of defaultpara=
@@ -237,9 +237,11 @@ elFramo.para=elFramo.deepcopy(defaultpara)
 
 
 function elFramo.updateFrameUpdate()
-    elFramo.trackerUpdate() 
-    elFramo.framesUpdateHealthOf(1)
-    elFramo.frames.updateFamilies(1)
+    elFramo.trackerUpdate()
+    for i=1,elFramo.group.nMembers do
+      elFramo.framesUpdateHealthOf(i)
+      elFramo.frames.updateFamilies(i)
+    end
 --    elFramo.frames.updateIcon(1,1,1)
 
     --print("done")
@@ -247,7 +249,7 @@ function elFramo.updateFrameUpdate()
 end
 
 function elFramo.groupFrameEventHandler(self,event,...)
-    print(event)
+    --print(event)
     elFramo.groupUpdate()
     elFramo.groupFrameUpdate()
 end --end of function ElFrame.groupFrame_eventHandler

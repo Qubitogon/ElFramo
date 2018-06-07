@@ -51,36 +51,36 @@ function elFramo.groupFrameUpdate()
       
         yos=-(1+para.spacingRelative)*(para.height+para.spacingAbsolute)*(i-1-lineNumber*para.maxInLine)
         if para.grow2=="right" then
-          xos=(1+para.spacing)*(para.width+para.spacingAbsolute)*lineNumber
+          xos=(1+para.spacingRelative)*(para.width+para.spacingAbsolute)*lineNumber
         elseif para.grow2=="left" then
-          xos=lineNumber*(1+para.spacing)*para.width
+          xos=lineNumber*(1+para.spacingRelative)*para.width
         end
         
       elseif para.grow1=="right" then
         
         xos=(1+para.spacingRelative)*(para.width+para.spacingAbsolute)*(i-1-lineNumber*para.maxInLine)
         if para.grow2=="up" then
-          yos=(1+para.spacing)*(para.height+para.spacingAbsolute)*lineNumber
+          yos=(1+para.spacingRelative)*(para.height+para.spacingAbsolute)*lineNumber
         elseif para.grow2=="down" then
-          yos=-(1+para.spacing)*(para.height+para.spacingAbsolute)*lineNumber
+          yos=-(1+para.spacingRelative)*(para.height+para.spacingAbsolute)*lineNumber
         end
         
       elseif para.grow1=="up" then   
       
         yos=(1+para.spacingRelative)*(para.height+para.spacingAbsolute)*(i-1-lineNumber*para.maxInLine)
         if para.grow2=="right" then
-          xos=(1+para.spacing)*(para.width+para.spacingAbsolute)*lineNumber
+          xos=(1+para.spacingRelative)*(para.width+para.spacingAbsolute)*lineNumber
         elseif para.grow2=="left" then
-          xos=lineNumber*(1+para.spacing)*para.width
+          xos=lineNumber*(1+para.spacingRelative)*para.width
         end
         
       elseif para.grow1=="left" then
         
         xos=-(1+para.spacingRelative)*(para.width+para.spacingAbsolute)*(i-1-lineNumber*para.maxInLine)
         if para.grow2=="up" then
-          yos=(1+para.spacing)*(para.height+para.spacingAbsolute)*lineNumber
+          yos=(1+para.spacingRelative)*(para.height+para.spacingAbsolute)*lineNumber
         elseif para.grow2=="down" then
-          yos=-(1+para.spacing)*(para.height+para.spacingAbsolute)*lineNumber
+          yos=-(1+para.spacingRelative)*(para.height+para.spacingAbsolute)*lineNumber
         end
       end --end of if para.grow1=="down" elseif elseif elseif 
       
