@@ -405,7 +405,7 @@ function elFramo.createFamilyFrames()
           
             vis[i].family[j][k].text=vis[i].family[j][k].frame:CreateFontString(nil,"ARTOWRK",-1) 
             vis[i].family[j][k].text:SetPoint(para.family[j][k].textAnchor,vis[i].family[j][k].frame,para.family[j][k].textAnchorTo,para.family[j][k].textXOS,para.family[j][k].textYOS)
-            vis[i].family[j][k].text:SetFont(para.family[j][k].textFont,para.family[j][k].textSize,"OUTLINE, MONOCHROME")
+            vis[i].family[j][k].text:SetFont(para.family[j][k].textFont,para.family[j][k].textSize,"OUTLINE") --THICKOUTLINE, OUTLINE, MONOCHROME
             vis[i].family[j][k].text:SetTextColor(para.family[j][k].textColor[1],para.family[j][k].textColor[2],para.family[j][k].textColor[3],para.family[j][k].textAlpha)
 
           end --end of if para.family[][].hasText
@@ -466,7 +466,7 @@ function elFramo.createFamilyFrames()
             vis[i].family[j][k].text:SetPoint(para.family[j].textAnchor,vis[i].family[j][k].frame,para.family[j].textAnchorTo,para.family[j].textXOS,para.family[j].textYOS)
             vis[i].family[j][k].text:SetDrawLayer("OVERLAY",7)
             
-            vis[i].family[j][k].text:SetFont(para.family[j].textFont,para.family[j].textSize,"OUTLINE, MONOCHROME")
+            vis[i].family[j][k].text:SetFont(para.family[j].textFont,para.family[j].textSize,"OUTLINE") --THICKOUTLINE, OUTLINE, MONOCHROME
             vis[i].family[j][k].text:SetTextColor(para.family[j].textColor[1],para.family[j].textColor[2],para.family[j].textColor[3],para.family[j].textAlpha)
 
           end --end of if para.family[][].hasText
