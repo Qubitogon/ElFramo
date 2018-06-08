@@ -48,7 +48,7 @@ end
 --default testing profile
 --elFramo.ClassTable={Druid="DRUID",Monk="MONK",Paladin="PALADIN", Priest="PRIEST", Rogue="ROGUE",Mage="MAGE",Warlock="WARLOCK",Hunter="HUNTER",Shaman="SHAMAN"}
 
-local defaultpara={frames={family={count=4, 
+local defaultpara={frames={family={count=3, 
                                    [1]={name="void", 
                                         xpos=0, 
                                         ypos=0,
@@ -57,59 +57,7 @@ local defaultpara={frames={family={count=4,
                                         anchor="CENTER",
                                         anchorTo="CENTER",
                                         smart=false,
-                                        count=2,
-                                        [1]={name="ReM",
-                                             type="name",
-                                             arg1="buff",
-                                             arg2="Renewing Mist",
-                                             xpos=0,
-                                             ypos=0,
-                                             height=30,
-                                             width=30,
-                                             anchor="CENTER",
-                                             anchorTo="CENTER",
-                                             cdWheel=true,
-                                             cdReverse=true,
-                                             hasTexture=true,
-                                             texture=627487,
-                                             hasText=true,
-                                             textType="remainingTime",
-                                             textAnchor="CENTER",
-                                             textAnchorTo="CENTER",
-                                             textXOS=0,
-                                             textYOS=0,
-                                             textFont="Fonts\\ARIALN.ttf",
-                                             textSize=20,
-                                             textColor={0.85,0.85,0.85},
-                                             textAlpha=1,
-                                             textDecimals=0,                                             
-                                             },--end of Family[1][1]=
-                                        [2]={name="SooM",
-                                             type="name",
-                                             arg1="buff",
-                                             arg2="Soothing Mist",
-                                             xpos=40,
-                                             ypos=0,
-                                             height=30,
-                                             width=30,
-                                             anchor="CENTER",
-                                             anchorTo="CENTER",
-                                             cdWheel=true,
-                                             cdReverse=true,
-                                             hasTexture=true,
-                                             texture=606550,
-                                             hasText=true,
-                                             textType="remainingTime",
-                                             textAnchor="CENTER",
-                                             textAnchorTo="CENTER",
-                                             textXOS=0,
-                                             textYOS=0,
-                                             textFont="Fonts\\ARIALN.ttf",
-                                             textSize=20,
-                                             textColor={0.85,0.85,0.85},
-                                             textAlpha=1,
-                                             textDecimals=0,
-                                             },--end of Family[1][2]=
+                                        count=0,                                       
                                         },--end of Family[1]=
                                       
                                    [2]={name="MW test family", 
@@ -120,39 +68,8 @@ local defaultpara={frames={family={count=4,
                                         anchor="CENTER",
                                         anchorTo="CENTER",
                                         smart=false,
-                                        count=2,
-                                        [1]={name="LC",
-                                             type="name",
-                                             arg1="buff",
-                                             arg2="Life Cocoon",
-                                             xpos=0,
-                                             ypos=0,
-                                             height=30,
-                                             width=30,
-                                             anchor="CENTER",
-                                             anchorTo="CENTER",
-                                             cdWheel=true,
-                                             cdReverse=true,
-                                             hasTexture=true,
-                                             texture=627485,
-                                             hasText=false,
-                                             },--end of Family[1][1]=
-                                        [2]={name="EnM",
-                                             type="name",
-                                             arg1="buff",
-                                             arg2="Enveloping Mist",
-                                             xpos=40,
-                                             ypos=0,
-                                             height=30,
-                                             width=30,
-                                             anchor="CENTER",
-                                             anchorTo="CENTER",
-                                             cdWheel=true,
-                                             cdReverse=true,
-                                             hasTexture=true,
-                                             texture=775461,
-                                             hasText=false,
-                                             },--end of Family[1][2]=
+                                        count=0,
+                                       
                                         },--end of Family[1]=
                                    
                                    [3]={name="All smart", 
@@ -167,11 +84,11 @@ local defaultpara={frames={family={count=4,
                                         maxCount=7,
                                         type="blackList",
                                         arg1="buff",
-                                        arg2={"Sign of the Warrior","Soothing Mist"}, --has a blacklist array 
+                                        arg2={}, --has a blacklist array 
                                         smartIcons=true,
-                                        grow="down",
-                                        growAnchor="TOPLEFT",
-                                        growAnchorTo="TOPLEFT",
+                                        grow="right",
+                                        growAnchor="BOTTOMLEFT",
+                                        growAnchorTo="BOTTOMLEFT",
                                         cdReverse=true,
                                         cdWheel=true,
                                         ignorePermanents=true,
@@ -186,39 +103,7 @@ local defaultpara={frames={family={count=4,
                                         textColor={0.85,0.85,0.85},
                                         textAlpha=1,
                                         textDecimals=0,
-                                        },--end of Family[3]=
-                                   [4]={name="WhitelistTest", 
-                                        xpos=0, 
-                                        ypos=0,
-                                        height=30,
-                                        width=30,
-                                        spacing=1,
-                                        anchor="CENTER",
-                                        anchorTo="CENTER",
-                                        smart=true,
-                                        maxCount=7,
-                                        type="whiteList",
-                                        arg1="buff",
-                                        arg2={"Soothing Mist","Tiger's Lust","Essence Font"}, --has a whitelist array 
-                                        smartIcons=true,
-                                        grow="down",
-                                        growAnchor="TOPRIGHT",
-                                        growAnchorTo="TOPRIGHT",
-                                        cdReverse=true,
-                                        cdWheel=true,
-                                        hasText=true,
-                                        textType="remainingTime",
-                                        textAnchor="CENTER",
-                                        textAnchorTo="CENTER",
-                                        textXOS=0,
-                                        textYOS=0,
-                                        textFont="Fonts\\ARIALN.ttf",
-                                        textSize=20,
-                                        textColor={0.85,0.85,0.85},
-                                        textAlpha=1,
-                                        textDecimals=0,
-                                        --ignorePermanents=true,
-                                        },--end of Family[4]= 
+                                        },--end of Family[3]=                                  
                                    },--end of Family=
                            width=100,
                            height=100,
@@ -227,7 +112,7 @@ local defaultpara={frames={family={count=4,
                            maxInLine=5,
                            grow1="down",
                            grow2="right",
-                           byGroup=true,
+                           byGroup=false,
                            healthTexture="gradient",
                            gradientOrientation="VERTICAL",
                            gradientStartColor={0.5,0.5,0.5},
@@ -261,6 +146,9 @@ function elFramo.groupFrameEventHandler(self,event,...)
     elFramo.groupFrameApplyHealthTexture()
 end --end of function ElFrame.groupFrame_eventHandler
 
+
+
+
 function elFramo.firstDrawFrames()
   local tostring=tostring
   -------------------------DEFINING NECESSARY FRAMES
@@ -268,12 +156,26 @@ function elFramo.firstDrawFrames()
   elFramo.frames.tracker=CreateFrame("Frame", "TrackerFrame", UIParent)
   elFramo.frames.visual={}
 
+  local backDropTest ={ bgFile = background,
+                  edgeFile = edgeFile,
+                  tile = false, tileSize = 70, edgeSize = 70,
+                  insets = { left = 3, right = 3, top = 5, bottom = 3 }
+                }
+
+  
   elFramo.frames.visual.main=CreateFrame("Frame", "visualMain", UIParent)
   elFramo.frames.visual.main:EnableMouse(true)
-  elFramo.frames.visual.main:SetPoint("CENTER",UIParent,"CENTER",-300,0) 
-  elFramo.frames.visual.main:SetWidth(500) 
-  elFramo.frames.visual.main:SetHeight(200)
+  elFramo.frames.visual.main:SetPoint("CENTER",UIParent,"CENTER",500,0) 
+  elFramo.frames.visual.main:SetWidth(300) 
+  elFramo.frames.visual.main:SetHeight(300)
   
+  elFramo.frames.visual.mainTexture=elFramo.frames.visual.main:CreateTexture()
+  elFramo.frames.visual.mainTexture:SetDrawLayer("BACKGROUND")
+  elFramo.frames.visual.mainTexture:SetAllPoints()
+
+  elFramo.frames.visual.mainTexture:SetColorTexture(0,0,0,0.5)
+  
+ 
   elFramo.frames.visual.main:Show()
   
   MakeMovable(elFramo.frames.visual.main)

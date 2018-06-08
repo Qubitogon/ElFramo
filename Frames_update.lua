@@ -20,7 +20,6 @@ function elFramo.framesUpdateHealthOf(n)
    
 end
 
-
 function elFramo.groupFrameUpdate()
   local tostring=tostring
   local unitID=elFramo.unitID
