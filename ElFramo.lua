@@ -187,7 +187,7 @@ local defaultpara={frames={family={count=4,
                                         textAlpha=1,
                                         textDecimals=0,
                                         },--end of Family[3]=
-                                   [4]={name="Whitelist", 
+                                   [4]={name="WhitelistTest", 
                                         xpos=0, 
                                         ypos=0,
                                         height=30,
