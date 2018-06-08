@@ -271,10 +271,12 @@ function elFramo.firstDrawFrames()
   elFramo.frames.visual.main=CreateFrame("Frame", "visualMain", UIParent)
   elFramo.frames.visual.main:EnableMouse(true)
   elFramo.frames.visual.main:SetPoint("CENTER",UIParent,"CENTER",-300,0) 
-  elFramo.frames.visual.main:SetWidth(200) 
+  elFramo.frames.visual.main:SetWidth(500) 
   elFramo.frames.visual.main:SetHeight(200)
   
   elFramo.frames.visual.main:Show()
+  
+  MakeMovable(elFramo.frames.visual.main)
   
 
   elFramo.frames.update=CreateFrame("Frame","updateFrame",UIParent) --This frame is only there to have an OnUpdate event (triggered every frame)
