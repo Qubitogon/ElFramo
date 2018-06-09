@@ -1,4 +1,4 @@
-local _,eF=...
+ local _,eF=...
 
 eFGlob=eF
 
@@ -14,7 +14,7 @@ eF.para.layout={
 
 local function layoutEventHandler(self,event,...)
   self:update() 
-  
+  if event=="PLAYER_ENTERING_WORLD" then self:update() end
 end
 eF.rep.layoutEventHandler=layoutEventHandler
 
@@ -43,8 +43,6 @@ local function layoutUpdate(self)
   if num==0 then num=1 end
   
   local units=eF.units
-  
-
   --r,g,b = GetClassColor
   
   if not raid then

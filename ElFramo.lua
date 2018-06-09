@@ -48,7 +48,8 @@ local function unitEnable(self)
   if self.enabled then return end
   self.enabled=true
   self:Show()
-    
+  RegisterUnitWatch(self)
+
 end
 
 eF.rep.unitEnable=unitEnable
@@ -92,7 +93,6 @@ local function createUnitFrame(self,unit)
   self[unit]:SetFrameStrata("MEDIUM")
   self[unit]:Hide()
   self[unit].enabled=false
-  RegisterUnitWatch(self[unit])
   
   if self.bg then 
     self[unit].bg=self[unit]:CreateTexture()
@@ -145,6 +145,8 @@ local function createUnitFrame(self,unit)
   self[unit].hpUpdate=eF.rep.unitHPUpdate
   self[unit].enable=eF.rep.unitEnable
   self[unit].disable=eF.rep.unitDisable
+  
+  
 end --end of CreateUnitFrame()
 
 eF.rep.createUnitFrame=createUnitFrame
