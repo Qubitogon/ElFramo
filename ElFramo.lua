@@ -1,32 +1,4 @@
 local _,eF=...
-eF.para={}
-eF.para.units={
-               height=50,
-               width=50,
-               bg=true,
-               bgR=nil,
-               bgG=nil,
-               bgB=nil,
-               spacing=10,
-               grow1="down",
-               grow2="right",
-               healthGrow="up",
-               --hpTexture="Interface\\TargetingFrame\\UI-StatusBar",
-               hpR=0,
-               hpG=0.8,
-               hpB=0,
-               hpA=1,
-               hpGrad=false,
-               hpGradOrientation="VERTICAL",
-               hpGrad1R=0.5,
-               hpGrad1G=0.5,
-               hpGrad1B=0.5,
-               hpGrad1A=1,
-               hpGrad2R=0.8,
-               hpGrad2G=0.8,
-               hpGrad2B=0.8,
-               hpGrad2A=1,
-               }
 
 local function initUnitsFrame()
 eF.units=CreateFrame("Frame","units",UIParent)
@@ -45,6 +17,12 @@ eF.units.texture:SetColorTexture(0.5,0,0.5,0.5)
 
 eF.units.createUnitFrame=eF.rep.createUnitFrame
 
+eF.units:RegisterEvent("UNIT_HEALTH_FREQUENT")
+eF.units:RegisterEvent('UNIT_MAXHEALTH')
+eF.units:RegisterEvent('UNIT_CONNECTION')
+eF.units:RegisterEvent('UNIT_FACTION')
+eF.units:SetScript("OnEvent",eF.rep.unitsEventHandler)
+
 --apply all relevant non-table parameters
 for k,v in pairs(eF.para.units) do
   if type(v)~="table" then eF.units[k]=v end
@@ -52,26 +30,38 @@ end
 
 end
 
-
-eF.rep={}
-
-
 local function createUnitAuras(self)
 --will contain creation of all auras necessary, probably iwll beed a loop through families and their parameters, see old elFramo
 end
 eF.rep.createUnitAuras=createUnitAuras
 
-local function createUnitHealth(self)
---should be self-explanatory
+
+local function unitHPUpdate(self)
+  if not self.hp then return end --WARN: MIGHT BE UNNECESSARY
+  local unit=self.id
+  self.hp:SetValue( UnitHealth(unit)/UnitHealthMax(unit) )
 end
-eF.rep.createUnitHealth=eF.rep.createUnitHealth
+eF.rep.unitHPUpdate=unitHPUpdate
+
+local function unitsEventHandler(self,event,...)
+
+  if event=="UNIT_HEALTH_FREQUENT" then 
+    local unit=select(1,...)
+    if self.unit then self.unit:hpUpdate() end
+  end--if event==UNIT_HEALTH_FREQUENT
+  
+end
+eF.rep.unitsEventHandler=unitsEventHandler
 
 local function createUnitFrame(self,unit)
   
   --if this unit frame exists already or unit is nil, fuck it
   if self.unit or not unit then return end  
   
+
+  
   self.unit=CreateFrame("Button",nil,self,"SecureUnitButtonTemplate")
+  self.unit.id=unit
   
   self.unit:SetAttribute("unit",unit)
   self.unit:SetAttribute("type1","target")
@@ -97,10 +87,14 @@ local function createUnitFrame(self,unit)
   
   do --create HP bar
   self.unit.hp=CreateFrame("StatusBar",nil,self.unit,"TextStatusBar") 
-  if self.healthGrow=="up" then self.unit.hp:SetPoint("BOTTOMLEFT"); self.unit.hp:SetPoint("BOTTOMRIGHT");  self.unit.hp:SetHeight(self.height)
-  elseif self.healthGrow=="right" then self.unit.hp:SetPoint("BOTTOMLEFT"); self.unit.hp:SetPoint("TOPLEFT"); self.unit.hp:SetWidth(self.width)
-  elseif self.healthGrow=="down" then self.unit.hp:SetPoint("TOPRIGHT"); self.unit.hp:SetPoint("TOPLEFT"); self.unit.hp:SetHeight(self.height)
-  elseif self.healthGrow=="left" then self.unit.hp:SetPoint("TOPRIGHT"); self.unit.hp:SetPoint("BOTTOMRIGHT"); self.unit.hp:SetWidth(self.width)
+  if self.healthGrow=="up" then 
+    self.unit.hp:SetPoint("BOTTOMLEFT"); self.unit.hp:SetPoint("BOTTOMRIGHT");  self.unit.hp:SetHeight(self.height); self.unit.hp:SetOrientation("VERTICAL")
+  elseif self.healthGrow=="right" then
+    self.unit.hp:SetPoint("BOTTOMLEFT"); self.unit.hp:SetPoint("TOPLEFT"); self.unit.hp:SetWidth(self.width); self.unit.hp:SetOrientation("HORIZONTAL")
+  elseif self.healthGrow=="down" then
+    self.unit.hp:SetPoint("TOPRIGHT"); self.unit.hp:SetPoint("TOPLEFT"); self.unit.hp:SetHeight(self.height); self.unit.hp:SetOrientation("VERTICAL")
+  elseif self.healthGrow=="left" then
+    self.unit.hp:SetPoint("TOPRIGHT"); self.unit.hp:SetPoint("BOTTOMRIGHT"); self.unit.hp:SetWidth(self.width); self.unit.hp:SetOrientation("HORIZONTAL")
   end
 
   if self.hpTexture then 
@@ -126,8 +120,9 @@ local function createUnitFrame(self,unit)
     hpTexture:SetGradientAlpha(self.hpGradOrientation,self.hpGrad1R,self.hpGrad1G,self.hpGrad1B,self.hpGrad1A,self.hpGrad2R,self.hpGrad2G,self.hpGrad2B,self.hpGrad2A)
   end
   
-  end
+  end  
   
+  self.unit.hpUpdate=eF.rep.unitHPUpdate
   
 end --end of CreateUnitFrame()
   
