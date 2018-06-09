@@ -1,4 +1,4 @@
-print("----Misc_tables.lua init")
+
 elFramo.classTable={Druid="DRUID",Monk="MONK",Paladin="PALADIN", Priest="PRIEST", Rogue="ROGUE",Mage="MAGE",Warlock="WARLOCK",Hunter="HUNTER",Shaman="SHAMAN",Warrior="WARRIOR"}
 
 elFramo.raidRosterIndextoGroupIndex={} --1:1 map from RaidRoster index to index in Group

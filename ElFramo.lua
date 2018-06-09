@@ -1,4 +1,14 @@
-print("----EF elFramo.lua init")
+local parent,ns=...
+print(parent)
+print(ns)
+print(#ns)
+local i=0
+for k,v in ipairs(ns) do
+  i=i+1
+  print("Iteration "..tostring(i).." key: "..tostring(k).." value: "..tostring(v))
+  
+end
+
 --local testvar="elFramo.lua initiated me locally"
 --globvar="elFramo.lua initiated me globally"
 
@@ -92,6 +102,7 @@ local defaultpara={frames={family={count=3,
                                         cdReverse=true,
                                         cdWheel=true,
                                         ignorePermanents=true,
+                                        yoursOnly=true,
                                         hasText=true,
                                         textType="remainingTime", --could be count as well, or duration, or expirationTime I guess?
                                         textAnchor="CENTER",
@@ -103,7 +114,7 @@ local defaultpara={frames={family={count=3,
                                         textColor={0.85,0.85,0.85},
                                         textAlpha=1,
                                         textDecimals=0,
-                                        },--end of Family[3]=                                  
+                                        },--end of Family[3]=                               
                                    },--end of Family=
                            width=100,
                            height=100,
@@ -125,13 +136,18 @@ local defaultpara={frames={family={count=3,
 elFramo.para=elFramo.deepcopy(defaultpara)
 
 -----------------
+local throttle=0.1 --in s
+local timeSinceLastUpdate=0
 
-
-function elFramo.updateFrameUpdate()
-    elFramo.trackerUpdate()
-    for i=1,elFramo.group.nMembers do
-      elFramo.framesUpdateHealthOf(i)
-      elFramo.frames.updateFamilies(i)
+function elFramo.updateFrameUpdate(self,elapsed)
+    timeSinceLastUpdate=timeSinceLastUpdate+elapsed
+    if timeSinceLastUpdate>throttle then
+      timeSinceLastUpdate=0
+      elFramo.trackerUpdate()
+      for i=1,elFramo.group.nMembers do
+        elFramo.framesUpdateHealthOf(i)
+        elFramo.frames.updateFamilies(i)
+      end
     end
 --    elFramo.frames.updateIcon(1,1,1)
 

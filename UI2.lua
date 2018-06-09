@@ -1,4 +1,3 @@
-print("---- UI.lua init")
 
 
 

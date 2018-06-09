@@ -1,4 +1,3 @@
-print("----Frames_update.lua init")
 
 function elFramo.framesUpdateAll()
     
@@ -298,9 +297,11 @@ function elFramo.frames.updateFamily(n,j)
       while vis.family[j].active<paraFam.maxCount do --either reach maximum in smart group,
         if m>#tbl then break end  --or end of buffs/debuffs       
         
-        if not elFramo.isInList(tbl[m].name,paraFam.arg2) and not (paraFam.ignorePermanents and tbl[m].duration==0)  then
-        vis.family[j].active=vis.family[j].active+1
-        updateFrameTo(n,j,vis.family[j].active,m,paraFam.arg1.."s")         --updateFrameTo also does frame:Show(), but all others need to be hidden! (see below)
+        if not (paraFam.ignorePermanents and tbl[m].duration==0) and not elFramo.isInList(tbl[m].name,paraFam.arg2) then  
+          --if yoursOnly 
+            vis.family[j].active=vis.family[j].active+1
+            updateFrameTo(n,j,vis.family[j].active,m,paraFam.arg1.."s")         --updateFrameTo also does frame:Show(), but all others need to be hidden! (see below)
+          --end 
         end --end of if not elFramo.isInList(tbl[m].name,paraFam.arg2)
         
         m=m+1    

@@ -1,4 +1,3 @@
-print("----Misc_functions.lua init")
 
 function elFramo.targetUnit(n) --USELESS CAUSE PROECTED (OFC) COULD DELETE BUT ITS A NICE REMINDER OF MY FAILURE
   

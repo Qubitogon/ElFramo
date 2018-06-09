@@ -1,4 +1,3 @@
-print("----EF Group_update.lua init")
 
 function elFramo.groupUpdate()
     --print("elFramo.group_update entered")

@@ -1,7 +1,4 @@
-print("----EF Final.lua init")
 
------------------THINGS TO DO ON ENTERING THE GAME
---the do ... end is currently redundant
 do 
   createTextBox()
   elFramo.groupUpdate() 
