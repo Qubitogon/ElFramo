@@ -1,6 +1,0 @@
-print("----EF Test.lua init")
---print(testvar)
---print(globvar)
---print(ElFramo.Tracker)
---ElFramo.Group_update()
---print(ElFramo.Group.type)

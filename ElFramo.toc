@@ -6,14 +6,4 @@
 ## DefaultState: enabled
 
 ElFramo.lua
-Misc_tables.lua
-Misc_functions.lua
-UI2.lua
-Group_update.lua
-Tracker_update.lua
-Frames_update.lua
-
-
-Final.lua
-
-Test.lua
+Health.lua
