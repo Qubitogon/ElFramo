@@ -7,8 +7,8 @@ eF.para.layout={
                grow1="down",
                grow2="right",   
                byClassColor=true,
-               byGroup=false,
-               maxInLine=6,
+               byGroup=true,
+               maxInLine=5,
                }
 
 
@@ -103,70 +103,124 @@ local function layoutUpdate(self)
   
   else --if not raid else
 
-    local holes=0
     local line=1
     local nmax=self.maxInLine or 5 
-    local n=0
-    if self.byGroup then nmax=5 end
-    for i=1,num do
-      local x=0
-      local y=0
-      local unit=eF.raidLoop[i]
-      local group=select(3,GetRaidRosterInfo(i))
-      
-      if self.byGroup then 
-        if group>line then holes=holes+nmax- n%nmax; line=group; end
-      else
-        line=math.floor(i/nmax)+1
-      end     
-      n=i+holes
-      
-            
-      if self.grow1=="right" then 
-        x=(n%nmax-1)*(width+self.spacing)
-        if self.grow2=="up" then y=(line-1)*(height+self.spacing)
-        elseif self.grow2=="down" then y=(1-line)*(height+self.spacing) end  
+    local n
+    if not self.byGroup then 
+      nmax=5 
+      for i=1,num do
+        local unit=eF.raidLoop[i]
+        local x=0
+        local y=0
+        n=i --pointless, i would be fine but too lazy to change all of them
+        line=math.floor((n-1)/nmax)+1
         
-      elseif self.grow1=="down" then
-        y=(1-n%nmax)*(height+self.spacing)
-        if self.grow2=="right" then x=(line-1)*(width+self.spacing);
-        elseif self.grow2=="left" then x=(1-line)*(width+self.spacing) end   
+        if self.grow1=="right" then 
+          x=((n-1)%nmax)*(width+self.spacing)
+          if self.grow2=="up" then y=(line-1)*(height+self.spacing)
+          elseif self.grow2=="down" then y=(1-line)*(height+self.spacing) end  
+          
+        elseif self.grow1=="down" then
+          y=-((n-1)%nmax)*(height+self.spacing)
+
+          if self.grow2=="right" then x=(line-1)*(width+self.spacing);
+          elseif self.grow2=="left" then x=(1-line)*(width+self.spacing) end   
+          
+        elseif self.grow1=="up" then
+          y=((n-1)%nmax)*(height+self.spacing)
+          if self.grow2=="right" then x=(line-1)*(width+self.spacing)
+          elseif self.grow2=="left" then x=(1-line)*(width+self.spacing) end  
+          
+        elseif self.grow1=="left" then
+          x=-((n-1)%nmax)*(width+self.spacing)
+          if self.grow2=="up" then y=(line-1)*(height+self.spacing)
+          elseif self.grow2=="down" then y=(1-line)*(height+self.spacing) end
+        end    
         
-      elseif self.grow1=="up" then
-        y=(n%nmax-1)*(height+self.spacing)
-        if self.grow2=="right" then x=(line-1)*(width+self.spacing)
-        elseif self.grow2=="left" then x=(1-line)*(width+self.spacing) end  
+        units[unit]:SetPoint("TOPLEFT",units,"TOPLEFT",x,y)
         
-      elseif self.grow2=="left" then
-        x=(1-n%nmax)*(width+self.spacing)
-        if self.grow2=="up" then y=(line-1)*(height+self.spacing)
-        elseif self.grow2=="down" then y=(1-line)*(height+self.spacing) end
-      end    
-      units[unit]:SetPoint("TOPLEFT",units,"TOPLEFT",x,y)
+        if self.byClassColor then
+          local _,CLASS=UnitClass(unit)
+          local alpha=units.hpA or 1
+          local r,g,b=GetClassColor(CLASS) 
+          if units.hpTexture then 
+            units[unit].hp:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar",0,0.8,0)        
+            if units.hpR then 
+              local alpha=units.hpA or 1 
+              units[unit].hp:SetStatusBarColor(units.hpR,units.hpG,units.hpB,alpha)    
+            end          
+          else 
+            units[unit].hp:SetStatusBarTexture(r,g,b,alpha)  
+          end        
+          local hpTexture=units[unit].hp:GetStatusBarTexture()       
+          if units.hpGrad then 
+            hpTexture:SetGradientAlpha(units.hpGradOrientation,units.hpGrad1R,units.hpGrad1G,units.hpGrad1B,units.hpGrad1A,units.hpGrad2R,units.hpGrad2G,units.hpGrad2B,units.hpGrad2A)
+          end
+          --units[unit].hp:SetStatusBarColor(r,g,b,hpA)
+        end--end of byClassColor
+        
+        units[unit]:enable()
+      end--end of for loop 
+     
+    else --else of if byGroup
+      local groups={-1,-1,-1,-1,-1,-1,-1,-1}
       
-      if self.byClassColor then
-        local _,CLASS=UnitClass(unit)
-        local alpha=units.hpA or 1
-        local r,g,b=GetClassColor(CLASS) 
-        if units.hpTexture then 
-          units[unit].hp:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar",0,0.8,0)        
-          if units.hpR then 
-            local alpha=units.hpA or 1 
-            units[unit].hp:SetStatusBarColor(units.hpR,units.hpG,units.hpB,alpha)    
-          end          
-        else 
-          units[unit].hp:SetStatusBarTexture(r,g,b,alpha)  
-        end        
-        local hpTexture=units[unit].hp:GetStatusBarTexture()       
-        if units.hpGrad then 
-          hpTexture:SetGradientAlpha(units.hpGradOrientation,units.hpGrad1R,units.hpGrad1G,units.hpGrad1B,units.hpGrad1A,units.hpGrad2R,units.hpGrad2G,units.hpGrad2B,units.hpGrad2A)
-        end
-        --units[unit].hp:SetStatusBarColor(r,g,b,hpA)
-      end--end of byClassColor
-      
-      units[unit]:enable()
-   end--end of for loop 
+      for i=1,num do
+        local x=0
+        local y=0
+        local unit=eF.raidLoop[i]
+        local group=select(3,GetRaidRosterInfo(i))
+        groups[group]=groups[group]+1
+        local ind=groups[group]         
+              
+        if self.grow1=="right" then 
+          x=ind*(width+self.spacing)
+          if self.grow2=="up" then y=(group-1)*(height+self.spacing)
+          elseif self.grow2=="down" then y=(1-group)*(height+self.spacing) end  
+          
+        elseif self.grow1=="down" then
+          y=-ind*(height+self.spacing)
+
+          if self.grow2=="right" then x=(group-1)*(width+self.spacing);
+          elseif self.grow2=="left" then x=(1-group)*(width+self.spacing) end   
+          
+        elseif self.grow1=="up" then
+          y=ind*(height+self.spacing)
+          if self.grow2=="right" then x=(group-1)*(width+self.spacing)
+          elseif self.grow2=="left" then x=(1-group)*(width+self.spacing) end  
+          
+        elseif self.grow1=="left" then
+          x=-ind*(width+self.spacing)
+          if self.grow2=="up" then y=(group-1)*(height+self.spacing)
+          elseif self.grow2=="down" then y=(1-group)*(height+self.spacing) end
+        end    
+        
+        units[unit]:SetPoint("TOPLEFT",units,"TOPLEFT",x,y)
+        
+        if self.byClassColor then
+          local _,CLASS=UnitClass(unit)
+          local alpha=units.hpA or 1
+          local r,g,b=GetClassColor(CLASS) 
+          if units.hpTexture then 
+            units[unit].hp:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar",0,0.8,0)        
+            if units.hpR then 
+              local alpha=units.hpA or 1 
+              units[unit].hp:SetStatusBarColor(units.hpR,units.hpG,units.hpB,alpha)    
+            end          
+          else 
+            units[unit].hp:SetStatusBarTexture(r,g,b,alpha)  
+          end        
+          local hpTexture=units[unit].hp:GetStatusBarTexture()       
+          if units.hpGrad then 
+            hpTexture:SetGradientAlpha(units.hpGradOrientation,units.hpGrad1R,units.hpGrad1G,units.hpGrad1B,units.hpGrad1A,units.hpGrad2R,units.hpGrad2G,units.hpGrad2B,units.hpGrad2A)
+          end
+          --units[unit].hp:SetStatusBarColor(r,g,b,hpA)
+        end--end of byClassColor
+        
+        units[unit]:enable()
+     end--end of for loop 
    
+   end--end  of if self.byGroup else
    --Hide all others
   for i=1,5 do
     local unit=eF.partyLoop[i]; if units[unit].enabled then units[unit]:disable(); else break end
