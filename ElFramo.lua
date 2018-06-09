@@ -140,7 +140,7 @@ local throttle=0.1 --in s
 local timeSinceLastUpdate=0
 
 function elFramo.updateFrameUpdate(self,elapsed)
-    timeSinceLastUpdate=timeSinceLastUpdate+elapsed
+    --[[timeSinceLastUpdate=timeSinceLastUpdate+elapsed
     if timeSinceLastUpdate>throttle then
       timeSinceLastUpdate=0
       elFramo.trackerUpdate()
@@ -148,12 +148,14 @@ function elFramo.updateFrameUpdate(self,elapsed)
         elFramo.framesUpdateHealthOf(i)
         elFramo.frames.updateFamilies(i)
       end
-    end
+    end]]
 --    elFramo.frames.updateIcon(1,1,1)
 
     --print("done")
     --elFramo.framesUpdateHealthOf(2)
 end
+
+
 
 function elFramo.groupFrameEventHandler(self,event,...)
     --print(event)
@@ -212,6 +214,8 @@ function elFramo.firstDrawFrames()
 
 
   elFramo.frames.tracker:SetScript("OnUpdate",elFramo.updateFrameUpdate) --cant directly put Tracker_update in there because it's not defined until Group_update.lua launches
+  elFramo.frames.tracker:RegisterEvent("UNIT_HEALTH_FREQUENT")
+  elFramo.frames.tracker:SetScript("OnEvent",elFramo.updateTrackerEvent())
 
 
 
