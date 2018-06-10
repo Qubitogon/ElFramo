@@ -13,7 +13,7 @@ eF.para.layout={
 
 
 local function layoutEventHandler(self,event,...)
-  self:update() 
+  self:update()
   if event=="PLAYER_ENTERING_WORLD" then self:update() end
 end
 eF.rep.layoutEventHandler=layoutEventHandler
@@ -87,6 +87,8 @@ local function layoutUpdate(self)
       end--end of byClassColor
       
       units[unit]:enable()
+      if units[unit].text then units[unit]:updateText() end
+      
     end   
     
        --Hide all others
@@ -158,6 +160,7 @@ local function layoutUpdate(self)
         end--end of byClassColor
         
         units[unit]:enable()
+        if units[unit].text then units[unit]:updateText() end
       end--end of for loop 
      
     else --else of if byGroup
@@ -216,6 +219,8 @@ local function layoutUpdate(self)
         end--end of byClassColor
         
         units[unit]:enable()
+        if units[unit].text then units[unit]:updateText() end
+        
      end--end of for loop 
    
    end--end  of if self.byGroup else

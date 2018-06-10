@@ -12,6 +12,15 @@ eF.para.units={
                --grow1="down",
                --grow2="right",
                healthGrow="up",
+               textLim=4,
+               textFont="Fonts\\ARIALN.ttf",
+               textExtra="OUTLINE",
+               textPos="CENTER",
+               textSize=20,
+               textA=0.7,
+               textColorByClass=true,
+               --textR=1,
+               --textG=1,
                hpTexture=nil, --would put path in here, e.g. "Interface\\TargetingFrame\\UI-StatusBar"
                --hpTexture="Interface\\TargetingFrame\\UI-StatusBar",
                hpR=0.2,
@@ -28,6 +37,12 @@ eF.para.units={
                hpGrad2G=0.8,
                hpGrad2B=0.8,
                hpGrad2A=1,
+               borderSize=3,
+               borderR=0,
+               borderG=0,
+               borderB=0,
+               borderA=1,
+               borderFix=true, --if true we try to fix some of the bullshit
                }
 
      
@@ -46,4 +61,14 @@ function MakeMovable(frame)
   frame:RegisterForDrag("LeftButton")
   frame:SetScript("OnDragStart", frame.StartMoving)
   frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+end
+
+function eF.borderInfo(pos)
+  local loc,p1,p2,w,f11,f12,f21,f22
+  if pos=="RIGHT" then loc="borderRight"; p1="TOPRIGHT"; p2="BOTTOMRIGHT"; w=true; f11=1; f12=1; f21=1; f22=-1;
+  elseif pos=="TOP" then loc="borderTop"; p1="TOPLEFT"; p2="TOPRIGHT"; w=false; f11=-1; f12=1; f21=1; f22=1;
+  elseif pos=="LEFT" then loc="borderLeft"; p1="TOPLEFT"; p2="BOTTOMLEFT";w=true; f11=-1; f12=1; f21=-1; f22=-1;
+  elseif pos=="BOTTOM" then loc="borderBottom"; p1="BOTTOMLEFT";p2="BOTTOMRIGHT"; w=false; f11=-1; f12=-1; f21=1; f22=-1; end  
+  
+  return loc,p1,p2,w,f11,f12,f21,f22
 end

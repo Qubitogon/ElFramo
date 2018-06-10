@@ -54,6 +54,23 @@ end
 
 eF.rep.unitEnable=unitEnable
 
+local function unitUpdateText(self)
+  local unit=self.id
+  local name=UnitName(unit)
+  local units=eF.units
+  if units.textLim then name=strsub(name,1,units.textLim) end
+  self.text:SetText(name)
+  
+  if units.textColorByClass then
+    local _,CLASS=UnitClass(unit)
+    local r,g,b=GetClassColor(CLASS) 
+    local a=units.textA or 1
+    self.text:SetTextColor(r,g,b,a)
+  end
+  
+end
+eF.rep.unitUpdateText=unitUpdateText
+
 local function unitDisable(self)
   
   if not self.enabled then return end
@@ -63,6 +80,25 @@ local function unitDisable(self)
   
 end
 eF.rep.unitDisable=unitDisable
+
+local function updateUnitBorders(self)
+  local size=eF.units.borderSize
+  if not (size and self.borderRight) then return end
+  
+  for k,v in next,{"RIGHT","TOP","LEFT","BOTTOM"} do 
+    local loc,p1,p2,w,f11,f12,f21,f22=eF.borderInfo(v)
+
+    --compensate for some rounding bullshit
+
+    
+    self[loc]:SetPoint(p1,self,p1,f11*(size),f12*(size))
+    self[loc]:SetPoint(p2,self,p2,f21*(size),f22*(size))
+    if w then self[loc]:SetWidth(size); 
+    else self[loc]:SetHeight(size); end    --self:GetWidth()+2*size
+    if self.id=="player" then print(v,self[loc]:GetWidth(),self[loc]:GetHeight()) end
+  end
+end
+eF.rep.updateUnitBorders=updateUnitBorders
 
 local function unitsEventHandler(self,event,...)
 
@@ -140,9 +176,40 @@ local function createUnitFrame(self,unit)
     hpTexture:SetGradientAlpha(self.hpGradOrientation,self.hpGrad1R,self.hpGrad1G,self.hpGrad1B,self.hpGrad1A,self.hpGrad2R,self.hpGrad2G,self.hpGrad2B,self.hpGrad2A)
   end
   
+  self[unit].hpUpdate=eF.rep.unitHPUpdate
+
   end  
   
-  self[unit].hpUpdate=eF.rep.unitHPUpdate
+  do --create name string
+  self[unit].text=self[unit]:CreateFontString(nil,"OVERLAY",-1)
+  self[unit].text:SetFont(self.textFont,self.textSize,self.textExtra)
+  self[unit].text:SetPoint(self.textPos,self[unit],self.textPos)
+  local r=self.textR or 1
+  local g=self.textG or 1
+  local b=self.textB or 1
+  local a=self.textA or 1
+  self[unit].text:SetTextColor(r,g,b,a)
+  self[unit].updateText=eF.rep.unitUpdateText
+  end
+  
+  --create border
+  self[unit].updateBorders=eF.rep.updateUnitBorders
+  if self.borderSize then 
+    local r=self.borderR or 0
+    local g=self.borderG or 0
+    local b=self.borderB or 0
+    local a=self.borderA or 1 
+    for k,v in next,{"RIGHT","TOP","LEFT","BOTTOM"} do
+      local bn=eF.borderInfo(v)      
+      self[unit][bn]=self[unit]:CreateTexture("BACKGROUND",-4)
+      self[unit][bn]:SetColorTexture(r,g,b,a)
+    end
+  self[unit]:updateBorders()
+  end
+  
+  
+  
+  
   self[unit].enable=eF.rep.unitEnable
   self[unit].disable=eF.rep.unitDisable
   
