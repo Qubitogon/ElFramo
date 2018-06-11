@@ -18,11 +18,6 @@ eF.units.texture:SetColorTexture(0.5,0,0.5,0.5)
 
 eF.units.createUnitFrame=eF.rep.createUnitFrame
 
-eF.units:RegisterEvent("UNIT_HEALTH_FREQUENT")
-eF.units:RegisterEvent('UNIT_MAXHEALTH')
-eF.units:RegisterEvent('UNIT_CONNECTION')
-eF.units:RegisterEvent('UNIT_FACTION')
-eF.units:SetScript("OnEvent",eF.rep.unitsEventHandler)
 
 --apply all relevant non-table parameters
 for k,v in pairs(eF.para.units) do
@@ -49,10 +44,31 @@ local function unitEnable(self)
   self.enabled=true
   self:Show()
   RegisterUnitWatch(self)
+  local unit=self.id
+  for i=1,#self.events do
+    self:RegisterUnitEvent(self.events[i],unit)
+    --self:RegisterEvent(self.events[i])
+  end
+
 
 end
-
 eF.rep.unitEnable=unitEnable
+
+local function unitDisable(self)
+  
+  if not self.enabled then return end
+  UnregisterUnitWatch(self)
+  self.enabled=false
+  self:Hide()
+  
+  local unit=self.id
+  for i=1,#self.events do
+    self:UnregisterEvent(self.events[i])
+    --self:RegisterEvent(self.events[i])
+  end
+  
+end
+eF.rep.unitDisable=unitDisable
 
 local function unitUpdateText(self)
   local unit=self.id
@@ -71,43 +87,29 @@ local function unitUpdateText(self)
 end
 eF.rep.unitUpdateText=unitUpdateText
 
-local function unitDisable(self)
-  
-  if not self.enabled then return end
-  UnregisterUnitWatch(self)
-  self.enabled=false
-  self:Hide()
-  
-end
-eF.rep.unitDisable=unitDisable
-
 local function updateUnitBorders(self)
   local size=eF.units.borderSize
-  if not (size and self.borderRight) then return end
+  if not (size and self.borderRight) then return end 
   
   for k,v in next,{"RIGHT","TOP","LEFT","BOTTOM"} do 
     local loc,p1,p2,w,f11,f12,f21,f22=eF.borderInfo(v)
-
-    --compensate for some rounding bullshit
-
-    
     self[loc]:SetPoint(p1,self,p1,f11*(size),f12*(size))
     self[loc]:SetPoint(p2,self,p2,f21*(size),f22*(size))
     if w then self[loc]:SetWidth(size); 
-    else self[loc]:SetHeight(size); end    --self:GetWidth()+2*size
-    if self.id=="player" then print(v,self[loc]:GetWidth(),self[loc]:GetHeight()) end
+    else self[loc]:SetHeight(size); end    
   end
 end
 eF.rep.updateUnitBorders=updateUnitBorders
 
-local function unitsEventHandler(self,event,...)
+local function unitEventHandler(self,event,...)
+  if not self.enabled then return end
 
- 
-  local unit=select(1,...)
-  if self[unit] then self[unit]:hpUpdate() end
+  if event=="UNIT_HEALTH_FREQUENT" or event=="UNIT_MAXHEALTH" or event=="UNIT_CONNECTION" or event=="UNIT_FACTION" then
+    self:hpUpdate()
+  end
   
 end
-eF.rep.unitsEventHandler=unitsEventHandler
+eF.rep.unitEventHandler=unitEventHandler
 
 local function createUnitFrame(self,unit)
   
@@ -154,7 +156,7 @@ local function createUnitFrame(self,unit)
   end
 
   if self.hpTexture then 
-    self[unit].hp:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar",0,0.8,0)
+    self[unit].hp:SetStatusBarTexture(self.hpTexture,0,0.8,0)
    
     if self.hpR then 
       local alpha=self.hpA or 1 
@@ -177,7 +179,8 @@ local function createUnitFrame(self,unit)
   end
   
   self[unit].hpUpdate=eF.rep.unitHPUpdate
-
+  self[unit].events={"UNIT_HEALTH_FREQUENT","UNIT_MAXHEALTH","UNIT_CONNECTION","UNIT_FACTION"}
+  
   end  
   
   do --create name string
@@ -206,13 +209,12 @@ local function createUnitFrame(self,unit)
     end
   self[unit]:updateBorders()
   end
-  
-  
-  
+
   
   self[unit].enable=eF.rep.unitEnable
   self[unit].disable=eF.rep.unitDisable
-  
+  self[unit].eventHandler=eF.rep.unitEventHandler
+  self[unit]:SetScript("OnEvent",self[unit].eventHandler)
   
 end --end of CreateUnitFrame()
 
