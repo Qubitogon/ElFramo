@@ -101,13 +101,22 @@ local function updateUnitBorders(self)
 end
 eF.rep.updateUnitBorders=updateUnitBorders
 
-local function unitEventHandler(self,event,...)
+local function unitEventHandler(self,event)
   if not self.enabled then return end
 
   if event=="UNIT_HEALTH_FREQUENT" or event=="UNIT_MAXHEALTH" or event=="UNIT_CONNECTION" or event=="UNIT_FACTION" then
     self:hpUpdate()
-  end
-  
+    
+  elseif event=="UNIT_AURA" then 
+    self:disableFamilies()
+    --BUFFS FIRST
+    for i=1,40 do
+      local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss=UnitAura(self.id,i,"HELPFUL")
+      if not name then break end 
+      self:allAdopt(name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
+ 
+    end  
+  end 
 end
 eF.rep.unitEventHandler=unitEventHandler
 
@@ -179,7 +188,7 @@ local function createUnitFrame(self,unit)
   end
   
   self[unit].hpUpdate=eF.rep.unitHPUpdate
-  self[unit].events={"UNIT_HEALTH_FREQUENT","UNIT_MAXHEALTH","UNIT_CONNECTION","UNIT_FACTION"}
+  self[unit].events={"UNIT_HEALTH_FREQUENT","UNIT_MAXHEALTH","UNIT_CONNECTION","UNIT_FACTION","UNIT_AURA"}
   
   end  
   
