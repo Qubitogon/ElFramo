@@ -7,17 +7,17 @@ eF.para.families={[1]={displayName="void",
                             type="name",
                             buff=true,
                             arg1="Renewing Mist",
-                            xPos=0,
+                            xPos=-2,
                             yPos=0,
-                            height=30,
-                            width=30,
-                            anchor="CENTER",
-                            anchorTo="CENTER",
-                            cdWheel=true,
+                            height=15,
+                            width=15,
+                            anchor="TOPRIGHT",
+                            anchorTo="TOPRIGHT",
+                            cdWheel=false,
                             cdReverse=true,
-                            hasTexture=true,
                             texture=627487,
                             hasText=true,
+                            hasTexture=false,
                             textType="t",
                             textAnchor="CENTER",
                             textAnchorTo="CENTER",
@@ -25,7 +25,7 @@ eF.para.families={[1]={displayName="void",
                             textYOS=0,
                             textFont="Fonts\\FRIZQT__.ttf",
                             textExtra="OUTLINE",
-                            textSize=20,
+                            textSize=14,
                             textR=0.85,
                             textG=0.85,
                             textB=0.85,
@@ -37,17 +37,17 @@ eF.para.families={[1]={displayName="void",
                             type="name",
                             buff=true,
                             arg1="Soothing Mist",
-                            xPos=32,
+                            xPos=0,
                             yPos=0,
-                            height=30,
-                            width=30,
-                            anchor="CENTER",
-                            anchorTo="CENTER",
+                            height=20,
+                            width=20,
+                            anchor="TOPLEFT",
+                            anchorTo="TOPLEFT",
                             cdWheel=true,
                             cdReverse=true,
-                            hasTexture=true,
                             texture=606550,
                             hasText=true,
+                            hasTexture=true,
                             textType="t",
                             textAnchor="CENTER",
                             textAnchorTo="CENTER",
@@ -55,7 +55,7 @@ eF.para.families={[1]={displayName="void",
                             textYOS=0,
                             textFont="Fonts\\FRIZQT__.ttf",
                             textExtra="OUTLINE",
-                            textSize=20,
+                            textSize=14,
                             textR=0.85,
                             textG=0.85,
                             textB=0.85,
@@ -70,28 +70,30 @@ eF.para.families={[1]={displayName="void",
                        count=3,
                        type="b",
                        xPos=0,
-                       yPos=40,
+                       yPos=0,
                        spacing=1,
-                       height=30,
-                       width=30,
-                       anchor="TOPLEFT",
-                       anchorTo="TOPLEFT",
+                       height=15,
+                       width=15,
+                       anchor="BOTTOMLEFT",
+                       anchorTo="BOTTOMLEFT",
                        buff=true,
                        arg1={"Soothing Mist","Renewing Mist"},
                        smartIcons=true,
                        grow="right",
-                       growAnchor="TOPLEFT",
-                       growAnchorTo="TOPLEFT",
+                       growAnchor="BOTTOMLEFT",
+                       growAnchorTo="BOTTOMLEFT",
                        cdReverse=true,
                        cdWheel=true,
                        hasText=true,
+                       hasTexture=true,
                        ignorePermanents=true,
+                       ignoreDurationAbove=20,
                        textType="t",
                        textAnchor="CENTER",
                        textAnchorTo="CENTER",
                        textXOS=0,
                        textYOS=0,
-                       textSize=20,
+                       textSize=12,
                        textR=0.85,
                        textG=0.85,
                        textB=0.85,
@@ -147,12 +149,13 @@ local function createFamilyFrames()
           frame[j][k]:SetPoint(frame.families[j].growAnchor,frame[j],frame.families[j].growAnchorTo,xOS,yOS)
           frame[j][k]:SetSize(frame.families[j].width,frame.families[j].height)
         
-          
-          frame[j][k].texture=frame[j][k]:CreateTexture()
-          frame[j][k].texture:SetDrawLayer("BACKGROUND",-2)
-          frame[j][k].texture:SetAllPoints()
-          if frame.families[j].texture then frame[j][k].texture:SetTexture(frame.families[j].texture)  --if frame.families[j][k].texture
-          else frame[j][k].smartIcon=true end
+          if frame[j].para.hasTexture then
+            frame[j][k].texture=frame[j][k]:CreateTexture()
+            frame[j][k].texture:SetDrawLayer("BACKGROUND",-2)
+            frame[j][k].texture:SetAllPoints()
+            if frame.families[j].texture then frame[j][k].texture:SetTexture(frame.families[j].texture)  --if frame.families[j][k].texture
+            else frame[j][k].smartIcon=true end
+          end
           
           frame[j][k].adopt=eF.rep.iconUnconditionalAdopt        
           frame[j][k].disable=eF.rep.iconFrameDisable
@@ -200,13 +203,13 @@ local function createFamilyFrames()
           frame[j][k]:SetPoint(frame.families[j][k].anchor,frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
           frame[j][k]:SetSize(frame.families[j][k].width,frame.families[j][k].height)
           
-          
-          frame[j][k].texture=frame[j][k]:CreateTexture()
-          frame[j][k].texture:SetDrawLayer("BACKGROUND",-2)
-          frame[j][k].texture:SetAllPoints()
-          if frame.families[j][k].texture then frame[j][k].texture:SetTexture(frame.families[j][k].texture)  --if frame.families[j][k].texture
-          else frame[j][k].smartIcon=true end
-          
+          if frame[j][k].para.hasTexture then 
+            frame[j][k].texture=frame[j][k]:CreateTexture()
+            frame[j][k].texture:SetDrawLayer("BACKGROUND",-2)
+            frame[j][k].texture:SetAllPoints()
+            if frame.families[j][k].texture then frame[j][k].texture:SetTexture(frame.families[j][k].texture)  --if frame.families[j][k].texture
+            else frame[j][k].smartIcon=true end
+          end
           
           if frame.families[j][k].type=="name" then frame[j][k].adopt=eF.rep.iconAdoptAuraByName end 
           frame[j][k].para=eF.para.families[j][k]
@@ -331,7 +334,9 @@ local function blacklistFamilyAdopt(self,name,...)
   local dur=select(4,...)
   if self.para.ignorePermanents and dur==0 then return end
   local own=select(10,...)
-  if self.para.ownOnly and oO then return end
+  if self.para.ownOnly and not oO then return end
+  local iDA=self.para.ignoreDurationAbove
+  if iDA then if dur>iDA then return end end 
   
   self.active=self.active+1
   self.filled=true
