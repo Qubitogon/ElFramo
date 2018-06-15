@@ -17,7 +17,8 @@ eF.units.texture:SetDrawLayer("BACKGROUND",-6)
 eF.units.texture:SetColorTexture(0.5,0,0.5,0.5)
 
 eF.units.createUnitFrame=eF.rep.createUnitFrame
-
+eF.units.onUpdate=eF.rep.unitsFrameOnUpdate
+eF.units:SetScript("OnUpdate",units.onUpdate)
 
 --apply all relevant non-table parameters
 for k,v in pairs(eF.para.units) do
@@ -240,6 +241,26 @@ local function initUnitsUnits()
   end
   
 end
+
+local throttle=eF.para.throttle
+local eT=0
+local function unitsFrameOnUpdate(self,elapsed)
+  if eT<throttle then eT=eT+elapsed; return end
+  eT=0
+  local tbl
+  if self.raid then tbl=eF.raidLoop else tbl=eF.partyLoop end
+  
+  for i=1,self.num do
+    local frame=self[tbl[i]]
+    for j=1,self.familyCount do
+      if frame[j].onUpdate then frame[j]:onUpdate() end
+      
+    end
+    
+  end--end of for i=1,self.num
+end
+eF.rep.unitsFrameOnUpdate=unitsFrameOnUpdate
+
 
 
 initUnitsFrame()

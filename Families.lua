@@ -18,15 +18,18 @@ eF.para.families={[1]={displayName="void",
                             hasTexture=true,
                             texture=627487,
                             hasText=true,
-                            textType="remainingTime",
+                            textType="t",
                             textAnchor="CENTER",
                             textAnchorTo="CENTER",
                             textXOS=0,
                             textYOS=0,
                             textFont="Fonts\\FRIZQT__.ttf",
+                            textExtra="OUTLINE",
                             textSize=20,
-                            textColor={0.85,0.85,0.85},
-                            textAlpha=1,
+                            textR=0.85,
+                            textG=0.85,
+                            textB=0.85,
+                            textA=1,
                             textDecimals=0,
                             ownOnly=false,
                             }, --end of [1][1]
@@ -45,15 +48,18 @@ eF.para.families={[1]={displayName="void",
                             hasTexture=true,
                             texture=606550,
                             hasText=true,
-                            textType="remainingTime",
+                            textType="t",
                             textAnchor="CENTER",
                             textAnchorTo="CENTER",
                             textXOS=0,
                             textYOS=0,
                             textFont="Fonts\\FRIZQT__.ttf",
+                            textExtra="OUTLINE",
                             textSize=20,
-                            textColor={0.85,0.85,0.85},
-                            textAlpha=1,
+                            textR=0.85,
+                            textG=0.85,
+                            textB=0.85,
+                            textA=1,
                             textDecimals=0,
                             ownOnly=false,
                             },                            
@@ -74,7 +80,7 @@ for i=1,5 do
 end--end of i
 
 
-function createFamilyFrames()
+local function createFamilyFrames()
   local units=eF.units
   
   
@@ -83,6 +89,7 @@ function createFamilyFrames()
     if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
     frame.disableFamilies=eF.rep.unitDisableFamilies
     frame.allAdopt=eF.rep.unitAllAdopt    
+    eF.units.familyCount=#frame.families
     for j=1,#frame.families do
       frame[j]=CreateFrame("Frame",nil,frame)
       frame[j]:SetPoint("CENTER")
@@ -92,9 +99,10 @@ function createFamilyFrames()
         frame[j].smart=true
         --add their check function here
       else
-        
+        frame[j].para=frame.families[j]
         for k=1,frame.families[j].count do
           frame[j][k]=CreateFrame("Frame",nil,frame[j])
+          frame[j][k].para=eF.para.families[j][k]
           frame[j][k]:SetPoint(frame.families[j][k].anchor,frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
           frame[j][k]:SetSize(frame.families[j][k].width,frame.families[j][k].height)
         
@@ -112,6 +120,26 @@ function createFamilyFrames()
           frame[j][k].enable=eF.rep.iconFrameEnable
           frame[j][k]:disable()
           
+          --text
+          if frame.families[j][k].hasText then
+            if not frame[j].onUpdate then frame[j].onUpdate=eF.rep.dumbFamilyOnUpdateFunction end
+            frame[j][k].text=frame[j][k]:CreateFontString()
+            local font=frame.families[j][k].textFont or "Fonts\\FRIZQT__.ttf"
+            local size=frame.families[j][k].textSize or 20
+            local xOS=frame.families[j][k].textXOS or 0
+            local yOS=frame.families[j][k].textYOS or 0
+            local r=frame.families[j][k].textR
+            local g=frame.families[j][k].textG
+            local b=frame.families[j][k].textB
+            local a=frame.families[j][k].textA
+            local extra=frame.families[j][k].textExtra or "OUTLINE"
+            frame[j][k].text:SetFont(font,size,extra)    
+            frame[j][k].text:SetPoint(frame.families[j][k].textAnchor,frame[j][k],frame.families[j][k].textAnchorTo,xOS,yOS)
+            frame[j][k].text:SetTextColor(r,g,b,a)
+            frame[j][k].onUpdate=eF.rep.iconOnUpdateFunction
+            frame[j][k].textOnUpdate=eF.rep.iconTextOnUpdate
+          end--end of if frame.hasText
+          
         end --end for k=1,frame.families.count
       end--end of if frame.families[j].smart else
     end --end of for j=1,#frame.families
@@ -119,7 +147,20 @@ function createFamilyFrames()
 end
 
 
-function iconAdoptAuraByName(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss)
+local function iconTextOnUpdate(self)
+  local t=GetTime()
+  local s=''
+  if self.para.textType=="t" then 
+    s=self.expirationTime-t
+  end--end of if textType=="t"
+  
+  local dec=self.para.textDecimals or 1
+  s=eF.toDecimal(s,dec)
+  self.text:SetText(s)
+end
+eF.rep.iconTextOnUpdate=iconTextOnUpdate
+
+local function iconAdoptAuraByName(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss)
 
   if self.filled then return  end
   
@@ -141,7 +182,7 @@ function iconAdoptAuraByName(self,name,icon,count,debuffType,duration,expiration
 end
 eF.rep.iconAdoptAuraByName=iconAdoptAuraByName
 
-function unitAllAdopt(self,...)
+local function unitAllAdopt(self,...)
 
   for j=1,#self.families do
       
@@ -159,7 +200,7 @@ end
 eF.rep.unitAllAdopt=unitAllAdopt
 
 
-function unitDisableFamilies(self)
+local function unitDisableFamilies(self)
 
   for j=1,#self.families do
       
@@ -177,27 +218,37 @@ function unitDisableFamilies(self)
 end
 eF.rep.unitDisableFamilies=unitDisableFamilies
 
-function iconFrameDisable(self)
+local function iconFrameDisable(self)
   self:Hide()
   self.filled=false
   
 end
 eF.rep.iconFrameDisable=iconFrameDisable
 
-function iconFrameEnable(self)
+local function iconFrameEnable(self)
   self:Show()
   self.filled=true
 end
 eF.rep.iconFrameEnable=iconFrameEnable
 
+local function dumbFamilyOnUpdateFunction(self)
+  for i=1,self.para.count do
+    if self[i].onUpdate then self[i]:onUpdate() end
+  end
+  
+end --end of familyUpdateFunction
+eF.rep.dumbFamilyOnUpdateFunction=dumbFamilyOnUpdateFunction
+
+local function iconOnUpdateFunction(self)
+  if not self.filled then return end
+  
+  if self.text then 
+    if self.para.textType=="t" then self:textOnUpdate() end
+    
+  
+  end -- end of if self.text 
+end
+eF.rep.iconOnUpdateFunction=iconOnUpdateFunction
+
 createFamilyFrames()
-
-
-
-
-
-
-
-
-
 

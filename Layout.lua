@@ -39,9 +39,11 @@ local function layoutUpdate(self)
   local width=eF.units.width or 30
   local height=eF.units.height or 30
   local raid=IsInRaid()
+  eF.units.raid=IsInRaid() --is used for the updatefunction
   local num=GetNumGroupMembers() --for some reason gives 0 when solo
   if num==0 then num=1 end
-  
+  eF.units.num=num
+    
   local units=eF.units
   --r,g,b = GetClassColor
   

@@ -1,5 +1,6 @@
 local _,eF=...
-eF.para={}
+eF.para={throttle=0.1--in s
+        }
 eF.rep={}
 eF.para.units={
                height=50,
@@ -71,4 +72,12 @@ function eF.borderInfo(pos)
   elseif pos=="BOTTOM" then loc="borderBottom"; p1="BOTTOMLEFT";p2="BOTTOMRIGHT"; w=false; f11=-1; f12=-1; f21=1; f22=-1; end  
   
   return loc,p1,p2,w,f11,f12,f21,f22
+end
+
+function eF.toDecimal(f,d)
+  local m=math.pow(10,d)
+  f=f*m
+  f=floor(f)
+  f=f/m
+  return f
 end
