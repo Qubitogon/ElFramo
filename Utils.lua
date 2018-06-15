@@ -81,3 +81,19 @@ function eF.toDecimal(f,d)
   f=f/m
   return f
 end
+
+function eF.isInList(s,lst)
+
+  if not s or not lst then return false end
+  local found=false
+  for i=1,#lst do 
+    if type(lst[i])==type(s) then
+      if lst[i]==s then
+        found=true
+        break
+      end
+    end
+  end
+  return found
+end
+

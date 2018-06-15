@@ -112,9 +112,9 @@ local function unitEventHandler(self,event)
     self:disableFamilies()
     --BUFFS FIRST
     for i=1,40 do
-      local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss=UnitAura(self.id,i,"HELPFUL")
+      local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss,own=UnitAura(self.id,i,"HELPFUL")
       if not name then break end 
-      self:allAdopt(name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
+      self:allAdopt(name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
  
     end  
   end 
@@ -227,7 +227,6 @@ local function createUnitFrame(self,unit)
   self[unit]:SetScript("OnEvent",self[unit].eventHandler)
   
 end --end of CreateUnitFrame()
-
 eF.rep.createUnitFrame=createUnitFrame
 
 local function initUnitsUnits()
@@ -253,7 +252,7 @@ local function unitsFrameOnUpdate(self,elapsed)
   for i=1,self.num do
     local frame=self[tbl[i]]
     for j=1,self.familyCount do
-      if frame[j].onUpdate then frame[j]:onUpdate() end
+      if frame[j].onUpdate and frame[j].filled then frame[j]:onUpdate() end
       
     end
     
