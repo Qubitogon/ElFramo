@@ -5,8 +5,8 @@ local function initUnitsFrame()
 eF.units=CreateFrame("Frame","units",UIParent)
 eF.units:EnableMouse(true)
 eF.units:SetPoint("CENTER",UIParent,"CENTER",-300,0)
-eF.units:SetHeight(200)
-eF.units:SetWidth(500)
+eF.units:SetHeight(270)
+eF.units:SetWidth(70)
 eF.units:Show()
 
 MakeMovable(eF.units)
@@ -14,7 +14,7 @@ MakeMovable(eF.units)
 eF.units.texture=eF.units:CreateTexture()
 eF.units.texture:SetAllPoints()
 eF.units.texture:SetDrawLayer("BACKGROUND",-6)
-eF.units.texture:SetColorTexture(0.5,0,0.5,0.5)
+eF.units.texture:SetColorTexture(0,0,0,0.5)
 
 eF.units.createUnitFrame=eF.rep.createUnitFrame
 eF.units.onUpdate=eF.rep.unitsFrameOnUpdate
@@ -110,13 +110,19 @@ local function unitEventHandler(self,event)
     
   elseif event=="UNIT_AURA" then 
     self:disableFamilies()
-    --BUFFS FIRST
+    --BUFFS
     for i=1,40 do
-      local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss,own=UnitAura(self.id,i,"HELPFUL")
+      local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss,own=UnitAura(self.id,i)
       if not name then break end 
-      self:allAdopt(name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
- 
-    end  
+      self:allAdopt(true,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
+    end
+    --DEBUFFS
+    for i=1,40 do
+      local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss,own=UnitAura(self.id,i,"HARMFUL")
+      if not name then break end 
+      self:allAdopt(false,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
+    end 
+    
   end 
 end
 eF.rep.unitEventHandler=unitEventHandler
@@ -137,7 +143,7 @@ local function createUnitFrame(self,unit)
   --TBA: positional table
   self[unit]:SetPoint("TOPLEFT",self,"TOPLEFT",0,0)
   
-  self[unit]:SetSize(self.height,self.width)
+  self[unit]:SetSize(self.width,self.height)
   self[unit]:SetFrameStrata("MEDIUM")
   self[unit]:Hide()
   self[unit].enabled=false
@@ -183,7 +189,6 @@ local function createUnitFrame(self,unit)
     self[unit].hp:SetStatusBarTexture(self.hpR,self.hpG,self.hpB,alpha)  
   end
   
-  
   self[unit].hp:SetMinMaxValues(0,1) 
   self[unit].hp:SetFrameLevel( self[unit]:GetFrameLevel())
   
@@ -195,7 +200,6 @@ local function createUnitFrame(self,unit)
   
   self[unit].hpUpdate=eF.rep.unitHPUpdate
   self[unit].events={"UNIT_HEALTH_FREQUENT","UNIT_MAXHEALTH","UNIT_CONNECTION","UNIT_FACTION","UNIT_AURA"}
-  
   end  
   
   do --create name string

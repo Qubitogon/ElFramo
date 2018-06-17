@@ -3,7 +3,7 @@
 eFGlob=eF
 
 eF.para.layout={
-               spacing=10,
+               spacing=5,
                grow1="down",
                grow2="right",   
                byClassColor=true,

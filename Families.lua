@@ -1,6 +1,6 @@
 _,eF=...
 
-eF.para.families={[1]={displayName="void",
+--[[eF.para.families={[1]={displayName="void",
                        smart=false,
                        count=2,
                        [1]={displayName="ReM",
@@ -137,8 +137,111 @@ eF.para.families={[1]={displayName="void",
                        textDecimals=0,
                        ownOnly=false,
                        },   --end of families[2]  
-                  }--end of all
-                 
+                  }--end of all   ]]
+
+eF.para.families={[1]={displayName="void",
+                       smart=false,
+                       count=2,
+                       [1]={displayName="ReM",
+                            type="name",
+                            buff=true,
+                            arg1="Renewing Mist",
+                            xPos=-2,
+                            yPos=0,
+                            height=15,
+                            width=15,
+                            anchor="TOPRIGHT",
+                            anchorTo="TOPRIGHT",
+                            cdWheel=false,
+                            cdReverse=true,
+                            texture=627487,
+                            hasText=true,
+                            hasTexture=false,
+                            textType="t",
+                            textAnchor="CENTER",
+                            textAnchorTo="CENTER",
+                            textXOS=0,
+                            textYOS=0,
+                            textFont="Fonts\\FRIZQT__.ttf",
+                            textExtra="OUTLINE",
+                            textSize=14,
+                            textR=0.85,
+                            textG=0.85,
+                            textB=0.85,
+                            textA=1,
+                            textDecimals=0,
+                            ownOnly=false,
+                            }, --end of [1][1]
+                       [2]={displayName="SooM",
+                            type="name",
+                            buff=true,
+                            arg1="Soothing Mist",
+                            xPos=0,
+                            yPos=0,
+                            height=20,
+                            width=20,
+                            anchor="TOPLEFT",
+                            anchorTo="TOPLEFT",
+                            cdWheel=true,
+                            cdReverse=true,
+                            texture=606550,
+                            hasText=true,
+                            hasTexture=true,
+                            textType="t",
+                            textAnchor="CENTER",
+                            textAnchorTo="CENTER",
+                            textXOS=0,
+                            textYOS=0,
+                            textFont="Fonts\\FRIZQT__.ttf",
+                            textExtra="OUTLINE",
+                            textSize=14,
+                            textR=0.85,
+                            textG=0.85,
+                            textB=0.85,
+                            textA=1,
+                            textDecimals=0,
+                            ownOnly=false,
+                            },                             
+                      }, --end of ...families[1]
+                      
+                  [2]={displayName="blacktest",
+                       smart=true,
+                       count=3,
+                       type="b",
+                       xPos=0,
+                       yPos=0,
+                       spacing=1,
+                       height=20,
+                       width=20,
+                       anchor="BOTTOMLEFT",
+                       anchorTo="BOTTOMLEFT",
+                       buff=false,
+                       arg1={"Soothing Mist","Renewing Mist","Enveloping Mist","Essence Font"},
+                       smartIcons=true,
+                       grow="right",
+                       growAnchor="BOTTOMLEFT",
+                       growAnchorTo="BOTTOMLEFT",
+                       cdReverse=true,
+                       cdWheel=true,
+                       hasText=true,
+                       hasTexture=true,
+                       ignorePermanents=true,
+                       ignoreDurationAbove=20,
+                       textType="t",
+                       textAnchor="CENTER",
+                       textAnchorTo="CENTER",
+                       textXOS=0,
+                       textYOS=0,
+                       textSize=15,
+                       textR=0.85,
+                       textG=0.85,
+                       textB=0.85,
+                       textA=1,
+                       textDecimals=0,
+                       ownOnly=false,
+                       },   --end of families[2]  
+                  }--end of all  
+                  
 for i=1,40 do
   local frame=eF.units[eF.raidLoop[i]]
   frame.families=eF.para.families
@@ -348,11 +451,14 @@ local function iconUnconditionalAdopt(self,name,icon,count,debuffType,duration,e
 end
 eF.rep.iconUnconditionalAdopt=iconUnconditionalAdopt
 
-local function unitAllAdopt(self,...)
+local function unitAllAdopt(self,isBuff,...)
   local fam=self.families
   for j=1,#fam do
-      if fam[j].smart then if self[j]:adopt(...) then self[j].filled=true end
-        
+      if fam[j].smart then 
+        local n=...
+        if (fam[j].buff and isBuff) or (not fam[j].buff and not isBuff) then 
+          if self[j]:adopt(...) then self[j].filled=true end end 
+      
       else
         for k=1,fam[j].count do
           if self[j][k]:adopt(...) then self[j].filled=true end 

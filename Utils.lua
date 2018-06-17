@@ -4,7 +4,7 @@ eF.para={throttle=0.1--in s
 eF.rep={}
 eF.para.units={
                height=50,
-               width=50,
+               width=70,
                bg=true,
                bgR=nil,
                bgG=nil,
