@@ -250,7 +250,6 @@ local function createFamilyFrames()
   end--end of for i=1,40
 end
 
-
 local function iconTextOnUpdate(self)
   local t=GetTime()
   local s
@@ -400,7 +399,6 @@ local function smartFamilyOnUpdateFunction(self)
 end --end of familyUpdateFunction
 eF.rep.smartFamilyOnUpdateFunction=smartFamilyOnUpdateFunction
 
-
 local function iconOnUpdateFunction(self)
 
   if not self.filled then return end
@@ -410,6 +408,7 @@ local function iconOnUpdateFunction(self)
   
 end
 eF.rep.iconOnUpdateFunction=iconOnUpdateFunction
+
 
 createFamilyFrames()
 

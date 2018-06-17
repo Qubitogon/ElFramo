@@ -142,6 +142,11 @@ local function createUnitFrame(self,unit)
   self[unit]:Hide()
   self[unit].enabled=false
   
+  self[unit].oor=false
+  self[unit].oorA=eF.para.units.oorA
+  self[unit].nA=eF.para.units.nA
+  if eF.units.checkOOR then self[unit].updateRange=eF.rep.unitUpdateRange end
+  
   if self.bg then 
     self[unit].bg=self[unit]:CreateTexture()
     self[unit].bg:SetAllPoints()
@@ -241,6 +246,19 @@ local function initUnitsUnits()
   
 end
 
+local function unitUpdateRange(self)
+   local r=UnitInRange(self.id)  
+   --print(self.id,r,self.oor)
+   if not r and not self.oor then 
+    self:SetAlpha(self.oorA)
+    self.oor=true
+   elseif self.oor and r then
+    self:SetAlpha(self.nA)
+    self.oor=false
+   end
+end
+eF.rep.unitUpdateRange=unitUpdateRange
+
 local throttle=eF.para.throttle
 local eT=0
 local function unitsFrameOnUpdate(self,elapsed)
@@ -251,9 +269,11 @@ local function unitsFrameOnUpdate(self,elapsed)
   
   for i=1,self.num do
     local frame=self[tbl[i]]
+    if frame.updateRange and self.num>1 then frame:updateRange() end   --if youre alone in the group it's fucked  
+    
+    
     for j=1,self.familyCount do
       if frame[j].onUpdate and frame[j].filled then frame[j]:onUpdate() end
-      
     end
     
   end--end of for i=1,self.num
