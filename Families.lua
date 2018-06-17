@@ -101,6 +101,42 @@ eF.para.families={[1]={displayName="void",
                        textDecimals=0,
                        ownOnly=false,
                        },   --end of families[2]  
+                  [3]={displayName="whitetest",
+                       smart=true,
+                       count=3,
+                       type="w",
+                       xPos=0,
+                       yPos=0,
+                       spacing=1,
+                       height=15,
+                       width=15,
+                       anchor="LEFT",
+                       anchorTo="LEFT",
+                       buff=true,
+                       arg1={"Soothing Mist","Renewing Mist"},
+                       smartIcons=true,
+                       grow="right",
+                       growAnchor="LEFT",
+                       growAnchorTo="LEFT",
+                       cdReverse=true,
+                       cdWheel=true,
+                       hasText=true,
+                       hasTexture=true,
+                       ignorePermanents=true,
+                       ignoreDurationAbove=20,
+                       textType="t",
+                       textAnchor="CENTER",
+                       textAnchorTo="CENTER",
+                       textXOS=0,
+                       textYOS=0,
+                       textSize=12,
+                       textR=0.85,
+                       textG=0.85,
+                       textB=0.85,
+                       textA=1,
+                       textDecimals=0,
+                       ownOnly=false,
+                       },   --end of families[2]  
                   }--end of all
                  
 for i=1,40 do
@@ -135,6 +171,7 @@ local function createFamilyFrames()
         frame[j]:SetPoint(frame.families[j].anchor, frame, frame.families[j].anchorTo,frame.families[j].xPos,frame.families[j].yPos)
         
         if frame[j].para.type=="b" then frame[j].adopt=eF.rep.blacklistFamilyAdopt end
+        if frame[j].para.type=="w" then frame[j].adopt=eF.rep.whitelistFamilyAdopt end
         
         for k=1,frame.families[j].count do
           local xOS=0
@@ -196,7 +233,6 @@ local function createFamilyFrames()
       
         frame[j].para=frame.families[j]
         frame[j]:SetPoint("CENTER")
-        
         for k=1,frame.families[j].count do
           frame[j][k]=CreateFrame("Frame",nil,frame[j])
           frame[j][k].para=eF.para.families[j][k]
@@ -345,6 +381,24 @@ local function blacklistFamilyAdopt(self,name,...)
 end
 eF.rep.blacklistFamilyAdopt=blacklistFamilyAdopt
 
+local function whitelistFamilyAdopt(self,name,...)
+
+  if self.full or not eF.isInList(name,self.para.arg1) then return end
+  local dur=select(4,...)
+  if self.para.ignorePermanents and dur==0 then return end
+  local own=select(10,...)
+  if self.para.ownOnly and not oO then return end
+  local iDA=self.para.ignoreDurationAbove
+  if iDA then if dur>iDA then return end end 
+  
+  self.active=self.active+1
+  self.filled=true
+  self[self.active]:adopt(name,...)
+  if self.active==self.para.count then self.full=true end
+  
+end
+eF.rep.whitelistFamilyAdopt=whitelistFamilyAdopt
+
 local function unitDisableFamilies(self)
 
   for j=1,#self.families do
@@ -408,7 +462,6 @@ local function iconOnUpdateFunction(self)
   
 end
 eF.rep.iconOnUpdateFunction=iconOnUpdateFunction
-
 
 createFamilyFrames()
 

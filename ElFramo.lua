@@ -280,7 +280,5 @@ local function unitsFrameOnUpdate(self,elapsed)
 end
 eF.rep.unitsFrameOnUpdate=unitsFrameOnUpdate
 
-
-
 initUnitsFrame()
 initUnitsUnits()
