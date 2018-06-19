@@ -450,8 +450,9 @@ local function iconTextOnUpdate(self)
     s=self.expirationTime-t
   end--end of if textType=="t"
   
-  local dec=self.para.textDecimals or 1
-  s=eF.toDecimal(s,dec)
+  if s<0 then s='' 
+  else local dec=self.para.textDecimals or 1; s=eF.toDecimal(s,dec) end
+  
   self.text:SetText(s)
 end
 eF.rep.iconTextOnUpdate=iconTextOnUpdate
