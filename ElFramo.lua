@@ -1,5 +1,8 @@
 local _,eF=...
 
+for debuffType, color in next, DebuffTypeColor do
+	print(debuffType,color.r,color.g,color.b)
+end
 
 local function initUnitsFrame()
 eF.units=CreateFrame("Frame","units",UIParent)

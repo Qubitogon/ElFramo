@@ -240,6 +240,43 @@ eF.para.families={[1]={displayName="void",
                        textDecimals=0,
                        ownOnly=false,
                        },   --end of families[2]  
+                  [3]={displayName="black2",
+                       smart=true,
+                       count=3,
+                       type="b",
+                       xPos=0,
+                       yPos=0,
+                       spacing=1,
+                       height=20,
+                       width=20,
+                       anchor="BOTTOMLEFT",
+                       anchorTo="BOTTOMLEFT",
+                       buff=true,
+                       hasBorder=true,
+                       arg1={},
+                       smartIcons=true,
+                       grow="right",
+                       growAnchor="TOPLEFT",
+                       growAnchorTo="TOPLEFT",
+                       cdReverse=true,
+                       cdWheel=true,
+                       hasText=true,
+                       hasTexture=true,
+                       ignorePermanents=false,
+                       ignoreDurationAbove=nil,
+                       textType="t",
+                       textAnchor="CENTER",
+                       textAnchorTo="CENTER",
+                       textXOS=0,
+                       textYOS=0,
+                       textSize=15,
+                       textR=0.85,
+                       textG=0.85,
+                       textB=0.85,
+                       textA=1,
+                       textDecimals=0,
+                       ownOnly=false,
+                       },   --end of families[2]  
                   }--end of all  
                   
 for i=1,40 do
@@ -297,11 +334,20 @@ local function createFamilyFrames()
             else frame[j][k].smartIcon=true end
           end
           
+          if frame[j].para.hasBorder then
+            frame[j][k].border=frame[j][k]:CreateTexture(nil,'OVERLAY')
+            frame[j][k].border:SetTexture([[Interface\Buttons\UI-Debuff-Overlays]])
+            frame[j][k].border:SetAllPoints()                     
+            frame[j][k].border:SetTexCoord(.296875, .5703125, 0, .515625)
+            frame[j][k].borderColor=eF.para.colors.debuff
+          end
+          
           frame[j][k].adopt=eF.rep.iconUnconditionalAdopt        
           frame[j][k].disable=eF.rep.iconFrameDisable
           frame[j][k].enable=eF.rep.iconFrameEnable
           frame[j][k]:disable()
           
+     
           if frame.families[j].cdWheel then
             frame[j][k].cdFrame=CreateFrame("Cooldown",nil,frame[j][k],"CooldownFrameTemplate")
             if frame.families[j].cdReverse then frame[j][k].cdFrame:SetReverse(true) end
@@ -355,6 +401,14 @@ local function createFamilyFrames()
           frame[j][k].disable=eF.rep.iconFrameDisable
           frame[j][k].enable=eF.rep.iconFrameEnable
           frame[j][k]:disable()
+          
+          if frame[j][k].para.hasBorder then
+            frame[j][k].border=frame[j][k]:CreateTexture(nil,'OVERLAY')
+            frame[j][k].border:SetTexture([[Interface\Buttons\UI-Debuff-Overlays]])
+            frame[j][k].border:SetAllPoints()                     
+            frame[j][k].border:SetTexCoord(.296875, .5703125, 0, .515625)
+            frame[j][k].borderColor=eF.para.colors.debuff
+          end
           
           if frame.families[j][k].cdWheel then
             frame[j][k].cdFrame=CreateFrame("Cooldown",nil,frame[j][k],"CooldownFrameTemplate")
@@ -413,6 +467,11 @@ local function iconAdoptAuraByName(self,name,icon,count,debuffType,duration,expi
     if self.cdFrame then self.cdFrame:SetCooldown(expirationTime-duration,duration) end
     self.count=count
     self.debuffType=debuffType
+    if self.border then
+      local c=self.borderColor[debuffType] 
+      if c then self.border:SetVertexColor(c.r,c.g,c.b)
+      else self.border:Hide() end
+    end
     self.duration=duration
     self.expirationTime=expirationTime
     self.own=own
@@ -437,6 +496,12 @@ local function iconUnconditionalAdopt(self,name,icon,count,debuffType,duration,e
     if self.cdFrame then self.cdFrame:SetCooldown(expirationTime-duration,duration) end
     self.count=count
     self.debuffType=debuffType
+    if self.border then
+      local c=self.borderColor[debuffType] 
+      print(debuffType,c)
+      if c then self.border:SetVertexColor(c[1],c[2],c[3]); self.border:Show()
+      else self.border:Hide(); end
+    end  
     self.duration=duration
     self.expirationTime=expirationTime
     self.own=own
@@ -470,7 +535,6 @@ end
 eF.rep.unitAllAdopt=unitAllAdopt
 
 local function blacklistFamilyAdopt(self,name,...)
-
   if self.full or eF.isInList(name,self.para.arg1) then return end
   local dur=select(4,...)
   if self.para.ignorePermanents and dur==0 then return end
@@ -531,7 +595,6 @@ eF.rep.unitDisableFamilies=unitDisableFamilies
 local function iconFrameDisable(self)
   self:Hide()
   self.filled=false
-  
 end
 eF.rep.iconFrameDisable=iconFrameDisable
 
