@@ -204,8 +204,7 @@ eF.para.families={[1]={displayName="void",
                             textDecimals=0,
                             ownOnly=false,
                             },                             
-                      }, --end of ...families[1]
-                      
+                      }, --end of ...families[1] 
                   [2]={displayName="blacktest",
                        smart=true,
                        count=3,
@@ -279,7 +278,7 @@ eF.para.families={[1]={displayName="void",
                        textA=1,
                        textDecimals=0,
                        ownOnly=false,
-                       },   --end of families[2]  
+                       },   --end of families[2]  ]]
                   }--end of all  
                   
 for i=1,40 do
@@ -301,11 +300,11 @@ local function createFamilyFrames()
 
     if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
     frame.onAuraList={}
+    frame.onAuraBuffList={}
+    frame.onAuraDebuffList={}
     frame.onUpdateList={}
     frame.onGroupList={}
     
-    frame.preOnAura=eF.rep.unitDisableOnAuraFamilies
-    frame.onAura=eF.rep.unitAllAdopt    
     eF.units.familyCount=#frame.families
     for j=1,#frame.families do
       frame[j]=CreateFrame("Frame",nil,frame)
@@ -319,11 +318,20 @@ local function createFamilyFrames()
         frame[j].active=0
         frame[j]:SetPoint(frame.families[j].anchor, frame, frame.families[j].anchorTo,frame.families[j].xPos,frame.families[j].yPos)
         
-        if frame[j].para.type=="b" then frame[j].onAura=eF.rep.blacklistFamilyAdopt; insert(frame.onAuraList,j) end
-        if frame[j].para.type=="w" then frame[j].onAura=eF.rep.whitelistFamilyAdopt; insert(frame.onAuraList,j) end
-        if frame[j].para.hasText and frame[j].para.textType=="t" then 
-          insert(frame.onUpdateList,j)
-          frame[j].onUpdate=eF.rep.smartFamilyOnUpdateFunction
+        if frame[j].para.type=="b" then 
+          if frame[j].para.buff then insert(frame.onAuraBuffList,{eF.rep.blacklistFamilyAdopt,j})  
+          else insert(frame.onAuraDebuffList,{eF.rep.blacklistFamilyAdopt,j}) end
+          insert(frame.onAuraList,{eF.rep.smartFamilyDisableAll,j})
+        end
+        
+         if frame[j].para.type=="w" then 
+          if frame[j].para.buff then insert(frame.onAuraBuffList,{eF.rep.whitelistFamilyAdopt,j})  
+          else insert(frame.onAuraDebuffList,{eF.rep.whitelistFamilyAdopt,j}) end
+          insert(frame.onAuraList,{eF.rep.smartFamilyDisableAll,j})
+        end
+        
+        if frame[j].para.hasText then 
+          insert(frame.onUpdateList,{eF.rep.smartFamilyUpdateTexts,j})
         end
     
         for k=1,frame.families[j].count do
@@ -335,9 +343,6 @@ local function createFamilyFrames()
           elseif frame[j].para.grow=="right" then xOS=(1-k)*(frame[j].para.spacing+frame[j].para.width) end
           
           frame[j][k]=CreateFrame("Frame",nil,frame[j])
-          frame[j][k].onUpdateFuncs={}
-          frame[j][k].onGroupFuncs={}
-          frame[j][k].onAuraFuncs={}
           frame[j][k].para=eF.para.families[j]
           frame[j][k]:SetPoint(frame.families[j].growAnchor,frame[j],frame.families[j].growAnchorTo,xOS,yOS)
           frame[j][k]:SetSize(frame.families[j].width,frame.families[j].height)
@@ -346,15 +351,7 @@ local function createFamilyFrames()
           frame[j][k].enable=eF.rep.iconFrameEnable
           frame[j][k]:disable()
           
-          
-          if frame.onUpdateList[#frame.onUpdateList]==j then 
-            frame[j][k].onUpdate=eF.rep.iconOnUpdateFunction
-          end
-          
-          if frame[j][k].para.hasText and frame[j][k].para.textType=="t" then 
-              insert(frame[j][k].onUpdateFuncs,eF.rep.iconTextOnUpdate)              
-          end
-        
+        --iconUpdateTextTypeT
           ----------------------VISUALS
         
           if frame[j].para.hasTexture then
@@ -383,7 +380,6 @@ local function createFamilyFrames()
           
           --text
           if frame.families[j].hasText then
-            if not frame[j].onUpdate then frame[j].onUpdate=eF.rep.smartFamilyOnUpdateFunction end
             frame[j][k].text=frame[j][k]:CreateFontString()
             local font=frame.families[j].textFont or "Fonts\\FRIZQT__.ttf"
             local size=frame.families[j].textSize or 20
@@ -399,6 +395,7 @@ local function createFamilyFrames()
             frame[j][k].text:SetPoint(frame.families[j].textAnchor,frame[j][k],frame.families[j].textAnchorTo,xOS,yOS)
             frame[j][k].text:SetTextColor(r,g,b,a)
             if iDA then frame[j][k].textIgnoreDurationAbove=iDA end
+            if frame[j][k].para.textType=="t" then frame[j][k].updateText= eF.rep.iconUpdateTextTypeT end 
           end--end of if frame.hasText
           
         end --end for k=1,frame.families.count
@@ -408,28 +405,21 @@ local function createFamilyFrames()
       
         frame[j].para=frame.families[j]
         frame[j]:SetPoint("CENTER")
-        frame[j].onAuraList={}
-        frame[j].onUpdateList={}
-        frame[j].onGroupList={}  
         
         for k=1,frame.families[j].count do
           
           if frame.families[j][k].type=="icon" then
             frame[j][k]=CreateFrame("Frame",nil,frame[j])
-            frame[j][k].onAura=eF.rep.iconOnAuraFunction
-            frame[j][k].onUpdateFuncs={}
-            frame[j][k].onGroupFuncs={}
-            frame[j][k].onAuraFuncs={}
             frame[j][k].para=frame.families[j][k]
             frame[j][k]:SetPoint(frame.families[j][k].anchor,frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
             frame[j][k]:SetSize(frame.families[j][k].width,frame.families[j][k].height)
            
-            if not frame[j].onUpdate then frame[j].onUpdate=eF.rep.dumbFamilyOnUpdateFunction end
+            --if not frame[j].onUpdate then frame[j].onUpdate=eF.rep.dumbFamilyOnUpdateFunction end
             
-            if frame.families[j][k].trackType=="name" then 
-              if not next(frame.onAuraList) or frame.onAuraList[#frame.onAuraList] ~= j then insert(frame.onAuraList,j) end
-              if not next(frame[j].onAuraList) or frame[j].onAuraList[#frame[j].onAuraList] ~= k then insert(frame[j].onAuraList,k) end
-              insert(frame[j][k].onAuraFuncs,eF.rep.iconAdoptAuraByName)
+            if frame.families[j][k].trackType=="name" then  
+              insert(frame.onAuraList,{eF.rep.iconFrameDisable,j,k})
+              if frame[j][k].para.buff then insert(frame.onAuraBuffList,{eF.rep.iconAdoptAuraByName,j,k})
+              else insert(frame.onAuraDebuffList,{eF.rep.iconAdoptAuraByName,j,k}) end           
             end 
             
             frame[j][k].disable=eF.rep.iconFrameDisable
@@ -437,12 +427,9 @@ local function createFamilyFrames()
             frame[j][k].onUpdate=eF.rep.iconOnUpdateFunction   
             
             if frame[j][k].para.hasText and frame[j][k].para.textType=="t" then 
-              if frame.onUpdateList[#frame.onUpdateList] ~= j then insert(frame.onUpdateList,j) end
-              if not next(frame[j].onUpdateList) or (frame[j].onUpdateList[#frame[j].onUpdateList]~=k) then insert(frame[j].onUpdateList,k) end
-              insert(frame[j][k].onUpdateFuncs,eF.rep.iconTextOnUpdate)              
+              insert(frame.onUpdateList,{eF.rep.iconUpdateTextTypeT,j,k})              
             end
-            
-            
+         
             frame[j][k]:disable()
 
             --------VISUALS
@@ -494,40 +481,23 @@ local function createFamilyFrames()
       
     end --end of for j=1,#frame.families
   end--end of for i=1,40
-
-  local pf=units["player"]
-  
-  --TESTING WHETHER LISTS ARE CORRECT
-  --[[
-  for _,v in ipairs(pf.onAuraList) do 
-    print("Family ",v)
-    if pf[v].para.smart then
-      print("smart")      
-    else
-      for _,b in ipairs(pf[v].onAuraList) do print(b);
-        for _,c in ipairs(pf[v][b].onAuraFuncs) do print(c) end
-      end     
-    end
-    
-  end
-  ]]
   
 end --end of createFamilyFrames()
 
-local function iconTextOnUpdate(self)
+local function iconUpdateTextTypeT(self)
+  if not self.filled then return end
   local t=GetTime()
   local s
   local iDA=self.textIgnoreDurationAbove
-  if self.para.textType=="t" then 
-    s=self.expirationTime-t
-  end--end of if textType=="t"
+
+  s=self.expirationTime-t
   
   if s<0 or (iDA and s>iDA ) then s='';
   else local dec=self.para.textDecimals or 1; s=eF.toDecimal(s,dec) end
 
   self.text:SetText(s)
 end
-eF.rep.iconTextOnUpdate=iconTextOnUpdate
+eF.rep.iconUpdateTextTypeT=iconUpdateTextTypeT
 
 local function iconAdoptAuraByName(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
 
@@ -587,27 +557,6 @@ local function iconUnconditionalAdopt(self,name,icon,count,debuffType,duration,e
 end
 eF.rep.iconUnconditionalAdopt=iconUnconditionalAdopt
 
-local function unitAllAdopt(self,isBuff,...)
-  local fam=self.families
-  local ipairs=ipairs
-  for _,j in ipairs(self.onAuraList) do
-      if fam[j].smart then 
-        local n=...
-        if (fam[j].buff and isBuff) or (not fam[j].buff and not isBuff) then 
-          if self[j]:onAura(...) then self[j].filled=true end end 
-      
-      else
-        for _,k in ipairs(self[j].onAuraList) do
-        
-          if self[j][k]:onAura(...) then self[j].filled=true end 
-          
-        end --end for k=1,frame.families.count
-        
-      end--end of if frame.families[j].smart else
-    end --end of for j=1,#frame.families 
-end
-eF.rep.unitAllAdopt=unitAllAdopt
-
 local function blacklistFamilyAdopt(self,name,...)
   if self.full or eF.isInList(name,self.para.arg1) then return end
   local dur=select(4,...)
@@ -643,28 +592,12 @@ local function whitelistFamilyAdopt(self,name,...)
 end
 eF.rep.whitelistFamilyAdopt=whitelistFamilyAdopt
 
-local function unitDisableOnAuraFamilies(self)
-  local ipairs=ipairs
-  for _,j in ipairs(self.onAuraList) do
-      self[j].filled=false
-      if self[j].smart then
-        self[j].active=0
-        self[j].full=false
-        
-        for k=1,self.families[j].count do
-          self[j][k]:disable()
-        end --end for k=1,frame.families.count
-        
-      else
-        
-        for _,k in ipairs(self[j].onAuraList) do
-          self[j][k]:disable()
-        end --end for k=1,frame.families.count
-        
-      end--end of if frame.families[j].smart else
-    end --end of for j=1,#frame.families
+local function smartFamilyDisableAll(self)
+  self.full=false
+  for k=1,self.active do self[k]:disable() end
+  self.active=0
 end
-eF.rep.unitDisableOnAuraFamilies=unitDisableOnAuraFamilies
+eF.rep.smartFamilyDisableAll=smartFamilyDisableAll
 
 local function iconFrameDisable(self)
   self:Hide()
@@ -678,46 +611,12 @@ local function iconFrameEnable(self)
 end
 eF.rep.iconFrameEnable=iconFrameEnable
 
-local function dumbFamilyOnUpdateFunction(self)
-
-  for i=1,self.para.count do
-    if self[i].onUpdate then self[i]:onUpdate() end
-  end
-  
-end --end of familyUpdateFunction
-eF.rep.dumbFamilyOnUpdateFunction=dumbFamilyOnUpdateFunction
-
-local function smartFamilyOnUpdateFunction(self)
-
+local function smartFamilyUpdateTexts(self)
   for i=1,self.active do
-    if self[i].onUpdate then self[i]:onUpdate() end
+    self[i]:updateText()
   end
-  
-end --end of familyUpdateFunction
-eF.rep.smartFamilyOnUpdateFunction=smartFamilyOnUpdateFunction
-
-local function iconOnUpdateFunction(self)
-
-  if not self.filled then return end
-  local ipairs=ipairs 
-    
-  for _,f in ipairs(self.onUpdateFuncs) do 
-    f(self)
-  end -- end of if self.text 
-  
 end
-eF.rep.iconOnUpdateFunction=iconOnUpdateFunction
-
-local function iconOnAuraFunction(self,...)
-  local ipairs=ipairs
-  local r
-  for _,f in ipairs(self.onAuraFuncs) do
-    r=f(self,...)
-  end
-  
-  return r
-end
-eF.rep.iconOnAuraFunction=iconOnAuraFunction
+eF.rep.smartFamilyUpdateTexts=smartFamilyUpdateTexts
 
 createFamilyFrames()
 

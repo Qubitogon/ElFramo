@@ -105,23 +105,41 @@ eF.rep.updateUnitBorders=updateUnitBorders
 
 local function unitEventHandler(self,event)
   if not self.enabled then return end
-  
+  local ipairs=ipairs
   if event=="UNIT_HEALTH_FREQUENT" or event=="UNIT_MAXHEALTH" or event=="UNIT_CONNECTION" or event=="UNIT_FACTION" then
     self:hpUpdate()
     
   elseif event=="UNIT_AURA" then 
-    self:preOnAura()
+    
+    for _,v in ipairs(self.onAuraList) do
+      local frame
+      if v[3] then frame=self[v[2]][v[3]] else frame=self[v[2]] end
+      v[1](frame)
+    end
+      
     --BUFFS
     for i=1,40 do
       local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss,own=UnitAura(self.id,i)
-      if not name then break end 
-      self:onAura(true,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
+      if not name then break end   
+      
+      for _,v in ipairs(self.onAuraBuffList) do
+        local frame
+        if v[3] then frame=self[v[2]][v[3]] else frame=self[v[2]] end
+        v[1](frame,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
+      end  
+    
     end
     --DEBUFFS
     for i=1,40 do
       local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss,own=UnitAura(self.id,i,"HARMFUL")
       if not name then break end 
-      self:onAura(false,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
+      
+      for _,v in ipairs(self.onAuraDebuffList) do
+        local frame
+        if v[3] then frame=self[v[2]][v[3]] else frame=self[v[2]] end
+        v[1](frame,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
+      end
+      
     end 
     
   end 
@@ -277,14 +295,11 @@ local function unitsFrameOnUpdate(self,elapsed)
     local frame=self[tbl[i]]
     if frame.updateRange and self.num>1 then frame:updateRange() end   --if youre alone in the group it's fucked  
       
-    for _,j in ipairs(frame.onUpdateList) do
-      if frame[j].smart then frame[j]:onUpdate() --IF SMART LIST
-      
-      else            
-        for _,k in ipairs(frame[j].onUpdateList) do frame[k][k]:onUpdate() end       
-      end --end of if smart else
-      
-    end --end of for _,j in ipairs(frame.onUpdateList)
+    for _,v in ipairs(frame.onUpdateList) do
+      local frame2
+      if v[3] then frame2=frame[v[2]][v[3]] else frame2=frame[v[2]] end
+      v[1](frame2)
+    end
     
   end--end of for i=1,self.num
 end
