@@ -1,8 +1,6 @@
-local _,eF=...
+--to remember:  role = UnitGroupRolesAssigned(Unit); should be able to skip GetRaidRosterInfo for assigning roles
 
-for debuffType, color in next, DebuffTypeColor do
-	print(debuffType,color.r,color.g,color.b)
-end
+local _,eF=...
 
 local function initUnitsFrame()
 eF.units=CreateFrame("Frame","units",UIParent)
@@ -107,23 +105,23 @@ eF.rep.updateUnitBorders=updateUnitBorders
 
 local function unitEventHandler(self,event)
   if not self.enabled then return end
-
+  
   if event=="UNIT_HEALTH_FREQUENT" or event=="UNIT_MAXHEALTH" or event=="UNIT_CONNECTION" or event=="UNIT_FACTION" then
     self:hpUpdate()
     
   elseif event=="UNIT_AURA" then 
-    self:disableFamilies()
+    self:preOnAura()
     --BUFFS
     for i=1,40 do
       local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss,own=UnitAura(self.id,i)
       if not name then break end 
-      self:allAdopt(true,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
+      self:onAura(true,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
     end
     --DEBUFFS
     for i=1,40 do
       local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss,own=UnitAura(self.id,i,"HARMFUL")
       if not name then break end 
-      self:allAdopt(false,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
+      self:onAura(false,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
     end 
     
   end 
@@ -272,16 +270,21 @@ local function unitsFrameOnUpdate(self,elapsed)
   if eT<throttle then eT=eT+elapsed; return end
   eT=0
   local tbl
+  local ipairs=ipairs
   if self.raid then tbl=eF.raidLoop else tbl=eF.partyLoop end
   
   for i=1,self.num do
     local frame=self[tbl[i]]
     if frame.updateRange and self.num>1 then frame:updateRange() end   --if youre alone in the group it's fucked  
-    
-    
-    for j=1,self.familyCount do
-      if frame[j].onUpdate and frame[j].filled then frame[j]:onUpdate() end
-    end
+      
+    for _,j in ipairs(frame.onUpdateList) do
+      if frame[j].smart then frame[j]:onUpdate() --IF SMART LIST
+      
+      else            
+        for _,k in ipairs(frame[j].onUpdateList) do frame[k][k]:onUpdate() end       
+      end --end of if smart else
+      
+    end --end of for _,j in ipairs(frame.onUpdateList)
     
   end--end of for i=1,self.num
 end
