@@ -141,7 +141,7 @@ _,eF=...
 
 eF.para.families={[1]={displayName="void",
                        smart=false,
-                       count=2,
+                       count=3,
                        [1]={displayName="ReM",
                             type="icon",
                             trackType="name",
@@ -203,7 +203,23 @@ eF.para.families={[1]={displayName="void",
                             textA=1,
                             textDecimals=0,
                             ownOnly=false,
-                            },                             
+                            },    
+                        [3]={displayName="RoleSquare",
+                            type="icon",
+                            trackType="role",
+                            --roleIgnore="",      TBA CAN BE DONE WITH ALPHA=0 TBH                
+                            xPos=0,
+                            yPos=0,
+                            height=15,
+                            width=15,
+                            anchor="BOTTOMRIGHT",
+                            anchorTo="BOTTOMRIGHT",
+                            hasTexture=true,
+                            hasColorTexture=true,
+                            textureColorBasedOnRole=true,
+                            --can also have texture based on role or smth idk, TBA
+                            textureColors={DAMAGER={1,0,0,1},HEALER={0,1,0,1},TANK={0,0,1,1}},
+                            },                                        
                       }, --end of ...families[1] 
                   [2]={displayName="blacktest",
                        smart=true,
@@ -263,7 +279,7 @@ eF.para.families={[1]={displayName="void",
                        cdWheel=true,
                        hasText=true,
                        hasTexture=true,
-                       ignorePermanents=false,
+                       ignorePermanents=true,
                        ignoreDurationAbove=nil,
                        textType="t",
                        textAnchor="CENTER",
@@ -414,7 +430,9 @@ local function createFamilyFrames()
             frame[j][k]:SetPoint(frame.families[j][k].anchor,frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
             frame[j][k]:SetSize(frame.families[j][k].width,frame.families[j][k].height)
            
-            --if not frame[j].onUpdate then frame[j].onUpdate=eF.rep.dumbFamilyOnUpdateFunction end
+            frame[j][k].disable=eF.rep.iconFrameDisable
+            frame[j][k].enable=eF.rep.iconFrameEnable
+            frame[j][k]:disable()
             
             if frame.families[j][k].trackType=="name" then  
               insert(frame.onAuraList,{eF.rep.iconFrameDisable,j,k})
@@ -422,24 +440,35 @@ local function createFamilyFrames()
               else insert(frame.onAuraDebuffList,{eF.rep.iconAdoptAuraByName,j,k}) end           
             end 
             
-            frame[j][k].disable=eF.rep.iconFrameDisable
-            frame[j][k].enable=eF.rep.iconFrameEnable
-            frame[j][k].onUpdate=eF.rep.iconOnUpdateFunction   
+            --TBA NOT SURE IF NECESSARY? do we keep it with just setting alphas to 0 ... it only updates on GROUP so probably doesnt matter
+            if frame.families[j][k].trackType=="role" then
+              frame[j][k]:enable()
+            end
             
             if frame[j][k].para.hasText and frame[j][k].para.textType=="t" then 
               insert(frame.onUpdateList,{eF.rep.iconUpdateTextTypeT,j,k})              
             end
-         
-            frame[j][k]:disable()
-
-            --------VISUALS
-       
+                                    
             if frame[j][k].para.hasTexture then 
               frame[j][k].texture=frame[j][k]:CreateTexture()
               frame[j][k].texture:SetDrawLayer("BACKGROUND",-2)
               frame[j][k].texture:SetAllPoints()
+              
               if frame.families[j][k].texture then frame[j][k].texture:SetTexture(frame.families[j][k].texture)  --if frame.families[j][k].texture
-              else frame[j][k].smartIcon=true end
+              elseif frame[j][k].para.hasColorTexture then 
+                local r=frame[j][k].para.textureR or 0
+                local g=frame[j][k].para.textureG or 0
+                local b=frame[j][k].para.textureB or 0
+                local a=frame[j][k].para.textureA or 1
+                frame[j][k].texture:SetColorTexture(r,g,b,a)               
+              else frame[j][k].smartIcon=true 
+              end
+                            
+              if frame[j][k].para.textureColorBasedOnRole then
+                frame[j][k].texture:SetAlpha(0) --it will get changed based on what needed if group_event_udpate is called, but default is invis
+                frame[j][k].roleColors=frame[j][k].para.textureColors
+                insert(frame.onGroupList,{eF.rep.updateTextureRoleColor,j,k})
+              end
             end
                    
             if frame[j][k].para.hasBorder then
@@ -617,6 +646,13 @@ local function smartFamilyUpdateTexts(self)
   end
 end
 eF.rep.smartFamilyUpdateTexts=smartFamilyUpdateTexts
+
+local function updateTextureRoleColor(self,role,...)
+  local c=self.roleColors[role] or {0,0,0,0}
+  if self.para.hasColorTexture then self.texture:SetColorTexture(c[1],c[2],c[3]); self.texture:SetAlpha(c[4])
+  else self.texture:SetVertexColor(c[1],c[2],c[3]); self.texture:SetAlpha(c[4]) end
+end
+eF.rep.updateTextureRoleColor=updateTextureRoleColor
 
 createFamilyFrames()
 

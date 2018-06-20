@@ -19,19 +19,29 @@ eF.units.texture:SetColorTexture(0,0,0,0.5)
 
 eF.units.createUnitFrame=eF.rep.createUnitFrame
 eF.units.onUpdate=eF.rep.unitsFrameOnUpdate
+eF.units.onEvent=eF.rep.unitsEventHandler
+eF.units.onGroupUpdate=eF.rep.unitsOnGroupUpdate
 eF.units:SetScript("OnUpdate",units.onUpdate)
-
+eF.units:RegisterEvent("GROUP_ROSTER_UPDATE")
+eF.units:SetScript("OnEvent",units.onEvent)
 --apply all relevant non-table parameters
 for k,v in pairs(eF.para.units) do
+  if type(v)~="table" then eF.units[k]=v end
+end 
+for k,v in pairs(eF.para.layout) do
   if type(v)~="table" then eF.units[k]=v end
 end 
 
 end
 
-local function createUnitAuras(self)
---will contain creation of all auras necessary, probably iwll beed a loop through families and their parameters, see old elFramo
+local function unitsEventHandler(self,event)
+  
+  if event=="GROUP_ROSTER_UPDATE" then
+    self:onGroupUpdate()    
+  end--END OF IF event==GROUP_ROSTER_UDPATE
+    
 end
-eF.rep.createUnitAuras=createUnitAuras
+eF.rep.unitsEventHandler=unitsEventHandler
 
 local function unitHPUpdate(self)
   if not (self.hp and self.enabled) then return end --WARN: MIGHT BE UNNECESSARY
@@ -271,7 +281,6 @@ end
 
 local function unitUpdateRange(self)
    local r=UnitInRange(self.id)  
-   --print(self.id,r,self.oor)
    if not r and not self.oor then 
     self:SetAlpha(self.oorA)
     self.oor=true
@@ -305,5 +314,86 @@ local function unitsFrameOnUpdate(self,elapsed)
 end
 eF.rep.unitsFrameOnUpdate=unitsFrameOnUpdate
 
+local function unitsOnGroupUpdate(self)
+    local ipairs=ipairs
+    local raid=IsInRaid()
+    self.raid=IsInRaid() --is used for the updatefunction
+    local num=GetNumGroupMembers() --for some reason gives 0 when solo
+    if num==0 then num=1 end
+    self.num=num
+    local lst
+    if raid then lst=eF.raidLoop
+    else lst=eF.partyLoop end  
+      
+    for n=1,num do
+      local unit=lst[n]  
+      if self.byClassColor then
+        local _,CLASS=UnitClass(unit)
+        local alpha=units.hpA or 1
+        local r,g,b=GetClassColor(CLASS)       
+        if units.hpTexture then 
+          units[unit].hp:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar",0,0.8,0)        
+          if units.hpR then 
+            local alpha=units.hpA or 1 
+            units[unit].hp:SetStatusBarColor(units.hpR,units.hpG,units.hpB,alpha)    
+          end          
+        else 
+          units[unit].hp:SetStatusBarTexture(r,g,b,alpha)  
+        end    
+          
+        local hpTexture=units[unit].hp:GetStatusBarTexture()       
+        if units.hpGrad then 
+          hpTexture:SetGradientAlpha(units.hpGradOrientation,units.hpGrad1R,units.hpGrad1G,units.hpGrad1B,units.hpGrad1A,units.hpGrad2R,units.hpGrad2G,units.hpGrad2B,units.hpGrad2A)
+        end
+        --units[unit].hp:SetStatusBarColor(r,g,b,hpA)
+      end--end of byClassColor
+        
+      units[unit]:enable()
+      if units[unit].text then units[unit]:updateText() end 
+      
+      local role=UnitGroupRolesAssigned(unit)
+      units[unit].role=role      
+      
+      --DO ALL THE FAMILY DEPENDENCIES
+      for _,v in ipairs(units[unit].onGroupList) do
+        local frame1
+        if v[3] then frame1=units[unit][v[2]][v[3]] else frame1=units[unit][v[2]] end
+        v[1](frame1,role)  
+      end
+      
+    end --end of for n=1,num
+      
+    --Hide all others
+    if not raid then     
+      for i=num+1,5 do
+        local unit=eF.partyLoop[i]; if units[unit].enabled then units[unit]:disable();  else break end
+      end    
+      for i=1,40 do
+        local unit=eF.raidLoop[i]; if units[unit].enabled then units[unit]:disable(); else break end
+      end
+     
+    else  
+    
+      for i=1,5 do
+        local unit=eF.partyLoop[i]; if units[unit].enabled then units[unit]:disable(); else break end
+      end
+    
+      for i=num+1,40 do
+        local unit=eF.raidLoop[i]; if units[unit].enabled then units[unit]:disable() ; else break end
+      end
+    end
+end
+eF.rep.unitsOnGroupUpdate=unitsOnGroupUpdate
+
 initUnitsFrame()
 initUnitsUnits()
+
+
+
+
+
+
+
+
+
+

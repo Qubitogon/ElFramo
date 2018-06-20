@@ -2,22 +2,11 @@
 
 eFGlob=eF
 
-eF.para.layout={
-               spacing=5,
-               grow1="down",
-               grow2="right",   
-               byClassColor=true,
-               byGroup=true,
-               maxInLine=5,
-               }
-
-
 local function layoutEventHandler(self,event,...)
   self:update()
   if event=="PLAYER_ENTERING_WORLD" then self:update() end
 end
 eF.rep.layoutEventHandler=layoutEventHandler
-
 
 local function initLayoutFrame()
   eF.layout=CreateFrame("Frame",nil,UIParent)
@@ -68,41 +57,8 @@ local function layoutUpdate(self)
 
       units[unit]:SetPoint("TOPLEFT",units,"TOPLEFT",x,y)
       
-      if self.byClassColor then
-        local _,CLASS=UnitClass(unit)
-        local alpha=units.hpA or 1
-        local r,g,b=GetClassColor(CLASS)       
-        if units.hpTexture then 
-          units[unit].hp:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar",0,0.8,0)        
-          if units.hpR then 
-            local alpha=units.hpA or 1 
-            units[unit].hp:SetStatusBarColor(units.hpR,units.hpG,units.hpB,alpha)    
-          end          
-        else 
-          units[unit].hp:SetStatusBarTexture(r,g,b,alpha)  
-        end        
-        local hpTexture=units[unit].hp:GetStatusBarTexture()       
-        if units.hpGrad then 
-          hpTexture:SetGradientAlpha(units.hpGradOrientation,units.hpGrad1R,units.hpGrad1G,units.hpGrad1B,units.hpGrad1A,units.hpGrad2R,units.hpGrad2G,units.hpGrad2B,units.hpGrad2A)
-        end
-        --units[unit].hp:SetStatusBarColor(r,g,b,hpA)
-      end--end of byClassColor
-      
-      units[unit]:enable()
-      if units[unit].text then units[unit]:updateText() end
-      
     end   
-    
-       --Hide all others
-    for i=num+1,5 do
-      local unit=eF.partyLoop[i]; if units[unit].enabled then units[unit]:disable();  else break end
-    end
-    
-    for i=1,40 do
-      local unit=eF.raidLoop[i]; if units[unit].enabled then units[unit]:disable(); else break end
-    end
-  
-  
+
   else --if not raid else
 
     local line=1
@@ -139,32 +95,8 @@ local function layoutUpdate(self)
           elseif self.grow2=="down" then y=(1-line)*(height+self.spacing) end
         end    
         
-        units[unit]:SetPoint("TOPLEFT",units,"TOPLEFT",x,y)
-        
-        if self.byClassColor then
-          local _,CLASS=UnitClass(unit)
-          local alpha=units.hpA or 1
-          local r,g,b=GetClassColor(CLASS) 
-          if units.hpTexture then 
-            units[unit].hp:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar",0,0.8,0)        
-            if units.hpR then 
-              local alpha=units.hpA or 1 
-              units[unit].hp:SetStatusBarColor(units.hpR,units.hpG,units.hpB,alpha)    
-            end          
-          else 
-            units[unit].hp:SetStatusBarTexture(r,g,b,alpha)  
-          end        
-          local hpTexture=units[unit].hp:GetStatusBarTexture()       
-          if units.hpGrad then 
-            hpTexture:SetGradientAlpha(units.hpGradOrientation,units.hpGrad1R,units.hpGrad1G,units.hpGrad1B,units.hpGrad1A,units.hpGrad2R,units.hpGrad2G,units.hpGrad2B,units.hpGrad2A)
-          end
-          --units[unit].hp:SetStatusBarColor(r,g,b,hpA)
-        end--end of byClassColor
-        
-        units[unit]:enable()
-        if units[unit].text then units[unit]:updateText() end
-      end--end of for loop 
-     
+        units[unit]:SetPoint("TOPLEFT",units,"TOPLEFT",x,y)    
+     end
     else --else of if byGroup
       local groups={-1,-1,-1,-1,-1,-1,-1,-1}
       
@@ -198,46 +130,15 @@ local function layoutUpdate(self)
           elseif self.grow2=="down" then y=(1-group)*(height+self.spacing) end
         end    
         
-        units[unit]:SetPoint("TOPLEFT",units,"TOPLEFT",x,y)
-        
-        if self.byClassColor then
-          local _,CLASS=UnitClass(unit)
-          local alpha=units.hpA or 1
-          local r,g,b=GetClassColor(CLASS) 
-          if units.hpTexture then 
-            units[unit].hp:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar",0,0.8,0)        
-            if units.hpR then 
-              local alpha=units.hpA or 1 
-              units[unit].hp:SetStatusBarColor(units.hpR,units.hpG,units.hpB,alpha)    
-            end          
-          else 
-            units[unit].hp:SetStatusBarTexture(r,g,b,alpha)  
-          end        
-          local hpTexture=units[unit].hp:GetStatusBarTexture()       
-          if units.hpGrad then 
-            hpTexture:SetGradientAlpha(units.hpGradOrientation,units.hpGrad1R,units.hpGrad1G,units.hpGrad1B,units.hpGrad1A,units.hpGrad2R,units.hpGrad2G,units.hpGrad2B,units.hpGrad2A)
-          end
-          --units[unit].hp:SetStatusBarColor(r,g,b,hpA)
-        end--end of byClassColor
-        
-        units[unit]:enable()
-        if units[unit].text then units[unit]:updateText() end
+        units[unit]:SetPoint("TOPLEFT",units,"TOPLEFT",x,y)    
         
      end--end of for loop 
    
    end--end  of if self.byGroup else
-   --Hide all others
-  for i=1,5 do
-    local unit=eF.partyLoop[i]; if units[unit].enabled then units[unit]:disable(); else break end
-  end
-  
-  for i=num+1,40 do
-    local unit=eF.raidLoop[i]; if units[unit].enabled then units[unit]:disable() ; else break end
-  end
   
   end-- end of if not raid else
-  
-  
+    
+  eF.units:onGroupUpdate()
   
 end
 eF.rep.layoutUpdate=layoutUpdate

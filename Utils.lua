@@ -55,6 +55,15 @@ eF.para.colors.debuff={Disease={0.6,0.4,0},Poison={0,0.6,0},Curse={0.6,0,0.1},Ma
 eF.partyLoop={"player","party1","party2","party3","party4"}
 eF.raidLoop={}
 
+eF.para.layout={
+               spacing=5,
+               grow1="down",
+               grow2="right",   
+               byClassColor=true,
+               byGroup=true,
+               maxInLine=5,
+               }
+
 for i=1,40 do
   local s="raid"..tostring(i)
   table.insert(eF.raidLoop,s)
