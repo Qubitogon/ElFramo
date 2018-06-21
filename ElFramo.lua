@@ -17,6 +17,8 @@ eF.units.texture:SetAllPoints()
 eF.units.texture:SetDrawLayer("BACKGROUND",-6)
 eF.units.texture:SetColorTexture(0,0,0,0.5)
 
+eF.units.checkLoad=eF.rep.unitsLoad
+
 eF.units.createUnitFrame=eF.rep.createUnitFrame
 eF.units.onUpdate=eF.rep.unitsFrameOnUpdate
 eF.units.onEvent=eF.rep.unitsEventHandler
@@ -130,7 +132,7 @@ local function unitEventHandler(self,event)
       local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss,own=UnitAura(self.id,i)
       if not name then break end   
       
-      for _,v in ipairs(self.onAuraBuffList) do
+      for _,v in ipairs(self.onBuffList) do
         v[1](v[2],name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
       end  
     
@@ -140,7 +142,7 @@ local function unitEventHandler(self,event)
       local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss,own=UnitAura(self.id,i,"HARMFUL")
       if not name then break end 
       
-      for _,v in ipairs(self.onAuraDebuffList) do
+      for _,v in ipairs(self.onDebuffList) do
         v[1](v[2],name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
       end
       
@@ -256,6 +258,7 @@ local function createUnitFrame(self,unit)
   self[unit].enable=eF.rep.unitEnable
   self[unit].disable=eF.rep.unitDisable
   self[unit].eventHandler=eF.rep.unitEventHandler
+  self[unit].checkLoad=eF.rep.unitLoad
   self[unit]:SetScript("OnEvent",self[unit].eventHandler)
   
 end --end of CreateUnitFrame()
@@ -347,9 +350,7 @@ local function unitsOnGroupUpdate(self)
       units[unit].role=role      
       
       --DO ALL THE FAMILY DEPENDENCIES
-      for _,v in ipairs(units[unit].onGroupList) do
-        v[1](v[2],role)  
-      end
+      units:checkLoad()
       
     end --end of for n=1,num
       
@@ -374,6 +375,103 @@ local function unitsOnGroupUpdate(self)
     end
 end
 eF.rep.unitsOnGroupUpdate=unitsOnGroupUpdate
+
+local function unitsLoad(self,ins,enc) ---self here is eF.units !!!
+  
+  local tbl
+  if self.raid then tbl=eF.raidLoop else tbl=eF.partyLoop end
+  for i=1,self.num do 
+    local unit=tbl[i]
+    self[unit]:checkLoad(ins,enc)    
+  end 
+end
+eF.rep.unitsLoad=unitsLoad
+
+local function unitLoad(self,ins,enc)
+  local insert=table.insert
+  local nj=#self.families
+  local role=self.role
+  self.onAuraList={}
+  self.onBuffList={}
+  self.onDebuffList={}
+  self.onUpdateList={}
+  self.onPowerList={}
+  
+  for j=1,nj do 
+    if self[j].smart then 
+      if self[j]:checkLoad(role,ins,enc) then
+        local onAura=self[j].onAuraList
+        local onBuff=self[j].onBuffList
+        local onDebuff=self[j].onDebuffList
+        local onPower=self[j].onPowerList
+        local onUpdate=self[j].onUpdateList
+        
+        for l=1,#onAura do
+          insert(self.onAuraList,onAura[l])
+        end
+        
+        for l=1,#onBuff do
+          insert(self.onBuffList,onBuff[l])
+        end
+        
+        for l=1,#onDebuff do
+          insert(self.onDebuffList,onDebuff[l])
+        end
+        
+        for l=1,#onPower do
+          insert(self.onPowerList,onPower[l])
+        end
+        
+        for l=1,#onUpdate do
+          insert(self.onUpdateList,onUpdate[l])
+        end
+        
+      end --end of if self[j]:checkLoad
+      
+    else --else of if selfj.smart
+      local nk=self[j].para.count
+      for k=1,nk do       
+          if self[j][k]:checkLoad(role,ins,enc) then
+            local onAura=self[j][k].onAuraList
+            local onBuff=self[j][k].onBuffList
+            local onDebuff=self[j][k].onDebuffList
+            local onPower=self[j][k].onPowerList
+            local onUpdate=self[j][k].onUpdateList
+            
+            for l=1,#onAura do
+              insert(self.onAuraList,onAura[l])
+            end
+            
+            for l=1,#onBuff do
+              insert(self.onBuffList,onBuff[l])
+            end
+            
+            for l=1,#onDebuff do
+              insert(self.onDebuffList,onDebuff[l])
+            end
+            
+            for l=1,#onPower do
+              insert(self.onPowerList,onPower[l])
+            end
+            
+            for l=1,#onUpdate do
+              insert(self.onUpdateList,onUpdate[l])
+            end
+            
+          end --end of if selfjk.checkLoad
+        
+      end --end of for k=1,nk
+      
+    end--end of if smart else 
+    
+  end--end of for j=1,nj
+  
+  
+  
+end
+eF.rep.unitLoad=unitLoad
+
+
 
 initUnitsFrame()
 initUnitsUnits()

@@ -33,6 +33,7 @@ eF.para.families={[1]={displayName="void",
                             textA=1,
                             textDecimals=0,
                             ownOnly=false,
+                            loadAlways=true,
                             }, --end of [1][1]
                        [2]={displayName="SooM",
                             type="icon",
@@ -64,10 +65,11 @@ eF.para.families={[1]={displayName="void",
                             textA=1,
                             textDecimals=0,
                             ownOnly=false,
+                            loadAlways=true,
                             },    
                        [3]={displayName="RoleSquare",
                             type="icon",
-                            trackType="role",
+                            trackType="static",
                             --roleIgnore="",      TBA CAN BE DONE WITH ALPHA=0 TBH                
                             xPos=0,
                             yPos=0,
@@ -77,9 +79,10 @@ eF.para.families={[1]={displayName="void",
                             anchorTo="TOPLEFT",
                             hasTexture=true,
                             hasColorTexture=true,
-                            textureColorBasedOnRole=true,
-                            --can also have texture based on role or smth idk, TBA
-                            textureColors={DAMAGER={0.5,0.1,0.1,0},HEALER={0.1,0.5,0.1,1},TANK={0.1,0.1,0.5,1}},
+                            loadRole=true,
+                            loadRoleList={"HEALER"},
+                            textureColor={0.1,0.5,0.1,1},
+                            loadAlways=false,                     
                             },
                        [4]={displayName="PowerBar",
                             type="bar",
@@ -92,7 +95,7 @@ eF.para.families={[1]={displayName="void",
                             grow="up",
                             anchor="BOTTOMLEFT",
                             anchorTo="BOTTOMLEFT",
-                            
+                            loadAlways=true,                            
                             },                      
                          }, --end of ...families[1] 
                   [2]={displayName="blacktest",
@@ -130,6 +133,7 @@ eF.para.families={[1]={displayName="void",
                        textA=1,
                        textDecimals=0,
                        ownOnly=false,
+                       loadAlways=true,
                        },   --end of families[2]  
                   [3]={displayName="white",
                        smart=true,
@@ -168,6 +172,7 @@ eF.para.families={[1]={displayName="void",
                        textA=1,
                        textDecimals=0,
                        ownOnly=false,
+                       loadAlways=true,
                        },   --end of families[2]  ]]
                   }--end of all  
                   
@@ -190,10 +195,9 @@ local function createFamilyFrames()
 
     if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
     frame.onAuraList={}
-    frame.onAuraBuffList={}
-    frame.onAuraDebuffList={}
+    frame.onBuffList={}
+    frame.onDebuffList={}
     frame.onUpdateList={}
-    frame.onGroupList={}
     frame.onPowerList={}
     
     eF.units.familyCount=#frame.families
@@ -204,25 +208,43 @@ local function createFamilyFrames()
       
       --------------------SMART FAMILIES
       if frame.families[j].smart then
+        frame[j].disable=eF.rep.smartFamilyDisableAll
         frame[j].smart=true       
         frame[j].para=frame.families[j]
         frame[j].active=0
         frame[j]:SetPoint(frame.families[j].anchor, frame, frame.families[j].anchorTo,frame.families[j].xPos,frame.families[j].yPos)
         
+        ------LOAD STUFF
+        frame[j].checkLoad=eF.rep.checkLoad
+        frame[j].loaded=false
+        frame[j].onAuraList={}
+        frame[j].onBuffList={}
+        frame[j].onDebuffList={}
+        frame[j].onUpdateList={}
+        frame[j].onPowerList={}
+        
+        if frame[j].para.loadAlways then frame[j].loadAlways=true 
+        else 
+          if frame[j].para.loadRole then frame[j].loadRole=true; frame[j].loadRoleList=frame[j].para.loadRoleList end
+          if frame[j].para.loadInstance then frame[j].loadInstance=true; frame[j].loadInstanceList = frame[j].para.loadInstanceList end
+          if frame[j].para.loadEncounter then frame[j].loadEncounter=true; frame[j].loadEncounter=frame[j].para.loadEncounter end 
+        end  
+        
+        
         if frame[j].para.type=="b" then 
-          if frame[j].para.buff then insert(frame.onAuraBuffList,{eF.rep.blacklistFamilyAdopt,frame[j]})  
-          else insert(frame.onAuraDebuffList,{eF.rep.blacklistFamilyAdopt,frame[j]}) end
-          insert(frame.onAuraList,{eF.rep.smartFamilyDisableAll,frame[j]})
+          if frame[j].para.buff then insert(frame[j].onBuffList,{eF.rep.blacklistFamilyAdopt,frame[j]})  
+          else insert(frame[j].onDebuffList,{eF.rep.blacklistFamilyAdopt,frame[j]}) end
+          insert(frame[j].onAuraList,{eF.rep.smartFamilyDisableAll,frame[j]})
         end
         
          if frame[j].para.type=="w" then 
-          if frame[j].para.buff then insert(frame.onAuraBuffList,{eF.rep.whitelistFamilyAdopt,frame[j]})  
-          else insert(frame.onAuraDebuffList,{eF.rep.whitelistFamilyAdopt,frame[j]}) end
-          insert(frame.onAuraList,{eF.rep.smartFamilyDisableAll,frame[j]})
+          if frame[j].para.buff then insert(frame[j].onBuffList,{eF.rep.whitelistFamilyAdopt,frame[j]})  
+          else insert(frame[j].onDebuffList,{eF.rep.whitelistFamilyAdopt,frame[j]}) end
+          insert(frame[j].onAuraList,{eF.rep.smartFamilyDisableAll,frame[j]})
         end
         
         if frame[j].para.hasText then 
-          insert(frame.onUpdateList,{eF.rep.smartFamilyUpdateTexts,frame[j]})
+          insert(frame[j].onUpdateList,{eF.rep.smartFamilyUpdateTexts,frame[j]})
         end
     
         for k=1,frame.families[j].count do
@@ -289,6 +311,9 @@ local function createFamilyFrames()
             if frame[j][k].para.textType=="t" then frame[j][k].updateText= eF.rep.iconUpdateTextTypeT end 
           end--end of if frame.hasText
           
+          --LOAD CONDITIONS??
+          
+          
         end --end for k=1,frame.families.count
        
               
@@ -298,8 +323,9 @@ local function createFamilyFrames()
         frame[j]:SetPoint("CENTER")
         
         for k=1,frame.families[j].count do
-          
+ 
           if frame.families[j][k].type=="icon" then
+                    
             frame[j][k]=CreateFrame("Frame",nil,frame[j])
             frame[j][k].para=frame.families[j][k]
             frame[j][k]:SetPoint(frame.families[j][k].anchor,frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
@@ -309,21 +335,34 @@ local function createFamilyFrames()
             frame[j][k].enable=eF.rep.iconFrameEnable
             frame[j][k]:disable()
             
+            -----------LOADING STUFF
+            frame[j][k].checkLoad=eF.rep.checkLoad
+            frame[j][k].loaded=false
+            frame[j][k].onAuraList={}
+            frame[j][k].onBuffList={}
+            frame[j][k].onDebuffList={}
+            frame[j][k].onUpdateList={}
+            frame[j][k].onPowerList={}
+            if frame[j][k].para.loadAlways then frame[j][k].loadAlways=true 
+            else 
+              if frame[j][k].para.loadRole then frame[j][k].loadRole=true; frame[j][k].loadRoleList=frame[j][k].para.loadRoleList end
+              if frame[j][k].para.loadInstance then frame[j][k].loadInstance=true; frame[j][k].loadInstanceList = frame[j][k].para.loadInstanceList end
+              if frame[j][k].para.loadEncounter then frame[j][k].loadEncounter=true; frame[j][k].loadEncounter=frame[j][k].para.loadEncounter end 
+            end
+            
             if frame.families[j][k].trackType=="name" then  
-              insert(frame.onAuraList,{eF.rep.iconFrameDisable,frame[j][k]})
-              if frame[j][k].para.buff then insert(frame.onAuraBuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]})
-              else insert(frame.onAuraDebuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]}) end           
+              insert(frame[j][k].onAuraList,{eF.rep.iconFrameDisable,frame[j][k]})
+              if frame[j][k].para.buff then insert(frame[j][k].onBuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]})
+              else insert(frame[j][k].onDebuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]}) end           
             end 
             
-            --TBA NOT SURE IF NECESSARY? do we keep it with just setting alphas to 0 ... it only updates on GROUP so probably doesnt matter
-            if frame.families[j][k].trackType=="role" then
-              frame[j][k]:enable()
+            if frame[j][k].para.hasText and frame[j][k].para.textType=="t" then
+              insert(frame[j][k].onUpdateList,{eF.rep.iconUpdateTextTypeT,frame[j][k]})
             end
             
-            if frame[j][k].para.hasText and frame[j][k].para.textType=="t" then 
-              insert(frame.onUpdateList,{eF.rep.iconUpdateTextTypeT,frame[j][k]})              
-            end
-                                    
+            
+
+            -------------VISUAL STUFF
             if frame[j][k].para.hasTexture then 
               frame[j][k].texture=frame[j][k]:CreateTexture()
               frame[j][k].texture:SetDrawLayer("BACKGROUND",-2)
@@ -342,7 +381,6 @@ local function createFamilyFrames()
               if frame[j][k].para.textureColorBasedOnRole then
                 frame[j][k].texture:SetAlpha(0) --it will get changed based on what needed if group_event_udpate is called, but default is invis
                 frame[j][k].roleColors=frame[j][k].para.textureColors
-                insert(frame.onGroupList,{eF.rep.updateTextureRoleColor,frame[j][k]})
               end
             end
                    
@@ -378,21 +416,7 @@ local function createFamilyFrames()
               frame[j][k].text:SetTextColor(r,g,b,a)
             end--end of if frame.hasText
           end --end of if type=="icon"
-          
-          --[[[4]={displayName="PowerBar",
-               type="bar",
-                            trackType="power",
-                            --roleIgnore="",      TBA CAN BE DONE WITH ALPHA=0 TBH                
-                            xPos=0,
-                            yPos=0,
-                            lFix=5,
-                            lMax=50,
-                            grow="up",
-                            anchor="BOTTOMLEFT",
-                            anchorTo="BOTTOMLEFT",
-                            
-                            },                      ]]
-          
+                    
           if frame.families[j][k].type=="bar" then
             frame[j][k]=CreateFrame("StatusBar",nil,frame[j],"TextStatusBar")
             frame[j][k].para=frame.families[j][k]
@@ -403,8 +427,30 @@ local function createFamilyFrames()
             frame[j][k].enable=eF.rep.iconFrameEnable
             frame[j][k]:disable()
             
+            -----------LOADING STUFF
+            frame[j][k].checkLoad=eF.rep.checkLoad
+            frame[j][k].loaded=false
+            frame[j][k].onAuraList={}
+            frame[j][k].onBuffList={}
+            frame[j][k].onDebuffList={}
+            frame[j][k].onUpdateList={}
+            frame[j][k].onPowerList={}
+            if frame[j][k].para.loadAlways then frame[j][k].loadAlways=true 
+            else 
+              if frame[j][k].para.loadRole then frame[j][k].loadRole=true; frame[j][k].loadRoleList=frame[j][k].para.loadRoleList end
+              if frame[j][k].para.loadInstance then frame[j][k].loadInstance=true; frame[j][k].loadInstanceList = frame[j][k].para.loadInstanceList end
+              if frame[j][k].para.loadEncounter then frame[j][k].loadEncounter=true; frame[j][k].loadEncounter=frame[j][k].para.loadEncounter end 
+            end
+            
+            if frame.families[j][k].trackType=="name" then  
+              insert(frame[j][k].onAuraList,{eF.rep.iconFrameDisable,frame[j][k]})
+              if frame[j][k].para.buff then insert(frame[j][k].onBuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]})
+              else insert(frame[j][k].onDebuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]}) end           
+            end 
+
+            
             if frame.families[j][k].trackType=="power" then  
-              insert(frame.onPowerList,{eF.rep.statusBarPowerUpdate,frame[j][k]})                   
+              insert(frame[j][k].onPowerList,{eF.rep.statusBarPowerUpdate,frame[j][k]})                   
             end 
             
             --VISUALS
@@ -412,10 +458,14 @@ local function createFamilyFrames()
           end--end of if bar
           
           
+          
         end --end for k=1,frame.families.count
       end--end of if frame.families[j].smart else
       
     end --end of for j=1,#frame.families
+    
+    
+    
   end--end of for i=1,40
   
 end --end of createFamilyFrames()
@@ -567,5 +617,28 @@ local function statusBarPowerUpdate(self)
 end
 eF.rep.statusBarPowerUpdate=statusBarPowerUpdate
 
+local function checkLoad(self,role,enc,ins)
+  if self.loadAlways then return true end 
+  local inList=eF.isInList
+  local b=true
+  
+  if self.loadRole and not inList(role,self.loadRoleList) then b=false 
+  elseif self.loadEncounter and not inList(enc,self.loadEncounterList) then b=false 
+  elseif self.loadInstance and not inList(ins,self.loadInstanceList) then b=false 
+  end
+  
+  if not b and eF.loaded then eF.loaded=false; eF:disable() end
+  if b and not eF.loaded then eF.loaded=true end
+  
+  return b
+end
+eF.rep.checkLoad=checkLoad
+
 createFamilyFrames()
+
+
+
+
+
+
 
