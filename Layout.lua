@@ -1,10 +1,9 @@
- local _,eF=...
+local _,eF=...
 
 eFGlob=eF
 
 local function layoutEventHandler(self,event,...)
   self:update()
-  if event=="PLAYER_ENTERING_WORLD" then self:update() end
 end
 eF.rep.layoutEventHandler=layoutEventHandler
 
@@ -13,7 +12,6 @@ local function initLayoutFrame()
   eF.layout:SetPoint("TOPRIGHT")
   eF.layout:SetPoint("BOTTOMRIGHT")
   eF.layout:RegisterEvent("GROUP_ROSTER_UPDATE")
-  eF.layout:RegisterEvent("PLAYER_ENTERING_WORLD")
   eF.layout:SetScript("OnEvent",eF.rep.layoutEventHandler)
   eF.layout:Show()
   eF.layout.update=eF.rep.layoutUpdate
@@ -23,6 +21,7 @@ local function initLayoutFrame()
     if type(v)~="table" then eF.layout[k]=v end
   end 
 end
+eF.rep.initLayoutFrame=initLayoutFrame
 
 local function layoutUpdate(self)
   local width=eF.units.width or 30
@@ -143,4 +142,4 @@ local function layoutUpdate(self)
 end
 eF.rep.layoutUpdate=layoutUpdate
 
-initLayoutFrame()
+--initLayoutFrame()

@@ -1,5 +1,3 @@
---to remember:  role = UnitGroupRolesAssigned(Unit); should be able to skip GetRaidRosterInfo for assigning roles
-
 local _,eF=...
 
 local function initUnitsFrame()
@@ -35,6 +33,7 @@ for k,v in pairs(eF.para.layout) do
 end 
 
 end
+eF.rep.initUnitsFrame=initUnitsFrame
 
 local function unitsEventHandler(self,event)
   
@@ -275,6 +274,7 @@ local function initUnitsUnits()
   end
   
 end
+eF.rep.initUnitsUnits=initUnitsUnits
 
 local function unitUpdateRange(self)
    local r=UnitInRange(self.id)  
@@ -472,9 +472,8 @@ end
 eF.rep.unitLoad=unitLoad
 
 
-
-initUnitsFrame()
-initUnitsUnits()
+--initUnitsFrame()
+--initUnitsUnits()
 
 
 

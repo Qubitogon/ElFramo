@@ -1,4 +1,4 @@
-_,eF=...
+local _,eF=...
 
 eF.para.families={[1]={displayName="void",
                        smart=false,
@@ -176,15 +176,6 @@ eF.para.families={[1]={displayName="void",
                        },   --end of families[2]  ]]
                   }--end of all  
                   
-for i=1,40 do
-  local frame=eF.units[eF.raidLoop[i]]
-  frame.families=eF.para.families
-end--end of i
-                 
-for i=1,5 do
-  local frame=eF.units[eF.partyLoop[i]]
-  frame.families=eF.para.families
-end--end of i
 
 local function createFamilyFrames()
   local units=eF.units
@@ -469,6 +460,7 @@ local function createFamilyFrames()
   end--end of for i=1,40
   
 end --end of createFamilyFrames()
+eF.rep.createFamilyFrames=createFamilyFrames
 
 local function iconUpdateTextTypeT(self)
   if not self.filled then return end
@@ -634,7 +626,7 @@ local function checkLoad(self,role,enc,ins)
 end
 eF.rep.checkLoad=checkLoad
 
-createFamilyFrames()
+--createFamilyFrames()
 
 
 
