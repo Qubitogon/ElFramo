@@ -80,8 +80,21 @@ eF.para.families={[1]={displayName="void",
                             textureColorBasedOnRole=true,
                             --can also have texture based on role or smth idk, TBA
                             textureColors={DAMAGER={0.5,0.1,0.1,0},HEALER={0.1,0.5,0.1,1},TANK={0.1,0.1,0.5,1}},
-                            },                                        
-                      }, --end of ...families[1] 
+                            },
+                       [4]={displayName="PowerBar",
+                            type="bar",
+                            trackType="power",
+                            --roleIgnore="",      TBA CAN BE DONE WITH ALPHA=0 TBH                
+                            xPos=0,
+                            yPos=0,
+                            lFix=5,
+                            lMax=50,
+                            grow="up",
+                            anchor="BOTTOMLEFT",
+                            anchorTo="BOTTOMLEFT",
+                            
+                            },                      
+                         }, --end of ...families[1] 
                   [2]={displayName="blacktest",
                        smart=true,
                        count=3,
@@ -181,6 +194,7 @@ local function createFamilyFrames()
     frame.onAuraDebuffList={}
     frame.onUpdateList={}
     frame.onGroupList={}
+    frame.onPowerList={}
     
     eF.units.familyCount=#frame.families
     for j=1,#frame.families do
@@ -196,19 +210,19 @@ local function createFamilyFrames()
         frame[j]:SetPoint(frame.families[j].anchor, frame, frame.families[j].anchorTo,frame.families[j].xPos,frame.families[j].yPos)
         
         if frame[j].para.type=="b" then 
-          if frame[j].para.buff then insert(frame.onAuraBuffList,{eF.rep.blacklistFamilyAdopt,j})  
-          else insert(frame.onAuraDebuffList,{eF.rep.blacklistFamilyAdopt,j}) end
-          insert(frame.onAuraList,{eF.rep.smartFamilyDisableAll,j})
+          if frame[j].para.buff then insert(frame.onAuraBuffList,{eF.rep.blacklistFamilyAdopt,frame[j]})  
+          else insert(frame.onAuraDebuffList,{eF.rep.blacklistFamilyAdopt,frame[j]}) end
+          insert(frame.onAuraList,{eF.rep.smartFamilyDisableAll,frame[j]})
         end
         
          if frame[j].para.type=="w" then 
-          if frame[j].para.buff then insert(frame.onAuraBuffList,{eF.rep.whitelistFamilyAdopt,j})  
-          else insert(frame.onAuraDebuffList,{eF.rep.whitelistFamilyAdopt,j}) end
-          insert(frame.onAuraList,{eF.rep.smartFamilyDisableAll,j})
+          if frame[j].para.buff then insert(frame.onAuraBuffList,{eF.rep.whitelistFamilyAdopt,frame[j]})  
+          else insert(frame.onAuraDebuffList,{eF.rep.whitelistFamilyAdopt,frame[j]}) end
+          insert(frame.onAuraList,{eF.rep.smartFamilyDisableAll,frame[j]})
         end
         
         if frame[j].para.hasText then 
-          insert(frame.onUpdateList,{eF.rep.smartFamilyUpdateTexts,j})
+          insert(frame.onUpdateList,{eF.rep.smartFamilyUpdateTexts,frame[j]})
         end
     
         for k=1,frame.families[j].count do
@@ -296,9 +310,9 @@ local function createFamilyFrames()
             frame[j][k]:disable()
             
             if frame.families[j][k].trackType=="name" then  
-              insert(frame.onAuraList,{eF.rep.iconFrameDisable,j,k})
-              if frame[j][k].para.buff then insert(frame.onAuraBuffList,{eF.rep.iconAdoptAuraByName,j,k})
-              else insert(frame.onAuraDebuffList,{eF.rep.iconAdoptAuraByName,j,k}) end           
+              insert(frame.onAuraList,{eF.rep.iconFrameDisable,frame[j][k]})
+              if frame[j][k].para.buff then insert(frame.onAuraBuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]})
+              else insert(frame.onAuraDebuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]}) end           
             end 
             
             --TBA NOT SURE IF NECESSARY? do we keep it with just setting alphas to 0 ... it only updates on GROUP so probably doesnt matter
@@ -307,7 +321,7 @@ local function createFamilyFrames()
             end
             
             if frame[j][k].para.hasText and frame[j][k].para.textType=="t" then 
-              insert(frame.onUpdateList,{eF.rep.iconUpdateTextTypeT,j,k})              
+              insert(frame.onUpdateList,{eF.rep.iconUpdateTextTypeT,frame[j][k]})              
             end
                                     
             if frame[j][k].para.hasTexture then 
@@ -328,7 +342,7 @@ local function createFamilyFrames()
               if frame[j][k].para.textureColorBasedOnRole then
                 frame[j][k].texture:SetAlpha(0) --it will get changed based on what needed if group_event_udpate is called, but default is invis
                 frame[j][k].roleColors=frame[j][k].para.textureColors
-                insert(frame.onGroupList,{eF.rep.updateTextureRoleColor,j,k})
+                insert(frame.onGroupList,{eF.rep.updateTextureRoleColor,frame[j][k]})
               end
             end
                    
@@ -364,6 +378,38 @@ local function createFamilyFrames()
               frame[j][k].text:SetTextColor(r,g,b,a)
             end--end of if frame.hasText
           end --end of if type=="icon"
+          
+          --[[[4]={displayName="PowerBar",
+               type="bar",
+                            trackType="power",
+                            --roleIgnore="",      TBA CAN BE DONE WITH ALPHA=0 TBH                
+                            xPos=0,
+                            yPos=0,
+                            lFix=5,
+                            lMax=50,
+                            grow="up",
+                            anchor="BOTTOMLEFT",
+                            anchorTo="BOTTOMLEFT",
+                            
+                            },                      ]]
+          
+          if frame.families[j][k].type=="bar" then
+            frame[j][k]=CreateFrame("StatusBar",nil,frame[j],"TextStatusBar")
+            frame[j][k].para=frame.families[j][k]
+            frame[j][k]:SetPoint(frame.families[j][k].anchor,frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
+            frame[j][k]:SetSize(frame.families[j][k].width,frame.families[j][k].height)
+           
+            frame[j][k].disable=eF.rep.iconFrameDisable
+            frame[j][k].enable=eF.rep.iconFrameEnable
+            frame[j][k]:disable()
+            
+            if frame.families[j][k].trackType=="power" then  
+              insert(frame.onPowerList,{eF.rep.statusBarPowerUpdate,frame[j][k]})                   
+            end 
+            
+            --VISUALS
+            
+          end--end of if bar
           
           
         end --end for k=1,frame.families.count
@@ -514,6 +560,12 @@ local function updateTextureRoleColor(self,role,...)
   else self.texture:SetVertexColor(c[1],c[2],c[3]); self.texture:SetAlpha(c[4]) end
 end
 eF.rep.updateTextureRoleColor=updateTextureRoleColor
+
+local function statusBarPowerUpdate(self)
+  local unit=self.id
+  self:SetValue(UnitPower(unit)/UnitPowerMax(unit))
+end
+eF.rep.statusBarPowerUpdate=statusBarPowerUpdate
 
 createFamilyFrames()
 

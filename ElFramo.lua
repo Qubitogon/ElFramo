@@ -122,9 +122,7 @@ local function unitEventHandler(self,event)
   elseif event=="UNIT_AURA" then 
     
     for _,v in ipairs(self.onAuraList) do
-      local frame
-      if v[3] then frame=self[v[2]][v[3]] else frame=self[v[2]] end
-      v[1](frame)
+      v[1](v[2])
     end
       
     --BUFFS
@@ -133,9 +131,7 @@ local function unitEventHandler(self,event)
       if not name then break end   
       
       for _,v in ipairs(self.onAuraBuffList) do
-        local frame
-        if v[3] then frame=self[v[2]][v[3]] else frame=self[v[2]] end
-        v[1](frame,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
+        v[1](v[2],name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
       end  
     
     end
@@ -145,9 +141,7 @@ local function unitEventHandler(self,event)
       if not name then break end 
       
       for _,v in ipairs(self.onAuraDebuffList) do
-        local frame
-        if v[3] then frame=self[v[2]][v[3]] else frame=self[v[2]] end
-        v[1](frame,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
+        v[1](v[2],name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
       end
       
     end 
@@ -305,9 +299,7 @@ local function unitsFrameOnUpdate(self,elapsed)
     if frame.updateRange and self.num>1 then frame:updateRange() end   --if youre alone in the group it's fucked  
       
     for _,v in ipairs(frame.onUpdateList) do
-      local frame2
-      if v[3] then frame2=frame[v[2]][v[3]] else frame2=frame[v[2]] end
-      v[1](frame2)
+      v[1](v[2])
     end
     
   end--end of for i=1,self.num
@@ -356,9 +348,7 @@ local function unitsOnGroupUpdate(self)
       
       --DO ALL THE FAMILY DEPENDENCIES
       for _,v in ipairs(units[unit].onGroupList) do
-        local frame1
-        if v[3] then frame1=units[unit][v[2]][v[3]] else frame1=units[unit][v[2]] end
-        v[1](frame1,role)  
+        v[1](v[2],role)  
       end
       
     end --end of for n=1,num
