@@ -116,13 +116,14 @@ eF.rep.updateUnitBorders=updateUnitBorders
 
 local function unitEventHandler(self,event)
   if not self.enabled then return end
-  local ipairs=ipairs
   if event=="UNIT_HEALTH_FREQUENT" or event=="UNIT_MAXHEALTH" or event=="UNIT_CONNECTION" or event=="UNIT_FACTION" then
     self:hpUpdate()
     
   elseif event=="UNIT_AURA" then 
     
-    for _,v in ipairs(self.onAuraList) do
+    local c=self.onAuraList
+    for j=1,#c do
+      local v=c[j]
       v[1](v[2])
     end
       
@@ -131,7 +132,9 @@ local function unitEventHandler(self,event)
       local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss,own=UnitAura(self.id,i)
       if not name then break end   
       
-      for _,v in ipairs(self.onBuffList) do
+      local c=self.onBuffList
+      for j=1,#c do
+        local v=c[j]
         v[1](v[2],name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
       end  
     
@@ -141,7 +144,9 @@ local function unitEventHandler(self,event)
       local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss,own=UnitAura(self.id,i,"HARMFUL")
       if not name then break end 
       
-      for _,v in ipairs(self.onDebuffList) do
+      local c=self.onDebuffList
+      for j=1,#c do
+        local v=c[j]
         v[1](v[2],name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
       end
       
@@ -294,14 +299,15 @@ local function unitsFrameOnUpdate(self,elapsed)
   if eT<throttle then eT=eT+elapsed; return end
   eT=0
   local tbl
-  local ipairs=ipairs
   if self.raid then tbl=eF.raidLoop else tbl=eF.partyLoop end
   
   for i=1,self.num do
     local frame=self[tbl[i]]
     if frame.updateRange and self.num>1 then frame:updateRange() end   --if youre alone in the group it's fucked  
-      
-    for _,v in ipairs(frame.onUpdateList) do
+    
+    local c=frame.onUpdateList
+    for j=1,#c do
+      local v=c[j]
       v[1](v[2])
     end
     
@@ -310,7 +316,6 @@ end
 eF.rep.unitsFrameOnUpdate=unitsFrameOnUpdate
 
 local function unitsOnGroupUpdate(self)
-    local ipairs=ipairs
     local raid=IsInRaid()
     self.raid=IsInRaid() --is used for the updatefunction
     local num=GetNumGroupMembers() --for some reason gives 0 when solo
@@ -438,6 +443,8 @@ local function unitLoad(self,ins,enc)
             local onPower=self[j][k].onPowerList
             local onUpdate=self[j][k].onUpdateList
             
+            if self.static then self:enable() end
+            
             for l=1,#onAura do
               insert(self.onAuraList,onAura[l])
             end
@@ -457,6 +464,7 @@ local function unitLoad(self,ins,enc)
             for l=1,#onUpdate do
               insert(self.onUpdateList,onUpdate[l])
             end
+            
             
           end --end of if selfjk.checkLoad
         

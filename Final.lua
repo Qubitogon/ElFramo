@@ -1,7 +1,6 @@
 local _,eF=...
 
 function initialise(self)
-  print("got in")
   --eLFramo.lua
   eF.rep.initUnitsFrame()
   eF.rep.initUnitsUnits()
@@ -23,6 +22,8 @@ function initialise(self)
   eF.rep.createFamilyFrames()
   eF.layout:update()
   
+  self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+  self=nil
 end
 
 

@@ -67,7 +67,7 @@ eF.para.families={[1]={displayName="void",
                             ownOnly=false,
                             loadAlways=true,
                             },    
-                       [3]={displayName="RoleSquare",
+                       [3]={displayName="TankSquare",
                             type="icon",
                             trackType="static",
                             --roleIgnore="",      TBA CAN BE DONE WITH ALPHA=0 TBH                
@@ -80,8 +80,10 @@ eF.para.families={[1]={displayName="void",
                             hasTexture=true,
                             hasColorTexture=true,
                             loadRole=true,
-                            loadRoleList={"HEALER"},
-                            textureColor={0.1,0.5,0.1,1},
+                            loadRoleList={"TANK"},
+                            textureR=0.1,
+                            textureG=0.1,
+                            textureB=0.5,
                             loadAlways=false,                     
                             },
                        [4]={displayName="PowerBar",
@@ -301,9 +303,7 @@ local function createFamilyFrames()
             if iDA then frame[j][k].textIgnoreDurationAbove=iDA end
             if frame[j][k].para.textType=="t" then frame[j][k].updateText= eF.rep.iconUpdateTextTypeT end 
           end--end of if frame.hasText
-          
-          --LOAD CONDITIONS??
-          
+                    
           
         end --end for k=1,frame.families.count
        
@@ -334,6 +334,7 @@ local function createFamilyFrames()
             frame[j][k].onDebuffList={}
             frame[j][k].onUpdateList={}
             frame[j][k].onPowerList={}
+            
             if frame[j][k].para.loadAlways then frame[j][k].loadAlways=true 
             else 
               if frame[j][k].para.loadRole then frame[j][k].loadRole=true; frame[j][k].loadRoleList=frame[j][k].para.loadRoleList end
@@ -345,13 +346,15 @@ local function createFamilyFrames()
               insert(frame[j][k].onAuraList,{eF.rep.iconFrameDisable,frame[j][k]})
               if frame[j][k].para.buff then insert(frame[j][k].onBuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]})
               else insert(frame[j][k].onDebuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]}) end           
-            end 
+            elseif frame[j][k].para.trackType=="static" then            
+               frame[j][k].static=true
+            end
             
             if frame[j][k].para.hasText and frame[j][k].para.textType=="t" then
               insert(frame[j][k].onUpdateList,{eF.rep.iconUpdateTextTypeT,frame[j][k]})
             end
             
-            
+
 
             -------------VISUAL STUFF
             if frame[j][k].para.hasTexture then 
@@ -369,10 +372,6 @@ local function createFamilyFrames()
               else frame[j][k].smartIcon=true 
               end
                             
-              if frame[j][k].para.textureColorBasedOnRole then
-                frame[j][k].texture:SetAlpha(0) --it will get changed based on what needed if group_event_udpate is called, but default is invis
-                frame[j][k].roleColors=frame[j][k].para.textureColors
-              end
             end
                    
             if frame[j][k].para.hasBorder then
@@ -462,31 +461,18 @@ local function createFamilyFrames()
 end --end of createFamilyFrames()
 eF.rep.createFamilyFrames=createFamilyFrames
 
-local function iconUpdateTextTypeT(self)
-  if not self.filled then return end
-  local t=GetTime()
-  local s
-  local iDA=self.textIgnoreDurationAbove
-
-  s=self.expirationTime-t
-  
-  if s<0 or (iDA and s>iDA ) then s='';
-  else local dec=self.para.textDecimals or 1; s=eF.toDecimal(s,dec) end
-
-  self.text:SetText(s)
-end
-eF.rep.iconUpdateTextTypeT=iconUpdateTextTypeT
-
 local function iconAdoptAuraByName(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
 
   if self.filled then return  end
   if name==self.para.arg1 then
     self.name=name
     self.icon=icon
+    --TBA: streamline those motherfuckers as well
     if self.smartIcon then self.texture:SetTexture(icon) end
     if self.cdFrame then self.cdFrame:SetCooldown(expirationTime-duration,duration) end
     self.count=count
     self.debuffType=debuffType
+    --TBA: streamline that shit with the new system
     if self.border then
       local c=self.borderColor[debuffType] 
       if c then self.border:SetVertexColor(c.r,c.g,c.b)
@@ -512,6 +498,7 @@ local function iconUnconditionalAdopt(self,name,icon,count,debuffType,duration,e
   if self.filled then return  end
     self.name=name
     self.icon=icon
+    --TBA:streamline it here as well, will need new family functions for updating all cooldowns / all smarticons etc
     if self.smartIcon then self.texture:SetTexture(icon) end
     if self.cdFrame then self.cdFrame:SetCooldown(expirationTime-duration,duration) end
     self.count=count
@@ -596,12 +583,20 @@ local function smartFamilyUpdateTexts(self)
 end
 eF.rep.smartFamilyUpdateTexts=smartFamilyUpdateTexts
 
-local function updateTextureRoleColor(self,role,...)
-  local c=self.roleColors[role] or {0,0,0,0}
-  if self.para.hasColorTexture then self.texture:SetColorTexture(c[1],c[2],c[3]); self.texture:SetAlpha(c[4])
-  else self.texture:SetVertexColor(c[1],c[2],c[3]); self.texture:SetAlpha(c[4]) end
+local function iconUpdateTextTypeT(self)
+  if not self.filled then return end
+  local t=GetTime()
+  local s
+  local iDA=self.textIgnoreDurationAbove
+
+  s=self.expirationTime-t
+  
+  if s<0 or (iDA and s>iDA ) then s='';
+  else local dec=self.para.textDecimals or 1; s=eF.toDecimal(s,dec) end
+
+  self.text:SetText(s)
 end
-eF.rep.updateTextureRoleColor=updateTextureRoleColor
+eF.rep.iconUpdateTextTypeT=iconUpdateTextTypeT
 
 local function statusBarPowerUpdate(self)
   local unit=self.id
@@ -613,15 +608,15 @@ local function checkLoad(self,role,enc,ins)
   if self.loadAlways then return true end 
   local inList=eF.isInList
   local b=true
-  
-  if self.loadRole and not inList(role,self.loadRoleList) then b=false 
+
+  if self.loadRole and not inList(role,self.loadRoleList) then b=false
   elseif self.loadEncounter and not inList(enc,self.loadEncounterList) then b=false 
-  elseif self.loadInstance and not inList(ins,self.loadInstanceList) then b=false 
+  elseif self.loadInstance and not inList(ins,self.loadInstanceList) then b=false
   end
   
-  if not b and eF.loaded then eF.loaded=false; eF:disable() end
-  if b and not eF.loaded then eF.loaded=true end
-  
+  if not b and self.loaded then self.loaded=false; self:disable() end
+  if b and not self.loaded then self.loaded=true; self:enable() end
+
   return b
 end
 eF.rep.checkLoad=checkLoad
