@@ -2,11 +2,12 @@ local _,eF=...
 
 eF.para.families={[1]={displayName="void",
                        smart=false,
-                       count=3,
+                       count=4,
                        [1]={displayName="ReM",
                             type="icon",
                             trackType="name",
                             buff=true,
+                            frameLevel=4,
                             arg1="Renewing Mist",
                             xPos=-2,
                             yPos=0,
@@ -42,12 +43,16 @@ eF.para.families={[1]={displayName="void",
                             arg1="Soothing Mist",
                             xPos=0,
                             yPos=0,
+                            frameLevel=4,
+
                             height=20,
                             width=20,
                             anchor="TOPLEFT",
                             anchorTo="TOPLEFT",
                             cdWheel=true,
                             cdReverse=true,
+                            hasBorder=true,
+                            borderType="debuffColor",
                             texture=606550,
                             hasText=false,
                             hasTexture=true,
@@ -70,7 +75,6 @@ eF.para.families={[1]={displayName="void",
                        [3]={displayName="TankSquare",
                             type="icon",
                             trackType="static",
-                            --roleIgnore="",      TBA CAN BE DONE WITH ALPHA=0 TBH                
                             xPos=0,
                             yPos=0,
                             height=5,
@@ -79,25 +83,30 @@ eF.para.families={[1]={displayName="void",
                             anchorTo="TOPLEFT",
                             hasTexture=true,
                             hasColorTexture=true,
-                            loadRole=true,
-                            loadRoleList={"TANK"},
+                            frameLevel=3,
+
                             textureR=0.1,
                             textureG=0.1,
                             textureB=0.5,
-                            loadAlways=false,                     
+                            loadAlways=false,   
+                            loadRole=true,
+                            loadRoleList={"TANK"},                            
                             },
                        [4]={displayName="PowerBar",
                             type="bar",
                             trackType="power",
-                            --roleIgnore="",      TBA CAN BE DONE WITH ALPHA=0 TBH                
-                            xPos=0,
+                            frameLevel=2,
+
+                            xPos=3,
                             yPos=0,
-                            lFix=5,
+                            lFix=7,
                             lMax=50,
                             grow="up",
-                            anchor="BOTTOMLEFT",
+                            --anchor="BOTTOMLEFT",--anchor decided based on where it grows; up->top, right-> left etc
                             anchorTo="BOTTOMLEFT",
-                            loadAlways=true,                            
+                            loadAlways=false,
+                            loadRole=true,
+                            loadRoleList={"HEALER"}, 
                             },                      
                          }, --end of ...families[1] 
                   [2]={displayName="blacktest",
@@ -108,6 +117,7 @@ eF.para.families={[1]={displayName="void",
                        yPos=0,
                        spacing=1,
                        height=20,
+                       frameLevel=4,
                        width=20,
                        anchor="BOTTOMLEFT",
                        anchorTo="BOTTOMLEFT",
@@ -146,11 +156,13 @@ eF.para.families={[1]={displayName="void",
                        yPos=0,
                        spacing=1,
                        height=20,
+                       frameLevel=4,
                        width=20,
                        anchor="LEFT",
                        anchorTo="LEFT",
                        buff=true,
-                       hasBorder=false,
+                       hasBorder=true,
+                       borderType="debuffColor",
                        smartIcons=true,
                        grow="right",
                        growAnchor="LEFT",
@@ -202,8 +214,10 @@ local function createFamilyFrames()
       --------------------SMART FAMILIES
       if frame.families[j].smart then
         frame[j].disable=eF.rep.smartFamilyDisableAll
+        frame[j].enable=eF.rep.smartFamilyEnableAll
         frame[j].smart=true       
         frame[j].para=frame.families[j]
+        frame[j]:SetFrameLevel(frame[j].para.frameLevel+frame:GetFrameLevel()-1)
         frame[j].active=0
         frame[j]:SetPoint(frame.families[j].anchor, frame, frame.families[j].anchorTo,frame.families[j].xPos,frame.families[j].yPos)
         
@@ -215,6 +229,7 @@ local function createFamilyFrames()
         frame[j].onDebuffList={}
         frame[j].onUpdateList={}
         frame[j].onPowerList={}
+        frame[j].onPostAuraList={}
         
         if frame[j].para.loadAlways then frame[j].loadAlways=true 
         else 
@@ -222,8 +237,7 @@ local function createFamilyFrames()
           if frame[j].para.loadInstance then frame[j].loadInstance=true; frame[j].loadInstanceList = frame[j].para.loadInstanceList end
           if frame[j].para.loadEncounter then frame[j].loadEncounter=true; frame[j].loadEncounter=frame[j].para.loadEncounter end 
         end  
-        
-        
+               
         if frame[j].para.type=="b" then 
           if frame[j].para.buff then insert(frame[j].onBuffList,{eF.rep.blacklistFamilyAdopt,frame[j]})  
           else insert(frame[j].onDebuffList,{eF.rep.blacklistFamilyAdopt,frame[j]}) end
@@ -239,7 +253,20 @@ local function createFamilyFrames()
         if frame[j].para.hasText then 
           insert(frame[j].onUpdateList,{eF.rep.smartFamilyUpdateTexts,frame[j]})
         end
-    
+        
+        if frame[j].para.hasBorder and frame[j].para.borderType=="debuffColor" then 
+          insert(frame[j].onPostAuraList,{eF.rep.smartFamilyDebuffTypeBorderColor,frame[j]})
+        end
+        
+        if frame[j].para.hasTexture and (not frame[j].para.texture or frame[j].para.smartIcon) then
+          insert(frame[j].onPostAuraList,{eF.rep.smartFamilyApplySmartIcons,frame[j]})
+        end
+        
+        if frame[j].para.cdWheel then
+          insert(frame[j].onPostAuraList,{eF.rep.smartFamilyUpdateCDWheels,frame[j]})
+        end
+        
+        
         for k=1,frame.families[j].count do
           local xOS=0
           local yOS=0
@@ -265,15 +292,18 @@ local function createFamilyFrames()
             frame[j][k].texture:SetDrawLayer("BACKGROUND",-2)
             frame[j][k].texture:SetAllPoints()
             if frame.families[j].texture then frame[j][k].texture:SetTexture(frame.families[j].texture)  --if frame.families[j][k].texture
-            else frame[j][k].smartIcon=true end
-          end
+            else frame[j][k].smartIcon=true; frame[j][k].updateTexture=eF.rep.iconApplySmartIcon end
+          end        
           
           if frame[j].para.hasBorder then
             frame[j][k].border=frame[j][k]:CreateTexture(nil,'OVERLAY')
             frame[j][k].border:SetTexture([[Interface\Buttons\UI-Debuff-Overlays]])
             frame[j][k].border:SetAllPoints()                     
             frame[j][k].border:SetTexCoord(.296875, .5703125, 0, .515625)
-            frame[j][k].borderColor=eF.para.colors.debuff
+            if frame[j].para.borderType=="debuffColor" then
+              frame[j][k].updateBorder=eF.rep.updateBorderColorDebuffType
+              frame[j][k].borderColor=eF.para.colors.debuff
+            end
           end
           
 
@@ -282,6 +312,7 @@ local function createFamilyFrames()
             if frame.families[j].cdReverse then frame[j][k].cdFrame:SetReverse(true) end
             frame[j][k].cdFrame:SetAllPoints()
             frame[j][k].cdFrame:SetFrameLevel( frame[j][k]:GetFrameLevel())
+            frame[j][k].updateCDWheel=eF.rep.iconUpdateCDWheel
           end--end of if .cdwheel
           
           --text
@@ -321,6 +352,8 @@ local function createFamilyFrames()
             frame[j][k].para=frame.families[j][k]
             frame[j][k]:SetPoint(frame.families[j][k].anchor,frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
             frame[j][k]:SetSize(frame.families[j][k].width,frame.families[j][k].height)
+            frame[j][k]:SetFrameLevel(frame[j][k].para.frameLevel+frame:GetFrameLevel())
+
            
             frame[j][k].disable=eF.rep.iconFrameDisable
             frame[j][k].enable=eF.rep.iconFrameEnable
@@ -330,6 +363,7 @@ local function createFamilyFrames()
             frame[j][k].checkLoad=eF.rep.checkLoad
             frame[j][k].loaded=false
             frame[j][k].onAuraList={}
+            frame[j][k].onPostAuraList={}
             frame[j][k].onBuffList={}
             frame[j][k].onDebuffList={}
             frame[j][k].onUpdateList={}
@@ -354,8 +388,19 @@ local function createFamilyFrames()
               insert(frame[j][k].onUpdateList,{eF.rep.iconUpdateTextTypeT,frame[j][k]})
             end
             
+            if frame[j][k].para.hasTexture and (not frame[j][k].para.texture or frame[j][k].para.smartIcon) and not frame[j][k].para.hasColorTexture then
+              insert(frame[j][k].onPostAuraList,{eF.rep.iconApplySmartIcon,frame[j][k]})
+            end
 
-
+            if frame[j][k].para.hasBorder and frame[j][k].para.borderType=="debuffColor" then 
+              insert(frame[j][k].onPostAuraList,{eF.rep.updateBorderColorDebuffType,frame[j][k]})
+            end
+            
+            if frame[j][k].para.cdWheel then
+              insert(frame[j][k].onPostAuraList,{eF.rep.iconUpdateCDWheel,frame[j][k]})
+            end
+            
+            
             -------------VISUAL STUFF
             if frame[j][k].para.hasTexture then 
               frame[j][k].texture=frame[j][k]:CreateTexture()
@@ -369,7 +414,7 @@ local function createFamilyFrames()
                 local b=frame[j][k].para.textureB or 0
                 local a=frame[j][k].para.textureA or 1
                 frame[j][k].texture:SetColorTexture(r,g,b,a)               
-              else frame[j][k].smartIcon=true 
+                else frame[j][k].smartIcon=true;  
               end
                             
             end
@@ -379,7 +424,10 @@ local function createFamilyFrames()
               frame[j][k].border:SetTexture([[Interface\Buttons\UI-Debuff-Overlays]])
               frame[j][k].border:SetAllPoints()                     
               frame[j][k].border:SetTexCoord(.296875, .5703125, 0, .515625)
-              frame[j][k].borderColor=eF.para.colors.debuff
+              if frame[j][k].para.borderType=="debuffColor" then
+                frame[j][k].updateBorder=eF.rep.updateBorderColorDebuffType
+                frame[j][k].borderColor=eF.para.colors.debuff
+              end            
             end
             
             if frame.families[j][k].cdWheel then
@@ -408,11 +456,11 @@ local function createFamilyFrames()
           end --end of if type=="icon"
                     
           if frame.families[j][k].type=="bar" then
+          
             frame[j][k]=CreateFrame("StatusBar",nil,frame[j],"TextStatusBar")
             frame[j][k].para=frame.families[j][k]
-            frame[j][k]:SetPoint(frame.families[j][k].anchor,frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
-            frame[j][k]:SetSize(frame.families[j][k].width,frame.families[j][k].height)
-           
+            frame[j][k]:SetFrameLevel(frame[j][k].para.frameLevel+frame:GetFrameLevel())
+
             frame[j][k].disable=eF.rep.iconFrameDisable
             frame[j][k].enable=eF.rep.iconFrameEnable
             frame[j][k]:disable()
@@ -425,25 +473,48 @@ local function createFamilyFrames()
             frame[j][k].onDebuffList={}
             frame[j][k].onUpdateList={}
             frame[j][k].onPowerList={}
+            frame[j][k].onPostAuraList={}
+            
             if frame[j][k].para.loadAlways then frame[j][k].loadAlways=true 
             else 
               if frame[j][k].para.loadRole then frame[j][k].loadRole=true; frame[j][k].loadRoleList=frame[j][k].para.loadRoleList end
               if frame[j][k].para.loadInstance then frame[j][k].loadInstance=true; frame[j][k].loadInstanceList = frame[j][k].para.loadInstanceList end
               if frame[j][k].para.loadEncounter then frame[j][k].loadEncounter=true; frame[j][k].loadEncounter=frame[j][k].para.loadEncounter end 
             end
-            
-            if frame.families[j][k].trackType=="name" then  
-              insert(frame[j][k].onAuraList,{eF.rep.iconFrameDisable,frame[j][k]})
-              if frame[j][k].para.buff then insert(frame[j][k].onBuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]})
-              else insert(frame[j][k].onDebuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]}) end           
-            end 
-
-            
+                       
             if frame.families[j][k].trackType=="power" then  
-              insert(frame[j][k].onPowerList,{eF.rep.statusBarPowerUpdate,frame[j][k]})                   
+              insert(frame[j][k].onPowerList,{eF.rep.statusBarPowerUpdate,frame[j][k]})    
+              frame[j][k].id=frame.id
+              frame[j][k].static=true
             end 
             
             --VISUALS
+            
+           
+            if frame[j][k].para.grow=="up" or not frame[j][k].para.grow then 
+              frame[j][k]:SetPoint("BOTTOM",frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
+              frame[j][k]:SetWidth(frame[j][k].para.lFix)
+              frame[j][k]:SetHeight(frame[j][k].para.lMax)
+              frame[j][k]:SetOrientation("VERTICAL")
+            elseif frame[j][k].para.grow=="down" then 
+              frame[j][k]:SetPoint("TOP",frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
+              frame[j][k]:SetWidth(frame[j][k].para.lFix)
+              frame[j][k]:SetHeight(frame[j][k].para.lMax)
+              frame[j][k]:SetOrientation("VERTICAL")
+            elseif frame[j][k].para.grow=="right" then 
+              frame[j][k]:SetPoint("LEFT",frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
+              frame[j][k]:SetWidth(frame[j][k].para.lMax)
+              frame[j][k]:SetHeight(frame[j][k].para.lFix)
+              frame[j][k]:SetOrientation("HORIZONTAL") 
+            else
+              frame[j][k]:SetPoint("RIGHT",frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
+              frame[j][k]:SetWidth(frame[j][k].para.lMax)
+              frame[j][k]:SetHeight(frame[j][k].para.lFix)
+              frame[j][k]:SetOrientation("HORIZONTAL")
+            end
+            
+            frame[j][k]:SetStatusBarTexture(0.1,0.1,0.7,1)  
+            frame[j][k]:SetMinMaxValues(0,1)
             
           end--end of if bar
           
@@ -467,17 +538,8 @@ local function iconAdoptAuraByName(self,name,icon,count,debuffType,duration,expi
   if name==self.para.arg1 then
     self.name=name
     self.icon=icon
-    --TBA: streamline those motherfuckers as well
-    if self.smartIcon then self.texture:SetTexture(icon) end
-    if self.cdFrame then self.cdFrame:SetCooldown(expirationTime-duration,duration) end
     self.count=count
     self.debuffType=debuffType
-    --TBA: streamline that shit with the new system
-    if self.border then
-      local c=self.borderColor[debuffType] 
-      if c then self.border:SetVertexColor(c.r,c.g,c.b)
-      else self.border:Hide() end
-    end
     self.duration=duration
     self.expirationTime=expirationTime
     self.own=own
@@ -498,16 +560,9 @@ local function iconUnconditionalAdopt(self,name,icon,count,debuffType,duration,e
   if self.filled then return  end
     self.name=name
     self.icon=icon
-    --TBA:streamline it here as well, will need new family functions for updating all cooldowns / all smarticons etc
-    if self.smartIcon then self.texture:SetTexture(icon) end
-    if self.cdFrame then self.cdFrame:SetCooldown(expirationTime-duration,duration) end
     self.count=count
     self.debuffType=debuffType
-    if self.border then
-      local c=self.borderColor[debuffType] 
-      if c then self.border:SetVertexColor(c[1],c[2],c[3]); self.border:Show()
-      else self.border:Hide(); end
-    end  
+ 
     self.duration=duration
     self.expirationTime=expirationTime
     self.own=own
@@ -564,6 +619,13 @@ local function smartFamilyDisableAll(self)
 end
 eF.rep.smartFamilyDisableAll=smartFamilyDisableAll
 
+local function smartFamilyEnableAll(self)
+  self.full=false
+  for k=1,self.active do self[k]:enable() end
+  self.active=0
+end
+eF.rep.smartFamilyEnableAll=smartFamilyEnableAll
+
 local function iconFrameDisable(self)
   self:Hide()
   self.filled=false
@@ -598,6 +660,49 @@ local function iconUpdateTextTypeT(self)
 end
 eF.rep.iconUpdateTextTypeT=iconUpdateTextTypeT
 
+local function iconApplySmartIcon(self)
+  if not self.filled then return end
+  self.texture:SetTexture(self.icon)
+end
+eF.rep.iconApplySmartIcon=iconApplySmartIcon
+
+local function smartFamilyApplySmartIcons(self)
+  if not self.filled then return end
+  for i=1,self.active do
+    self[i]:updateTexture()
+  end
+end
+eF.rep.smartFamilyApplySmartIcons=smartFamilyApplySmartIcons
+
+local function updateBorderColorDebuffType(self)
+  if not self.filled then return end
+  local c=self.borderColor[self.debuffType] 
+  if c then self.border:SetVertexColor(c[1],c[2],c[3])
+  else self.border:Hide() end 
+end
+eF.rep.updateBorderColorDebuffType=updateBorderColorDebuffType
+
+local function smartFamilyDebuffTypeBorderColor(self)
+  for i=1,self.active do
+    self[i]:updateBorder()
+  end
+end
+eF.rep.smartFamilyDebuffTypeBorderColor=smartFamilyDebuffTypeBorderColor
+
+local function iconUpdateCDWheel(self)
+  if not self.filled then return end
+  local dur=self.duration
+  self.cdFrame:SetCooldown(self.expirationTime-dur,dur)
+end
+eF.rep.iconUpdateCDWheel=iconUpdateCDWheel
+
+local function smartFamilyUpdateCDWheels(self)
+  for i=1,self.active do
+    self[i]:updateCDWheel()
+  end
+end
+eF.rep.smartFamilyUpdateCDWheels=smartFamilyUpdateCDWheels
+
 local function statusBarPowerUpdate(self)
   local unit=self.id
   self:SetValue(UnitPower(unit)/UnitPowerMax(unit))
@@ -605,7 +710,14 @@ end
 eF.rep.statusBarPowerUpdate=statusBarPowerUpdate
 
 local function checkLoad(self,role,enc,ins)
-  if self.loadAlways then return true end 
+  if self.loadAlways then 
+    if not self.loaded then 
+      self.loaded=true; 
+      if self.static then self:enable() end
+    end
+    return true 
+  end 
+  
   local inList=eF.isInList
   local b=true
 
@@ -615,8 +727,11 @@ local function checkLoad(self,role,enc,ins)
   end
   
   if not b and self.loaded then self.loaded=false; self:disable() end
-  if b and not self.loaded then self.loaded=true; self:enable() end
-
+  if b and not self.loaded then 
+    if self.static then self:enable() end
+    self.loaded=true
+  end
+  
   return b
 end
 eF.rep.checkLoad=checkLoad

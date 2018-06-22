@@ -152,6 +152,20 @@ local function unitEventHandler(self,event)
       
     end 
     
+    local c=self.onPostAuraList
+    for j=1,#c do
+      local v=c[j]
+      v[1](v[2])
+    end
+  
+  elseif event=="UNIT_POWER_UPDATE" then
+  
+    local c=self.onPowerList
+    for j=1,#c do
+      local v=c[j]
+      v[1](v[2])
+    end
+    
   end 
 end
 eF.rep.unitEventHandler=unitEventHandler
@@ -165,11 +179,11 @@ local function createUnitFrame(self,unit)
   
   self[unit]=CreateFrame("Button",nil,self,"SecureUnitButtonTemplate")
   self[unit].id=unit
-  
+  self[unit].events={"UNIT_HEALTH_FREQUENT","UNIT_MAXHEALTH","UNIT_CONNECTION","UNIT_FACTION","UNIT_AURA","UNIT_POWER_UPDATE"}
+
   self[unit]:SetAttribute("unit",unit)
   self[unit]:SetAttribute("type1","target")
   
-  --TBA: positional table
   self[unit]:SetPoint("TOPLEFT",self,"TOPLEFT",0,0)
   
   self[unit]:SetSize(self.width,self.height)
@@ -228,7 +242,6 @@ local function createUnitFrame(self,unit)
   end
   
   self[unit].hpUpdate=eF.rep.unitHPUpdate
-  self[unit].events={"UNIT_HEALTH_FREQUENT","UNIT_MAXHEALTH","UNIT_CONNECTION","UNIT_FACTION","UNIT_AURA"}
   end  
   
   do --create name string
@@ -401,6 +414,7 @@ local function unitLoad(self,ins,enc)
   self.onDebuffList={}
   self.onUpdateList={}
   self.onPowerList={}
+  self.onPostAuraList={}
   
   for j=1,nj do 
     if self[j].smart then 
@@ -410,6 +424,7 @@ local function unitLoad(self,ins,enc)
         local onDebuff=self[j].onDebuffList
         local onPower=self[j].onPowerList
         local onUpdate=self[j].onUpdateList
+        local onPostAura=self[j].onPostAuraList
         
         for l=1,#onAura do
           insert(self.onAuraList,onAura[l])
@@ -431,6 +446,11 @@ local function unitLoad(self,ins,enc)
           insert(self.onUpdateList,onUpdate[l])
         end
         
+        for l=1,#onPostAura do
+          insert(self.onPostAuraList,onPostAura[l])
+        end
+        
+        
       end --end of if self[j]:checkLoad
       
     else --else of if selfj.smart
@@ -442,6 +462,7 @@ local function unitLoad(self,ins,enc)
             local onDebuff=self[j][k].onDebuffList
             local onPower=self[j][k].onPowerList
             local onUpdate=self[j][k].onUpdateList
+            local onPostAura=self[j][k].onPostAuraList
             
             if self.static then self:enable() end
             
@@ -465,7 +486,10 @@ local function unitLoad(self,ins,enc)
               insert(self.onUpdateList,onUpdate[l])
             end
             
-            
+            for l=1,#onPostAura do
+              insert(self.onPostAuraList,onPostAura[l])
+            end
+                
           end --end of if selfjk.checkLoad
         
       end --end of for k=1,nk
