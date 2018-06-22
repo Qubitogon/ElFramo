@@ -107,6 +107,8 @@ eF.para.families={[1]={displayName="void",
                             loadAlways=false,
                             loadRole=true,
                             loadRoleList={"HEALER"}, 
+                            loadClass=true,
+                            loadClassList={"Monk"}
                             },                      
                          }, --end of ...families[1] 
                   [2]={displayName="blacktest",
@@ -129,6 +131,8 @@ eF.para.families={[1]={displayName="void",
                        growAnchorTo="BOTTOMLEFT",
                        cdReverse=true,
                        cdWheel=true,
+                       hasBorder=true,
+                       borderType="debuffColor",
                        hasText=true,
                        hasTexture=true,
                        ignorePermanents=true,
@@ -161,8 +165,6 @@ eF.para.families={[1]={displayName="void",
                        anchor="LEFT",
                        anchorTo="LEFT",
                        buff=true,
-                       hasBorder=true,
-                       borderType="debuffColor",
                        smartIcons=true,
                        grow="right",
                        growAnchor="LEFT",
@@ -235,7 +237,8 @@ local function createFamilyFrames()
         else 
           if frame[j].para.loadRole then frame[j].loadRole=true; frame[j].loadRoleList=frame[j].para.loadRoleList end
           if frame[j].para.loadInstance then frame[j].loadInstance=true; frame[j].loadInstanceList = frame[j].para.loadInstanceList end
-          if frame[j].para.loadEncounter then frame[j].loadEncounter=true; frame[j].loadEncounter=frame[j].para.loadEncounter end 
+          if frame[j].para.loadEncounter then frame[j].loadEncounter=true; frame[j].loadEncounterList=frame[j].para.loadEncounterList end 
+          if frame[j].para.loadClass then frame[j].loadClass=true; frame[j].loadClassList=frame[j].para.loadClassList end
         end  
                
         if frame[j].para.type=="b" then 
@@ -369,12 +372,6 @@ local function createFamilyFrames()
             frame[j][k].onUpdateList={}
             frame[j][k].onPowerList={}
             
-            if frame[j][k].para.loadAlways then frame[j][k].loadAlways=true 
-            else 
-              if frame[j][k].para.loadRole then frame[j][k].loadRole=true; frame[j][k].loadRoleList=frame[j][k].para.loadRoleList end
-              if frame[j][k].para.loadInstance then frame[j][k].loadInstance=true; frame[j][k].loadInstanceList = frame[j][k].para.loadInstanceList end
-              if frame[j][k].para.loadEncounter then frame[j][k].loadEncounter=true; frame[j][k].loadEncounter=frame[j][k].para.loadEncounter end 
-            end
             
             if frame.families[j][k].trackType=="name" then  
               insert(frame[j][k].onAuraList,{eF.rep.iconFrameDisable,frame[j][k]})
@@ -480,6 +477,7 @@ local function createFamilyFrames()
               if frame[j][k].para.loadRole then frame[j][k].loadRole=true; frame[j][k].loadRoleList=frame[j][k].para.loadRoleList end
               if frame[j][k].para.loadInstance then frame[j][k].loadInstance=true; frame[j][k].loadInstanceList = frame[j][k].para.loadInstanceList end
               if frame[j][k].para.loadEncounter then frame[j][k].loadEncounter=true; frame[j][k].loadEncounter=frame[j][k].para.loadEncounter end 
+              if frame[j][k].para.loadClass then frame[j][k].loadClass=true; frame[j][k].loadClassList=frame[j][k].para.loadClassList end
             end
                        
             if frame.families[j][k].trackType=="power" then  
@@ -519,6 +517,16 @@ local function createFamilyFrames()
           end--end of if bar
           
           
+          do  --loading conditions
+          if frame[j][k].para.loadAlways then frame[j][k].loadAlways=true 
+          else 
+            if frame[j][k].para.loadRole then frame[j][k].loadRole=true; frame[j][k].loadRoleList=frame[j][k].para.loadRoleList end
+            if frame[j][k].para.loadInstance then frame[j][k].loadInstance=true; frame[j][k].loadInstanceList = frame[j][k].para.loadInstanceList end
+            if frame[j][k].para.loadEncounter then frame[j][k].loadEncounter=true; frame[j][k].loadEncounter=frame[j][k].para.loadEncounter end 
+            if frame[j][k].para.loadClass then frame[j][k].loadClass=true; frame[j][k].loadClassList=frame[j][k].para.loadClassList end
+          end
+          
+          end--end of do
           
         end --end for k=1,frame.families.count
       end--end of if frame.families[j].smart else
@@ -709,7 +717,7 @@ local function statusBarPowerUpdate(self)
 end
 eF.rep.statusBarPowerUpdate=statusBarPowerUpdate
 
-local function checkLoad(self,role,enc,ins)
+local function checkLoad(self,role,enc,ins,class)
   if self.loadAlways then 
     if not self.loaded then 
       self.loaded=true; 
@@ -720,10 +728,10 @@ local function checkLoad(self,role,enc,ins)
   
   local inList=eF.isInList
   local b=true
-
   if self.loadRole and not inList(role,self.loadRoleList) then b=false
   elseif self.loadEncounter and not inList(enc,self.loadEncounterList) then b=false 
   elseif self.loadInstance and not inList(ins,self.loadInstanceList) then b=false
+  elseif self.loadClass and not inList(class,self.loadClassList) then b=false
   end
   
   if not b and self.loaded then self.loaded=false; self:disable() end

@@ -340,8 +340,9 @@ local function unitsOnGroupUpdate(self)
       
     for n=1,num do
       local unit=lst[n]  
+      local class,CLASS=UnitClass(unit)
       if self.byClassColor then
-        local _,CLASS=UnitClass(unit)
+
         local alpha=units.hpA or 1
         local r,g,b=GetClassColor(CLASS)       
         if units.hpTexture then 
@@ -366,7 +367,8 @@ local function unitsOnGroupUpdate(self)
       
       local role=UnitGroupRolesAssigned(unit)
       units[unit].role=role      
-      
+      units[unit].class=class
+      print(class)
       --DO ALL THE FAMILY DEPENDENCIES
       units:checkLoad()
       
@@ -409,16 +411,16 @@ local function unitLoad(self,ins,enc)
   local insert=table.insert
   local nj=#self.families
   local role=self.role
+  local class=self.class
   self.onAuraList={}
   self.onBuffList={}
   self.onDebuffList={}
   self.onUpdateList={}
   self.onPowerList={}
   self.onPostAuraList={}
-  
   for j=1,nj do 
     if self[j].smart then 
-      if self[j]:checkLoad(role,ins,enc) then
+      if self[j]:checkLoad(role,ins,enc,class) then
         local onAura=self[j].onAuraList
         local onBuff=self[j].onBuffList
         local onDebuff=self[j].onDebuffList
@@ -456,7 +458,7 @@ local function unitLoad(self,ins,enc)
     else --else of if selfj.smart
       local nk=self[j].para.count
       for k=1,nk do       
-          if self[j][k]:checkLoad(role,ins,enc) then
+          if self[j][k]:checkLoad(role,ins,enc,class) then
             local onAura=self[j][k].onAuraList
             local onBuff=self[j][k].onBuffList
             local onDebuff=self[j][k].onDebuffList
