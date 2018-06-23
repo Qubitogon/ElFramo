@@ -1,7 +1,8 @@
 local _,eF=...
-
+--see OptionsPanelTemplates.xml
 local font="Fonts\\FRIZQT__.ttf"
 local font2="Fonts\\ARIALN.ttf"
+local border1="Interface\\Tooltips\\UI-Tooltip-Border"
 local fontExtra="OUTLINE"
 local smallBreak="Interface\\QUESTFRAME\\UI-HorizontalBreak"
 local largeBreak="Interface\\MailFrame\\MailPopup-Divider"
@@ -9,7 +10,9 @@ local div="Interface\\HELPFRAME\\HelpFrameDivider"
 local titleFont="Fonts\\ARIALN.ttf"
 local titleFontExtra="OUTLINE"
 local titleFontColor={0.9,0.9,0.1}
+local titleSpacer="Interface\\OPTIONSFRAME\\UI-OptionsFrame-Spacer"
 
+local bd2={edgeFile ="Interface\\Tooltips\\UI-Tooltip-Border" ,edgeSize = 10, insets ={ left = 0, right = 0, top = 0, bottom = 0 }}
 local bd={edgeFile ="Interface\\DialogFrame\\UI-DialogBox-Border",edgeSize = 20, insets ={ left = 0, right = 0, top = 0, bottom = 0 }}
 local int,tb,hd1,hd1b1,hd1b2,hd1b3,gf
 
@@ -59,7 +62,7 @@ int:SetHeight(600)
 int:SetWidth(850)
 int:SetBackdrop(bd)
 int:EnableMouse(true)
-int:SetAlpha(0.9)
+int:SetAlpha(1)
 
 int.bg=int:CreateTexture(nil,"BACKGROUND")
 int.bg:SetPoint("TOPLEFT",int,"TOPLEFT",5,-5)
@@ -195,6 +198,7 @@ gf:Hide()
 hd1b1.relatedFrame=gf
 gf:SetAllPoints()
 
+--[[
 createHDel(gf,"del1")
 gf.del1:SetPoint("TOP",gf,"TOP",0,-20)
 
@@ -208,32 +212,38 @@ gf.title1=gf:CreateFontString(nil,"OVERLAY")
 gf.title1:SetFont(titleFont,17,titleFontExtra)
 gf.title1:SetTextColor(titleFontColor[1],titleFontColor[2],titleFontColor[3])
 gf.title1:SetText("FRAME")
-gf.title1:SetPoint("CENTER",gf,"TOP",0,-40)
+gf.title1:SetPoint("CENTER",gf,"TOP",0,-40) ]]
 
 gf.frameDim=CreateFrame("Frame",nil,gf)
 local fD=gf.frameDim
 fD:SetPoint("TOPLEFT",gf,"TOPLEFT",70,-60)
 fD:SetHeight(100)
-fD:SetWidth(100)
+fD:SetWidth(110)
+fD:SetBackdrop(bd2)
 
 fD.title=fD:CreateFontString(nil,"OVERLAY")
 local t=fD.title
 t:SetFont(titleFont,15,titleFontExtra)
-t:SetTextColor(titleFontColor[1],titleFontColor[2],titleFontColor[3])
+t:SetTextColor(1,1,1)
 t:SetText("Dimensions")
-t:SetPoint("TOPLEFT",fD,"TOPLEFT",10)
+t:SetPoint("TOPLEFT",fD,"TOPLEFT",8,-8)
+
+fD.titleSpacer=fD:CreateTexture(nil,"BACKGROUND")
+local tS=fD.titleSpacer
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(10)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(fD:GetWidth()*0.85)
 
 createNumberEB(fD,"ebHeight")
-fD.ebHeight:SetPoint("TOPLEFT",fD,"TOPLEFT",50,-25)
+fD.ebHeight:SetPoint("TOPRIGHT",fD,"TOPRIGHT",-10,-35)
 fD.ebHeight:SetText(eF.para.units.height)
 fD.ebHeight.text:SetText("Height:")
 
 createNumberEB(fD,"ebWidth")
-fD.ebWidth:SetPoint("TOPLEFT",fD,"TOPLEFT",50,-50)
+fD.ebWidth:SetPoint("TOPRIGHT",fD,"TOPRIGHT",-10,-60)
 fD.ebWidth:SetText(eF.para.units.width)
 fD.ebWidth.text:SetText("Width:")
-
-
 
 end
 
