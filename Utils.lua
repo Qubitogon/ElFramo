@@ -46,7 +46,6 @@ eF.para.units={
                borderG=0.35,
                borderB=0.35,
                borderA=1,
-               borderFix=true, --if true we try to fix some of the bullshit
                }
 
 eF.para.colors={}
