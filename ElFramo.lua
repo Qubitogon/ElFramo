@@ -21,6 +21,7 @@ eF.units.createUnitFrame=eF.rep.createUnitFrame
 eF.units.onUpdate=eF.rep.unitsFrameOnUpdate
 eF.units.onEvent=eF.rep.unitsEventHandler
 eF.units.onGroupUpdate=eF.rep.unitsOnGroupUpdate
+eF.units.updateSize=eF.rep.updateUnitFrameSize
 eF.units:SetScript("OnUpdate",units.onUpdate)
 eF.units:RegisterEvent("GROUP_ROSTER_UPDATE")
 eF.units:SetScript("OnEvent",units.onEvent)
@@ -102,13 +103,20 @@ eF.rep.unitUpdateText=unitUpdateText
 
 local function updateUnitBorders(self)
   local size=eF.units.borderSize
+  local r=eF.para.units.borderR
+  local g=eF.para.units.borderG
+  local b=eF.para.units.borderG
+  local a=eF.para.units.borderA
+
+
   if not (size and self.borderRight) then return end 
   
   for k,v in next,{"RIGHT","TOP","LEFT","BOTTOM"} do 
     local loc,p1,p2,w,f11,f12,f21,f22=eF.borderInfo(v)
+    self[loc]:SetColorTexture(r,g,b,a)
     self[loc]:SetPoint(p1,self,p1,f11*(size),f12*(size))
     self[loc]:SetPoint(p2,self,p2,f21*(size),f22*(size))
-    if w then self[loc]:SetWidth(size); 
+    if w then self[loc]:SetWidth(size); print("done")
     else self[loc]:SetHeight(size); end    
   end
 end
@@ -504,6 +512,26 @@ local function unitLoad(self,ins,enc)
   
 end
 eF.rep.unitLoad=unitLoad
+
+local function updateUnitFrameSize(self)
+  local h,w
+  local para=eF.para.units
+  h=para.height or 50
+  w=para.width or 50
+  
+  for i=1,45 do
+    local id
+    if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
+    self[id]:SetHeight(h)
+    self[id]:SetWidth(w)
+    local o=self[id].hp:GetOrientation()
+    if o=="VERTICAL" then self[id].hp:SetHeight(h)
+    else self[id].hp:SetWidth(w) end 
+  end
+end
+eF.rep.updateUnitFrameSize=updateUnitFrameSize
+
+
 
 
 --initUnitsFrame()

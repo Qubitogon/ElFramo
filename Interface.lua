@@ -10,18 +10,71 @@ local div="Interface\\HELPFRAME\\HelpFrameDivider"
 local titleFont="Fonts\\ARIALN.ttf"
 local titleFontExtra="OUTLINE"
 local titleFontColor={0.9,0.9,0.1}
+local titleFontColor2={0.9,0.9,0.6}
 local titleSpacer="Interface\\OPTIONSFRAME\\UI-OptionsFrame-Spacer"
-
 local bd2={edgeFile ="Interface\\Tooltips\\UI-Tooltip-Border" ,edgeSize = 10, insets ={ left = 0, right = 0, top = 0, bottom = 0 }}
 local bd={edgeFile ="Interface\\DialogFrame\\UI-DialogBox-Border",edgeSize = 20, insets ={ left = 0, right = 0, top = 0, bottom = 0 }}
 local int,tb,hd1,hd1b1,hd1b2,hd1b3,gf
 
-local function frameToggle(self)
+function header1ReleaseAll()
+  hd1.button1:Enable()
+  hd1.button2:Enable()
+  hd1.button3:Enable()
+  if hd1.button1.relatedFrame then hd1.button1.relatedFrame:Hide() end
+  if hd1.button2.relatedFrame then hd1.button2.relatedFrame:Hide() end
+  if hd1.button3.relatedFrame then hd1.button3.relatedFrame:Hide() end
+end
+
+function makeHeader1Button(self)
+  self:SetHeight(39)
+  self:SetWidth(100)
+  self:SetBackdrop(bd)
+
+  self.text=self:CreateFontString(nil,"OVERLAY")
+  self.text:SetPoint("CENTER")
+  self.text:SetFont(font2,17,fontExtra)
+  self.text:SetText("General")
+  self.text:SetTextColor(0.9,0.9,0.1)
+
+  self.nTexture=self:CreateTexture(nil,"BACKGROUND")
+  self.nTexture:SetPoint("TOPLEFT",self,"TOPLEFT",6,-6)
+  self.nTexture:SetPoint("BOTTOMRIGHT",self,"BOTTOMRIGHT",-6,6)
+  self.nTexture:SetColorTexture(0.07,0.07,0.07)
+  self:SetNormalTexture(self.nTexture)
+
+  self.pTexture=self:CreateTexture(nil,"BACKGROUND")
+  self.pTexture:SetPoint("TOPLEFT",self,"TOPLEFT",6,-6)
+  self.pTexture:SetPoint("BOTTOMRIGHT",self,"BOTTOMRIGHT",-6,0)
+  self.pTexture:SetColorTexture(0.1,0.1,0.1)
+  self:SetPushedTexture(self.pTexture)
+
+  self:SetScript("OnClick",function(self)
+    header1ReleaseAll()
+    self:Disable()
+    if self.relatedFrame then self.relatedFrame:Show() end
+    end)
+end
+
+local function createNumberEB(self,name)
+  self[name]=CreateFrame("EditBox",nil,gf,"InputBoxTemplate")
+  local eb=self[name]
+  eb:SetWidth(30)
+  eb:SetHeight(20)
+  eb:SetAutoFocus(false)
+
+  eb.text=eb:CreateFontString()
+  local tx=eb.text
+  tx:SetFont(font,12,fontExtra)
+  tx:SetTextColor(1,1,1)
+  tx:SetPoint("RIGHT",eb,"LEFT",-12,0)
+end
+
+local function frameToggle(self) 
   if not self then return end
   if self:IsShown() then self:Hide() else self:Show()end
 end
 
-function createHDel(self,name)
+local function createHDel(self,name)
   self[name]=CreateFrame("Frame",nil,self)
   local f=self[name]
   f:SetWidth(self:GetWidth()*0.9)
@@ -116,45 +169,6 @@ hd1.bg:SetPoint("BOTTOMRIGHT",hd1,"BOTTOMRIGHT",-5,5)
 hd1.bg:SetColorTexture(0.1,0.1,0.1)
 end
 
-function header1ReleaseAll()
-  hd1.button1:Enable()
-  hd1.button2:Enable()
-  hd1.button3:Enable()
-  if hd1.button1.relatedFrame then hd1.button1.relatedFrame:Hide() end
-  if hd1.button2.relatedFrame then hd1.button2.relatedFrame:Hide() end
-  if hd1.button3.relatedFrame then hd1.button3.relatedFrame:Hide() end
-end
-
-function makeHeader1Button(self)
-  self:SetHeight(39)
-  self:SetWidth(100)
-  self:SetBackdrop(bd)
-
-  self.text=self:CreateFontString(nil,"OVERLAY")
-  self.text:SetPoint("CENTER")
-  self.text:SetFont(font2,17,fontExtra)
-  self.text:SetText("General")
-  self.text:SetTextColor(0.9,0.9,0.1)
-
-  self.nTexture=self:CreateTexture(nil,"BACKGROUND")
-  self.nTexture:SetPoint("TOPLEFT",self,"TOPLEFT",6,-6)
-  self.nTexture:SetPoint("BOTTOMRIGHT",self,"BOTTOMRIGHT",-6,6)
-  self.nTexture:SetColorTexture(0.07,0.07,0.07)
-  self:SetNormalTexture(self.nTexture)
-
-  self.pTexture=self:CreateTexture(nil,"BACKGROUND")
-  self.pTexture:SetPoint("TOPLEFT",self,"TOPLEFT",6,-6)
-  self.pTexture:SetPoint("BOTTOMRIGHT",self,"BOTTOMRIGHT",-6,0)
-  self.pTexture:SetColorTexture(0.1,0.1,0.1)
-  self:SetPushedTexture(self.pTexture)
-
-  self:SetScript("OnClick",function(self)
-    header1ReleaseAll()
-    self:Disable()
-    if self.relatedFrame then self.relatedFrame:Show() end
-    end)
-end
-
 --create header 1 buttons
 do
 hd1.button1=CreateFrame("Button","eFHeader1Button1",hd1)
@@ -176,20 +190,6 @@ makeHeader1Button(hd1b3)
 hd1b3.text:SetText("Families")
 end
 
-function createNumberEB(self,name)
-  self[name]=CreateFrame("EditBox",nil,gf,"InputBoxTemplate")
-  local eb=self[name]
-  eb:SetWidth(30)
-  eb:SetHeight(20)
-  eb:SetAutoFocus(false)
-
-  eb.text=eb:CreateFontString()
-  local tx=eb.text
-  tx:SetFont(font,12,fontExtra)
-  tx:SetTextColor(1,1,1)
-  tx:SetPoint("RIGHT",eb,"LEFT",-12,0)
-end
-
 --create general settings frame
 do
 int.generalFrame=CreateFrame("Frame","eFGeneral",hd1)
@@ -198,52 +198,183 @@ gf:Hide()
 hd1b1.relatedFrame=gf
 gf:SetAllPoints()
 
---[[
-createHDel(gf,"del1")
-gf.del1:SetPoint("TOP",gf,"TOP",0,-20)
-
-createHDel(gf,"del2")
-gf.del2:SetPoint("TOP",gf,"TOP",0,-250)
-
-createHDel(gf,"del3")
-gf.del3:SetPoint("TOP",gf,"TOP",0,-480)
-
-gf.title1=gf:CreateFontString(nil,"OVERLAY")
-gf.title1:SetFont(titleFont,17,titleFontExtra)
-gf.title1:SetTextColor(titleFontColor[1],titleFontColor[2],titleFontColor[3])
-gf.title1:SetText("FRAME")
-gf.title1:SetPoint("CENTER",gf,"TOP",0,-40) ]]
-
 gf.frameDim=CreateFrame("Frame",nil,gf)
 local fD=gf.frameDim
-fD:SetPoint("TOPLEFT",gf,"TOPLEFT",70,-60)
-fD:SetHeight(100)
-fD:SetWidth(110)
+fD:SetPoint("TOPLEFT",gf,"TOPLEFT",gf:GetWidth()*0.04,-30)
+fD:SetHeight(250)
+fD:SetWidth(gf:GetWidth()*0.92 )
 fD:SetBackdrop(bd2)
+
+fD.mainTitle=fD:CreateFontString(nil,"OVERLAY")
+local t=fD.mainTitle
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(titleFontColor2[1],titleFontColor2[2],titleFontColor2[3])
+t:SetText("UNIT FRAME")
+t:SetPoint("TOPLEFT",fD,"TOPLEFT",8,-8)
+
+fD.mainTitleSpacer=fD:CreateTexture(nil,"BACKGROUND")
+local tS=fD.mainTitleSpacer
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(9)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(fD:GetWidth()*0.95)
+tS:SetVertexColor(titleFontColor2[1],titleFontColor2[2],titleFontColor2[3])
 
 fD.title=fD:CreateFontString(nil,"OVERLAY")
 local t=fD.title
 t:SetFont(titleFont,15,titleFontExtra)
 t:SetTextColor(1,1,1)
 t:SetText("Dimensions")
-t:SetPoint("TOPLEFT",fD,"TOPLEFT",8,-8)
+t:SetPoint("TOPLEFT",fD,"TOPLEFT",8,-48)
 
 fD.titleSpacer=fD:CreateTexture(nil,"BACKGROUND")
 local tS=fD.titleSpacer
 tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
-tS:SetHeight(10)
+tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
-tS:SetWidth(fD:GetWidth()*0.85)
+tS:SetWidth(110)
 
 createNumberEB(fD,"ebHeight")
-fD.ebHeight:SetPoint("TOPRIGHT",fD,"TOPRIGHT",-10,-35)
+fD.ebHeight:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
 fD.ebHeight:SetText(eF.para.units.height)
 fD.ebHeight.text:SetText("Height:")
+fD.ebHeight:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+h=self:GetNumber()
+if h==0 then h=eF.para.units.height; self:SetText(h)
+else eF.para.units.height=h; eF.units:updateSize() end
+end)
 
 createNumberEB(fD,"ebWidth")
-fD.ebWidth:SetPoint("TOPRIGHT",fD,"TOPRIGHT",-10,-60)
+fD.ebWidth:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
 fD.ebWidth:SetText(eF.para.units.width)
 fD.ebWidth.text:SetText("Width:")
+fD.ebWidth:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+w=self:GetNumber()
+if w==0 then w=eF.para.units.width; self:SetText(w)
+else eF.para.units.width=w; eF.units:updateSize() end
+end)
+
+fD.title2=fD:CreateFontString(nil,"OVERLAY")
+local t=fD.title2
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("Health Frame")
+t:SetPoint("LEFT",fD.title,"LEFT",155,0)
+
+fD.titleSpacer2=fD:CreateTexture(nil,"BACKGROUND")
+local tS=fD.titleSpacer2
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(130)
+
+createNumberEB(fD,"hColor")
+fD.hColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
+fD.hColor:SetText("byClass")
+fD.hColor.text:SetText("Color:")
+
+createNumberEB(fD,"hDir")
+fD.hDir:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
+fD.hDir:SetText(eF.para.units.healthGrow)
+fD.hDir.text:SetText("Orientation:")
+
+createNumberEB(fD,"hGrad")
+fD.hGrad:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-65)
+fD.hGrad:SetText("true")
+fD.hGrad.text:SetText("Gradient:")
+
+createNumberEB(fD,"gradStart")
+fD.gradStart:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-90)
+fD.gradStart:SetText(eF.para.units.hpGrad1R)
+fD.gradStart.text:SetText("Start grad.")
+
+createNumberEB(fD,"gradFinal")
+fD.gradFinal:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-115)
+fD.gradFinal:SetText(eF.para.units.hpGrad2R)
+fD.gradFinal.text:SetText("Final grad.:")
+
+
+fD.title3=fD:CreateFontString(nil,"OVERLAY")
+local t=fD.title3
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("Name")
+t:SetPoint("LEFT",fD.title2,"LEFT",185,0)
+
+fD.titleSpacer3=fD:CreateTexture(nil,"BACKGROUND")
+local tS=fD.titleSpacer3
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(130)
+
+createNumberEB(fD,"nColor")
+fD.nColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
+fD.nColor:SetText("byClass")
+fD.nColor.text:SetText("Color:")
+
+createNumberEB(fD,"nMax")
+fD.nMax:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
+fD.nMax:SetText(eF.para.units.textLim)
+fD.nMax.text:SetText("Characters:")
+
+createNumberEB(fD,"nSize")
+fD.nSize:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-65)
+fD.nSize:SetText(eF.para.units.textSize)
+fD.nSize.text:SetText("Font size:")
+
+createNumberEB(fD,"nFont")
+fD.nFont:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-90)
+fD.nFont:SetText(eF.para.units.textFont)
+fD.nFont.text:SetText("Font:")
+
+createNumberEB(fD,"nAlpha")
+fD.nAlpha:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-115)
+fD.nAlpha:SetText(eF.para.units.textA)
+fD.nAlpha.text:SetText("Alpha:")
+
+createNumberEB(fD,"nPos")
+fD.nPos:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-140)
+fD.nPos:SetText(eF.para.units.textPos)
+fD.nPos.text:SetText("Position:")
+
+fD.title4=fD:CreateFontString(nil,"OVERLAY")
+local t=fD.title4
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("Border")
+t:SetPoint("LEFT",fD.title,"LEFT",0,-85)
+
+fD.titleSpacer4=fD:CreateTexture(nil,"BACKGROUND")
+local tS=fD.titleSpacer4
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(fD.titleSpacer:GetWidth())
+
+createNumberEB(fD,"bColor")
+fD.bColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
+fD.bColor:SetText("Nig")
+fD.bColor.text:SetText("Color:")
+
+createNumberEB(fD,"bWid")
+fD.bWid:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
+fD.bWid:SetText(eF.para.units.borderSize)
+fD.bWid.text:SetText("Width:")
+fD.bWid:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+w=self:GetNumber()
+if w==0 then w=eF.para.units.borderSize; self:SetText(w)
+else eF.para.units.borderSize=w; eF.units.borderSize=w;
+  for i=1,45 do
+    local id
+    if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
+    eF.units[id]:updateBorders();
+  end
+end
+end)
 
 end
 
