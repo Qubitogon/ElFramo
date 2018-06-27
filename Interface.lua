@@ -106,6 +106,43 @@ local function createHDel(self,name)
   
 end
 
+--http://wowwiki.wikia.com/wiki/UIOBJECT_ColorSelect
+local function createCS(self,name)
+  self[name]=CreateFrame("Button",nil,self)
+  local cp=self[name]
+  cp:SetWidth(35)
+  cp:SetHeight(20)
+  
+  cp.opacityFunc=function()  end
+  cp.cancelFunc=function()   end
+  cp.func=function()  end
+  
+  cp.hasOpacity=false
+  cp.getOldRGBA=function() return 1,1,1,1 end
+  
+  cp:SetScript("OnClick",function(self)
+    local r,g,b,a=self:getOldRGBA()
+    ColorPickerFrame:SetColorRGB(r,g,b)
+    if self.hasOpacity then ColorPickerFrame.opacity=a end
+    
+    ColorPickerFrame.func=self.func; 
+    ColorPickerFrame.cancelFunc=self.cancelFunc; 
+    ColorPickerFrame.opacityFunc=self.opacityFunc; 
+    
+    ColorPickerFrame:Show() 
+    end)
+  
+  cp.thumb=cp:CreateTexture(nil,"ARTWORK")
+  cp.thumb:SetAllPoints()
+  cp.thumb:SetColorTexture(1,1,1)
+  
+  cp.text=cp:CreateFontString()
+  local tx=cp.text
+  tx:SetFont(font,12,fontExtra)
+  tx:SetTextColor(1,1,1)
+  tx:SetPoint("RIGHT",cp,"LEFT",-12,0)
+end
+
 --create main frame
 do
 eF.interface=CreateFrame("Frame","eFInterface",UIParent)
@@ -354,10 +391,31 @@ tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
 tS:SetWidth(fD.titleSpacer:GetWidth())
 
-createNumberEB(fD,"bColor")
+createCS(fD,"bColor")
 fD.bColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
-fD.bColor:SetText("Nig")
 fD.bColor.text:SetText("Color:")
+fD.bColor.thumb:SetVertexColor(eF.para.units.borderR,eF.para.units.borderG,eF.para.units.borderB)
+fD.bColor.getOldRGBA=function(self)
+  local r=eF.para.units.borderR
+  local g=eF.para.units.borderG
+  local b=eF.para.units.borderB
+  return r,g,b
+end
+
+fD.bColor.opacityFunc=function()
+  local r,g,b=ColorPickerFrame:GetColorRGB()
+  local a=OpacitySliderFrame:GetValue()
+  fD.bColor.thumb:SetVertexColor(r,g,b)
+  eF.para.units.borderR=r
+  eF.para.units.borderG=g
+  eF.para.units.borderB=b
+  for i=1,45 do
+    local id
+    if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
+    eF.units[id]:updateBorders();
+  end
+end
+
 
 createNumberEB(fD,"bWid")
 fD.bWid:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)

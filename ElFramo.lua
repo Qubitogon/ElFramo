@@ -105,18 +105,17 @@ local function updateUnitBorders(self)
   local size=eF.units.borderSize
   local r=eF.para.units.borderR
   local g=eF.para.units.borderG
-  local b=eF.para.units.borderG
-  local a=eF.para.units.borderA
+  local b=eF.para.units.borderB
 
 
   if not (size and self.borderRight) then return end 
   
   for k,v in next,{"RIGHT","TOP","LEFT","BOTTOM"} do 
     local loc,p1,p2,w,f11,f12,f21,f22=eF.borderInfo(v)
-    self[loc]:SetColorTexture(r,g,b,a)
+    self[loc]:SetVertexColor(r,g,b)
     self[loc]:SetPoint(p1,self,p1,f11*(size),f12*(size))
     self[loc]:SetPoint(p2,self,p2,f21*(size),f22*(size))
-    if w then self[loc]:SetWidth(size); print("done")
+    if w then self[loc]:SetWidth(size);
     else self[loc]:SetHeight(size); end    
   end
 end
@@ -270,11 +269,11 @@ local function createUnitFrame(self,unit)
     local r=self.borderR or 0
     local g=self.borderG or 0
     local b=self.borderB or 0
-    local a=self.borderA or 1 
     for k,v in next,{"RIGHT","TOP","LEFT","BOTTOM"} do
       local bn=eF.borderInfo(v)      
       self[unit][bn]=self[unit]:CreateTexture("BACKGROUND",-4)
-      self[unit][bn]:SetColorTexture(r,g,b,a)
+      self[unit][bn]:SetColorTexture(1,1,1)
+      --self[unit][bn]:SetVertexColor(r,g,b)
     end
   self[unit]:updateBorders()
   end
@@ -376,7 +375,6 @@ local function unitsOnGroupUpdate(self)
       local role=UnitGroupRolesAssigned(unit)
       units[unit].role=role      
       units[unit].class=class
-      print(class)
       --DO ALL THE FAMILY DEPENDENCIES
       units:checkLoad()
       
@@ -531,7 +529,23 @@ local function updateUnitFrameSize(self)
 end
 eF.rep.updateUnitFrameSize=updateUnitFrameSize
 
-
+local function updateUnitFrameSize(self)
+  local h,w
+  local para=eF.para.units
+  h=para.height or 50
+  w=para.width or 50
+  
+  for i=1,45 do
+    local id
+    if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
+    self[id]:SetHeight(h)
+    self[id]:SetWidth(w)
+    local o=self[id].hp:GetOrientation()
+    if o=="VERTICAL" then self[id].hp:SetHeight(h)
+    else self[id].hp:SetWidth(w) end 
+  end
+end
+eF.rep.updateUnitFrameSize=updateUnitFrameSize
 
 
 --initUnitsFrame()
