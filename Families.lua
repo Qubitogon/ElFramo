@@ -1,5 +1,7 @@
 local _,eF=...
 
+--[[
+
 eF.para.families={[1]={displayName="void",
                        smart=false,
                        count=4,
@@ -189,10 +191,11 @@ eF.para.families={[1]={displayName="void",
                        textDecimals=0,
                        ownOnly=false,
                        loadAlways=true,
-                       },   --end of families[2]  ]]
+                       },   --end of families[2]  
                   }--end of all  
                   
-
+]]
+                  
 local function createFamilyFrames()
   local units=eF.units
   local insert=table.insert  

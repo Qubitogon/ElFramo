@@ -4,7 +4,10 @@
 ## Author: Gay
 ## Version: v0.1
 ## DefaultState: enabled
+## SavedVariables: _eF_savVar
+## SavedVariablesPerCharacter:_eF_initProfile
 
+Profiles.lua
 Utils.lua
 ElFramo.lua
 Layout.lua
@@ -13,3 +16,4 @@ Families.lua
 Final.lua
 
 Interface.lua
+

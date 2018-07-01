@@ -313,7 +313,7 @@ local function unitUpdateRange(self)
 end
 eF.rep.unitUpdateRange=unitUpdateRange
 
-local throttle=eF.para.throttle
+local throttle=eF.para.throttle or 0.1
 local eT=0
 local function unitsFrameOnUpdate(self,elapsed)
   if eT<throttle then eT=eT+elapsed; return end

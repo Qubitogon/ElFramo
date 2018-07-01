@@ -1,7 +1,10 @@
 local _,eF=...
+
+--[[
+
 eF.para={throttle=0.1--in s
         }
-eF.rep={}
+        
 eF.para.units={
                height=50,
                width=70,
@@ -47,13 +50,8 @@ eF.para.units={
                borderB=0.35,
                borderA=1,
                }
-
-eF.para.colors={}
-eF.para.colors.debuff={Disease={0.6,0.4,0},Poison={0,0.6,0},Curse={0.6,0,0.1},Magic={0.2,0.6,1}}
                
-eF.partyLoop={"player","party1","party2","party3","party4"}
-eF.raidLoop={}
-
+               
 eF.para.layout={
                spacing=5,
                grow1="down",
@@ -61,7 +59,20 @@ eF.para.layout={
                byClassColor=true,
                byGroup=true,
                maxInLine=5,
-               }
+               }   
+
+eF.para.colors={}
+eF.para.colors.debuff={Disease={0.6,0.4,0},Poison={0,0.6,0},Curse={0.6,0,0.1},Magic={0.2,0.6,1}}
+               
+]]            
+               
+
+               
+eF.partyLoop={"player","party1","party2","party3","party4"}
+eF.raidLoop={}
+
+
+
 
 for i=1,40 do
   local s="raid"..tostring(i)

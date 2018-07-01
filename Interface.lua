@@ -273,7 +273,7 @@ tS:SetWidth(110)
 
 createNumberEB(fD,"ebHeight")
 fD.ebHeight:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
-fD.ebHeight:SetText(eF.para.units.height)
+--fD.ebHeight:SetText(eF.para.units.height) --SETTING INIT VAL
 fD.ebHeight.text:SetText("Height:")
 fD.ebHeight:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
@@ -284,7 +284,7 @@ end)
 
 createNumberEB(fD,"ebWidth")
 fD.ebWidth:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
-fD.ebWidth:SetText(eF.para.units.width)
+--fD.ebWidth:SetText(eF.para.units.width) ebWidth:SetText(eF.para.units.width)
 fD.ebWidth.text:SetText("Width:")
 fD.ebWidth:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
@@ -314,7 +314,7 @@ fD.hColor.text:SetText("Color:")
 
 createNumberEB(fD,"hDir")
 fD.hDir:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
-fD.hDir:SetText(eF.para.units.healthGrow)
+--fD.hDir:SetText(eF.para.units.healthGrow) --SETTING INIT VAL
 fD.hDir.text:SetText("Orientation:")
 
 createNumberEB(fD,"hGrad")
@@ -324,12 +324,10 @@ fD.hGrad.text:SetText("Gradient:")
 
 createNumberEB(fD,"gradStart")
 fD.gradStart:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-90)
-fD.gradStart:SetText(eF.para.units.hpGrad1R)
 fD.gradStart.text:SetText("Start grad.")
 
 createNumberEB(fD,"gradFinal")
 fD.gradFinal:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-115)
-fD.gradFinal:SetText(eF.para.units.hpGrad2R)
 fD.gradFinal.text:SetText("Final grad.:")
 
 
@@ -354,27 +352,22 @@ fD.nColor.text:SetText("Color:")
 
 createNumberEB(fD,"nMax")
 fD.nMax:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
-fD.nMax:SetText(eF.para.units.textLim)
 fD.nMax.text:SetText("Characters:")
 
 createNumberEB(fD,"nSize")
 fD.nSize:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-65)
-fD.nSize:SetText(eF.para.units.textSize)
 fD.nSize.text:SetText("Font size:")
 
 createNumberEB(fD,"nFont")
 fD.nFont:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-90)
-fD.nFont:SetText(eF.para.units.textFont)
 fD.nFont.text:SetText("Font:")
 
 createNumberEB(fD,"nAlpha")
 fD.nAlpha:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-115)
-fD.nAlpha:SetText(eF.para.units.textA)
 fD.nAlpha.text:SetText("Alpha:")
 
 createNumberEB(fD,"nPos")
 fD.nPos:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-140)
-fD.nPos:SetText(eF.para.units.textPos)
 fD.nPos.text:SetText("Position:")
 
 fD.title4=fD:CreateFontString(nil,"OVERLAY")
@@ -394,7 +387,6 @@ tS:SetWidth(fD.titleSpacer:GetWidth())
 createCS(fD,"bColor")
 fD.bColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
 fD.bColor.text:SetText("Color:")
-fD.bColor.thumb:SetVertexColor(eF.para.units.borderR,eF.para.units.borderG,eF.para.units.borderB)
 fD.bColor.getOldRGBA=function(self)
   local r=eF.para.units.borderR
   local g=eF.para.units.borderG
@@ -419,7 +411,6 @@ end
 
 createNumberEB(fD,"bWid")
 fD.bWid:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
-fD.bWid:SetText(eF.para.units.borderSize)
 fD.bWid.text:SetText("Width:")
 fD.bWid:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
@@ -436,8 +427,25 @@ end)
 
 end
 
+function intSetInitValues()
+  local int=eF.interface
+  local gF=int.generalFrame
+  local fD=gF.frameDim
 
-
+  fD.ebHeight:SetText(eF.para.units.height)
+  fD.ebWidth:SetText(eF.para.units.width)
+  fD.hDir:SetText(eF.para.units.healthGrow)
+  fD.gradStart:SetText(eF.para.units.hpGrad1R)
+  fD.gradFinal:SetText(eF.para.units.hpGrad2R)
+  fD.nMax:SetText(eF.para.units.textLim)
+  fD.nSize:SetText(eF.para.units.textSize)
+  fD.nFont:SetText(eF.para.units.textFont)
+  fD.nAlpha:SetText(eF.para.units.textA)
+  fD.nPos:SetText(eF.para.units.textPos)
+  fD.bColor.thumb:SetVertexColor(eF.para.units.borderR,eF.para.units.borderG,eF.para.units.borderB)
+  fD.bWid:SetText(eF.para.units.borderSize)
+end
+eF.rep.intSetInitValues=intSetInitValues
 
 
 

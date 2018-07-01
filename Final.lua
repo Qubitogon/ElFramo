@@ -1,6 +1,10 @@
 local _,eF=...
 
 function initialise(self)
+  if _eF_savVar then eF.profiles=_eF_savVar.profiles end
+  local set=_eF_initProfile or "test" 
+  eF.rep.setProfile(set)
+
   --eLFramo.lua
   eF.rep.initUnitsFrame()
   eF.rep.initUnitsUnits()
@@ -24,6 +28,8 @@ function initialise(self)
   
   self:UnregisterEvent("PLAYER_ENTERING_WORLD")
   self=nil
+  
+  eF.rep.intSetInitValues()
 end
 
 
