@@ -325,11 +325,29 @@ fD.hGrad.text:SetText("Gradient:")
 createNumberEB(fD,"gradStart")
 fD.gradStart:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-90)
 fD.gradStart.text:SetText("Start grad.")
+fD.gradStart:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+n=self:GetNumber()
+eF.para.units.hpGrad1R=n;
+eF.para.units.hpGrad1G=n;
+eF.para.units.hpGrad1B=n;
+eF.units.hpGrad1R=n;
+eF.units.hpGrad1G=n;
+eF.units.hpGrad1B=n;
+eF.units:updateGrad() 
+end)
 
 createNumberEB(fD,"gradFinal")
 fD.gradFinal:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-115)
 fD.gradFinal.text:SetText("Final grad.:")
-
+fD.gradFinal:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+g=self:GetNumber()
+eF.para.units.hpGrad2R=n;
+eF.para.units.hpGrad2G=n;
+eF.para.units.hpGrad2B=n;
+eF.units:updateGrad() 
+end)
 
 fD.title3=fD:CreateFontString(nil,"OVERLAY")
 local t=fD.title3
@@ -353,18 +371,41 @@ fD.nColor.text:SetText("Color:")
 createNumberEB(fD,"nMax")
 fD.nMax:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
 fD.nMax.text:SetText("Characters:")
+fD.nMax:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+n=self:GetNumber()
+if n==0 then n=eF.para.units.textLim; self:SetText(n)
+else eF.para.units.textLim=n; eF.units.textLim=n; eF.units:updateTextLim() end
+end)
 
 createNumberEB(fD,"nSize")
 fD.nSize:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-65)
 fD.nSize.text:SetText("Font size:")
+fD.nSize:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+n=self:GetNumber()
+if n==0 then n=eF.para.units.textSize; self:SetText(n)
+else eF.para.units.textSize=n; eF.units.textSize=n; eF.units:updateTextFont() end
+end)
 
 createNumberEB(fD,"nFont")
 fD.nFont:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-90)
 fD.nFont.text:SetText("Font:")
+fD.nFont:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+s=self:GetNumber()
+if s==0 then s=eF.para.units.textSize; self:SetText(s)
+else eF.para.units.textSize=s; eF.units:updateTextFont() end
+end)
 
 createNumberEB(fD,"nAlpha")
 fD.nAlpha:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-115)
 fD.nAlpha.text:SetText("Alpha:")
+fD.nFont:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+a=self:GetNumber()
+eF.para.units.textAlpha=a; eF.units:updateTextColor() 
+end)
 
 createNumberEB(fD,"nPos")
 fD.nPos:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-140)
@@ -435,8 +476,8 @@ function intSetInitValues()
   fD.ebHeight:SetText(eF.para.units.height)
   fD.ebWidth:SetText(eF.para.units.width)
   fD.hDir:SetText(eF.para.units.healthGrow)
-  fD.gradStart:SetText(eF.para.units.hpGrad1R)
-  fD.gradFinal:SetText(eF.para.units.hpGrad2R)
+  fD.gradStart:SetText( eF.toDecimal(eF.para.units.hpGrad1R,2) or "nd")
+  fD.gradFinal:SetText( eF.toDecimal(eF.para.units.hpGrad2R,2) or "nd")
   fD.nMax:SetText(eF.para.units.textLim)
   fD.nSize:SetText(eF.para.units.textSize)
   fD.nFont:SetText(eF.para.units.textFont)

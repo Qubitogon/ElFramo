@@ -22,8 +22,14 @@ eF.units.onUpdate=eF.rep.unitsFrameOnUpdate
 eF.units.onEvent=eF.rep.unitsEventHandler
 eF.units.onGroupUpdate=eF.rep.unitsOnGroupUpdate
 eF.units.updateSize=eF.rep.updateUnitFrameSize
+eF.units.updateTextFont=eF.rep.updateUnitFrameTextFont
+eF.units.updateTextColor=eF.rep.updateUnitFrameTextColor
+eF.units.updateTextLim=eF.rep.updateUnitFrameTextLim
+eF.units.updateTextPos=eF.rep.updateUnitFrameTextPos
+eF.units.updateGrad=eF.rep.updateUnitFrameGrad
 eF.units:SetScript("OnUpdate",units.onUpdate)
 eF.units:RegisterEvent("GROUP_ROSTER_UPDATE")
+eF.units:RegisterEvent("PLAYER_ENTERING_WORLD")
 eF.units:SetScript("OnEvent",units.onEvent)
 --apply all relevant non-table parameters
 for k,v in pairs(eF.para.units) do
@@ -38,7 +44,7 @@ eF.rep.initUnitsFrame=initUnitsFrame
 
 local function unitsEventHandler(self,event)
   
-  if event=="GROUP_ROSTER_UPDATE" then
+  if event=="GROUP_ROSTER_UPDATE" or event=="PLAYER_ENTERING_WORLD"  then
     self:onGroupUpdate()    
   end--END OF IF event==GROUP_ROSTER_UDPATE
     
@@ -254,7 +260,7 @@ local function createUnitFrame(self,unit)
   do --create name string
   self[unit].text=self[unit]:CreateFontString(nil,"OVERLAY",-1)
   self[unit].text:SetFont(self.textFont,self.textSize,self.textExtra)
-  self[unit].text:SetPoint(self.textPos,self[unit],self.textPos)
+  self[unit].text:SetPoint(self.textPos,self[unit],self.textPos,self.textXOS,self.textYOS)
   local r=self.textR or 1
   local g=self.textG or 1
   local b=self.textB or 1
@@ -529,24 +535,100 @@ local function updateUnitFrameSize(self)
 end
 eF.rep.updateUnitFrameSize=updateUnitFrameSize
 
-local function updateUnitFrameSize(self)
-  local h,w
+local function updateUnitFrameTextFont(self)
+  local s,f,e
   local para=eF.para.units
-  h=para.height or 50
-  w=para.width or 50
+  s=para.textSize or 13
+  f=para.textFont or "Fonts\\FRIZQT__.ttf"
+  e=para.textExtra or nil
+
+  for i=1,45 do
+    local id
+    if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
+    self[id].text:SetFont(f,s,e)
+  end
+end
+eF.rep.updateUnitFrameTextFont=updateUnitFrameTextFont
+
+local function updateUnitFrameTextColor(self)
+  local a
+  local para=eF.para.units
+  a=para.textA or 1
+  if units.textColorByClass then 
+
+      for i=1,45 do
+        local id
+        if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end   
+        local _,CLASS=UnitClass(id)
+        local r=1
+        local g=1
+        local b=1
+        if CLASS then r,g,b=GetClassColor(CLASS) end
+        self[id].text:SetTextColor(r,g,b,a)
+      end
+  
+  else --else of byClassColor
+    local r=para.textR or 1 
+    local g=para.textG or 1 
+    local b=para.textB or 1 
+      for i=1,45 do
+        local id
+        if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end   
+        self[id].text:SetTextColor(r,g,b,a)
+      end
+  end
+end
+eF.rep.updateUnitFrameTextColor=updateUnitFrameTextColor
+
+local function updateUnitFrameTextPos(self)
+  local pos,xos,yos
+  local para=eF.para.units
+  pos=para.textPos or "CENTER"
+  xos=para.textXOS or 0
+  yos=para.textYOS or 0
+
+  for i=1,45 do
+    local id
+    if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
+    self.text:ClearAllPoints()
+    self.text:SetPoint(pos,self,pos,xos,yos)
+  end
+end
+eF.rep.updateUnitFrameTextPos=updateUnitFrameTextPos
+
+local function updateUnitFrameTextLim(self)
+  local n
+  local para=eF.para.units
+  n=para.textLim or 4
+  local tbl
+  if self.raid then tbl=eF.raidLoop else tbl=eF.partyLoop end
+  
+  for i=1,self.num do
+    local id=tbl[i]
+    self[id]:updateText()
+  end
+end
+eF.rep.updateUnitFrameTextLim=updateUnitFrameTextLim
+
+local function updateUnitFrameGrad(self)
+  local r1,g1,b1,r2,g2,b2
+  local para=eF.para.units
+  r1=para.hpGrad1R
+  g1=para.hpGrad1G
+  b1=para.hpGrad1B
+  r2=para.hpGrad2R
+  g2=para.hpGrad2G
+  b2=para.hpGrad2B
   
   for i=1,45 do
     local id
     if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
-    self[id]:SetHeight(h)
-    self[id]:SetWidth(w)
-    local o=self[id].hp:GetOrientation()
-    if o=="VERTICAL" then self[id].hp:SetHeight(h)
-    else self[id].hp:SetWidth(w) end 
+    local hpTexture=self[id].hp:GetStatusBarTexture()
+    hpTexture:SetGradientAlpha(self.hpGradOrientation,r1,g1,b1,1,r2,g2,b2,1)
   end
-end
-eF.rep.updateUnitFrameSize=updateUnitFrameSize
 
+end
+eF.rep.updateUnitFrameGrad=updateUnitFrameGrad
 
 --initUnitsFrame()
 --initUnitsUnits()
