@@ -410,6 +410,11 @@ end)
 createNumberEB(fD,"nPos")
 fD.nPos:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-140)
 fD.nPos.text:SetText("Position:")
+fD.nPos:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+p=self:GetText()
+eF.para.units.textPos=p; eF.units.textPos=p; eF.units:updateTextPos() 
+end)
 
 fD.title4=fD:CreateFontString(nil,"OVERLAY")
 local t=fD.title4

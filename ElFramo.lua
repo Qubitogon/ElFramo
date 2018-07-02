@@ -590,8 +590,8 @@ local function updateUnitFrameTextPos(self)
   for i=1,45 do
     local id
     if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
-    self.text:ClearAllPoints()
-    self.text:SetPoint(pos,self,pos,xos,yos)
+    self[id].text:ClearAllPoints()
+    self[id].text:SetPoint(pos,self[id],pos,xos,yos)
   end
 end
 eF.rep.updateUnitFrameTextPos=updateUnitFrameTextPos
