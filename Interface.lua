@@ -55,8 +55,8 @@ function makeHeader1Button(self)
     end)
 end
 
-local function createNumberEB(self,name)
-  self[name]=CreateFrame("EditBox",nil,gf,"InputBoxTemplate")
+local function createNumberEB(self,name,tab)
+  self[name]=CreateFrame("EditBox",nil,tab,"InputBoxTemplate")
   local eb=self[name]
   eb:SetWidth(30)
   eb:SetHeight(20)
@@ -68,6 +68,20 @@ local function createNumberEB(self,name)
   tx:SetTextColor(1,1,1)
   tx:SetPoint("RIGHT",eb,"LEFT",-12,0)
 end
+
+local function createDD(self,name,tab)
+  self[name]=CreateFrame("Frame","eFDropDown"..name,tab,"UIDropDownMenuTemplate")
+  local dd=self[name]
+  UIDropDownMenu_SetWidth(dd,85)
+
+
+  dd.text=dd:CreateFontString()
+  local tx=dd.text
+  tx:SetFont(font,12,fontExtra)
+  tx:SetTextColor(1,1,1)
+  tx:SetPoint("RIGHT",dd,"LEFT",10,0)
+end
+
 
 local function frameToggle(self) 
   if not self then return end
@@ -271,9 +285,8 @@ tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
 tS:SetWidth(110)
 
-createNumberEB(fD,"ebHeight")
+createNumberEB(fD,"ebHeight",gf)
 fD.ebHeight:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
---fD.ebHeight:SetText(eF.para.units.height) --SETTING INIT VAL
 fD.ebHeight.text:SetText("Height:")
 fD.ebHeight:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
@@ -282,7 +295,7 @@ if h==0 then h=eF.para.units.height; self:SetText(h)
 else eF.para.units.height=h; eF.units:updateSize() end
 end)
 
-createNumberEB(fD,"ebWidth")
+createNumberEB(fD,"ebWidth",gf)
 fD.ebWidth:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
 --fD.ebWidth:SetText(eF.para.units.width) ebWidth:SetText(eF.para.units.width)
 fD.ebWidth.text:SetText("Width:")
@@ -307,22 +320,22 @@ tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
 tS:SetWidth(130)
 
-createNumberEB(fD,"hColor")
+createNumberEB(fD,"hColor",gf)
 fD.hColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
 fD.hColor:SetText("byClass")
 fD.hColor.text:SetText("Color:")
 
-createNumberEB(fD,"hDir")
+createNumberEB(fD,"hDir",gf)
 fD.hDir:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
 --fD.hDir:SetText(eF.para.units.healthGrow) --SETTING INIT VAL
 fD.hDir.text:SetText("Orientation:")
 
-createNumberEB(fD,"hGrad")
+createNumberEB(fD,"hGrad",gf)
 fD.hGrad:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-65)
 fD.hGrad:SetText("true")
 fD.hGrad.text:SetText("Gradient:")
 
-createNumberEB(fD,"gradStart")
+createNumberEB(fD,"gradStart",gf)
 fD.gradStart:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-90)
 fD.gradStart.text:SetText("Start grad.")
 fD.gradStart:SetScript("OnEnterPressed", function(self)
@@ -337,7 +350,7 @@ eF.units.hpGrad1B=n;
 eF.units:updateGrad() 
 end)
 
-createNumberEB(fD,"gradFinal")
+createNumberEB(fD,"gradFinal",gf)
 fD.gradFinal:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-115)
 fD.gradFinal.text:SetText("Final grad.:")
 fD.gradFinal:SetScript("OnEnterPressed", function(self)
@@ -363,12 +376,12 @@ tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
 tS:SetWidth(130)
 
-createNumberEB(fD,"nColor")
+createNumberEB(fD,"nColor",gf)
 fD.nColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
 fD.nColor:SetText("byClass")
 fD.nColor.text:SetText("Color:")
 
-createNumberEB(fD,"nMax")
+createNumberEB(fD,"nMax",gf)
 fD.nMax:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
 fD.nMax.text:SetText("Characters:")
 fD.nMax:SetScript("OnEnterPressed", function(self)
@@ -378,7 +391,7 @@ if n==0 then n=eF.para.units.textLim; self:SetText(n)
 else eF.para.units.textLim=n; eF.units.textLim=n; eF.units:updateTextLim() end
 end)
 
-createNumberEB(fD,"nSize")
+createNumberEB(fD,"nSize",gf)
 fD.nSize:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-65)
 fD.nSize.text:SetText("Font size:")
 fD.nSize:SetScript("OnEnterPressed", function(self)
@@ -388,7 +401,7 @@ if n==0 then n=eF.para.units.textSize; self:SetText(n)
 else eF.para.units.textSize=n; eF.units.textSize=n; eF.units:updateTextFont() end
 end)
 
-createNumberEB(fD,"nFont")
+createNumberEB(fD,"nFont",gf)
 fD.nFont:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-90)
 fD.nFont.text:SetText("Font:")
 fD.nFont:SetScript("OnEnterPressed", function(self)
@@ -398,23 +411,35 @@ if s==0 then s=eF.para.units.textSize; self:SetText(s)
 else eF.para.units.textSize=s; eF.units:updateTextFont() end
 end)
 
-createNumberEB(fD,"nAlpha")
+createNumberEB(fD,"nAlpha",gf)
 fD.nAlpha:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-115)
 fD.nAlpha.text:SetText("Alpha:")
-fD.nFont:SetScript("OnEnterPressed", function(self)
+fD.nAlpha:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
 a=self:GetNumber()
 eF.para.units.textAlpha=a; eF.units:updateTextColor() 
 end)
 
-createNumberEB(fD,"nPos")
-fD.nPos:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-140)
+createDD(fD,"nPos",gf)
+fD.nPos:SetPoint("TOPLEFT",fD.nAlpha,"TOPLEFT",-22,-25)
 fD.nPos.text:SetText("Position:")
-fD.nPos:SetScript("OnEnterPressed", function(self)
-self:ClearFocus()
-p=self:GetText()
-eF.para.units.textPos=p; eF.units.textPos=p; eF.units:updateTextPos() 
-end)
+
+fD.nPos.initialize=function(frame,level,menuList)
+ local info = UIDropDownMenu_CreateInfo()
+ for i=1,#eF.positions do
+   local v=eF.positions[i]
+   info.text, info.checked, info.arg1 = v,false,v
+   info.func=function(self,arg1,arg2,checked)
+     eF.para.units.textPos=arg1
+     eF.units.textPos=arg1
+     eF.units:updateTextPos()
+     UIDropDownMenu_SetText(frame,v)
+     UIDropDownMenu_SetSelectedName(frame,v)
+     CloseDropDownMenus()
+   end
+   UIDropDownMenu_AddButton(info)
+ end
+end
 
 fD.title4=fD:CreateFontString(nil,"OVERLAY")
 local t=fD.title4
@@ -455,7 +480,7 @@ fD.bColor.opacityFunc=function()
 end
 
 
-createNumberEB(fD,"bWid")
+createNumberEB(fD,"bWid",gf)
 fD.bWid:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
 fD.bWid.text:SetText("Width:")
 fD.bWid:SetScript("OnEnterPressed", function(self)
@@ -477,19 +502,23 @@ function intSetInitValues()
   local int=eF.interface
   local gF=int.generalFrame
   local fD=gF.frameDim
+  local para=eF.para
+  local units=para.units
+  
+  fD.ebHeight:SetText(units.height)
+  fD.ebWidth:SetText(units.width)
+  fD.hDir:SetText(units.healthGrow)
+  fD.gradStart:SetText( eF.toDecimal(units.hpGrad1R,2) or "nd")
+  fD.gradFinal:SetText( eF.toDecimal(units.hpGrad2R,2) or "nd")
+  fD.nMax:SetText(units.textLim)
+  fD.nSize:SetText(units.textSize)
+  fD.nFont:SetText(units.textFont)
+  fD.nAlpha:SetText(units.textA)
+  UIDropDownMenu_SetSelectedName(fD.nPos,units.textPos)
+  UIDropDownMenu_SetText(fD.nPos,units.textPos)
 
-  fD.ebHeight:SetText(eF.para.units.height)
-  fD.ebWidth:SetText(eF.para.units.width)
-  fD.hDir:SetText(eF.para.units.healthGrow)
-  fD.gradStart:SetText( eF.toDecimal(eF.para.units.hpGrad1R,2) or "nd")
-  fD.gradFinal:SetText( eF.toDecimal(eF.para.units.hpGrad2R,2) or "nd")
-  fD.nMax:SetText(eF.para.units.textLim)
-  fD.nSize:SetText(eF.para.units.textSize)
-  fD.nFont:SetText(eF.para.units.textFont)
-  fD.nAlpha:SetText(eF.para.units.textA)
-  fD.nPos:SetText(eF.para.units.textPos)
-  fD.bColor.thumb:SetVertexColor(eF.para.units.borderR,eF.para.units.borderG,eF.para.units.borderB)
-  fD.bWid:SetText(eF.para.units.borderSize)
+  fD.bColor.thumb:SetVertexColor(units.borderR,units.borderG,units.borderB)
+  fD.bWid:SetText(units.borderSize)
 end
 eF.rep.intSetInitValues=intSetInitValues
 

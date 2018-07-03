@@ -70,7 +70,7 @@ eF.para.colors.debuff={Disease={0.6,0.4,0},Poison={0,0.6,0},Curse={0.6,0,0.1},Ma
                
 eF.partyLoop={"player","party1","party2","party3","party4"}
 eF.raidLoop={}
-
+eF.positions={"CENTER","RIGHT","TOPRIGHT","TOP","TOPLEFT","LEFT","BOTTOMLEFT","BOTTOM","BOTTOMRIGHT"}
 
 
 
@@ -120,4 +120,36 @@ function eF.isInList(s,lst)
   end
   return found
 end
+
+
+function eF.posInList(s,lst)
+  if not s or not lst then return nil end
+  for i=1,#lst do 
+    if type(lst[i])==type(s) then
+      if lst[i]==s then
+        break
+      end
+    end
+  end
+  return i
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
