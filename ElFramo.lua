@@ -646,13 +646,13 @@ local function updateUnitFrameHealthVisuals(self)
       self[unit].hp:SetPoint("TOPRIGHT"); self[unit].hp:SetPoint("BOTTOMRIGHT"); self[unit].hp:SetWidth(self.width); self[unit].hp:SetOrientation("HORIZONTAL"); self[unit].hp:SetReverseFill(true)
     end 
   end
- 
-  --update color if byCC
+  
+  --update color if byCC else
+  local a=self.hpA or 1
   if byCC then
     local lst
     if raid then lst=eF.raidLoop
     else lst=eF.partyLoop end  
-    local alpha=self.hpA or 1
     
     for i=1,self.num do
       local unit=lst[i]
@@ -663,7 +663,7 @@ local function updateUnitFrameHealthVisuals(self)
     end
   
   else
-    local r,g,b,a=self.hpR,self.hpG,self.hpB,self.hpA
+    local r,g,b=self.hpR,self.hpG,self.hpB
     for i=1,45 do
       local unit
       if i<6 then unit=eF.partyLoop[i] else unit=eF.raidLoop[i-5] end
@@ -671,7 +671,6 @@ local function updateUnitFrameHealthVisuals(self)
     end
   
   end
- 
 end
 eF.rep.updateUnitFrameHealthVisuals=updateUnitFrameHealthVisuals
 

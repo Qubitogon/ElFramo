@@ -5,7 +5,6 @@ function initialise(self)
   local set=_eF_initProfile or "test" 
   eF.rep.setProfile(set)
   
-  --eF.para.units.textFont="Fonts\\FRIZQT__.ttf"
 
 
   --eLFramo.lua

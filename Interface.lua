@@ -15,6 +15,8 @@ local titleSpacer="Interface\\OPTIONSFRAME\\UI-OptionsFrame-Spacer"
 local bd2={edgeFile ="Interface\\Tooltips\\UI-Tooltip-Border" ,edgeSize = 10, insets ={ left = 0, right = 0, top = 0, bottom = 0 }}
 local bd={edgeFile ="Interface\\DialogFrame\\UI-DialogBox-Border",edgeSize = 20, insets ={ left = 0, right = 0, top = 0, bottom = 0 }}
 local int,tb,hd1,hd1b1,hd1b2,hd1b3,gf
+local ySpacing=25
+local initSpacing=15
 
 function header1ReleaseAll()
   hd1.button1:Enable()
@@ -66,7 +68,9 @@ local function createNumberEB(self,name,tab)
   local tx=eb.text
   tx:SetFont(font,12,fontExtra)
   tx:SetTextColor(1,1,1)
-  tx:SetPoint("RIGHT",eb,"LEFT",-12,0)
+  --tx:SetPoint("RIGHT",eb,"LEFT",-12,0)
+  
+  eb:SetPoint("LEFT",tx,"RIGHT",12,0)
 end
 
 local function createDD(self,name,tab)
@@ -79,19 +83,20 @@ local function createDD(self,name,tab)
   local tx=dd.text
   tx:SetFont(font,12,fontExtra)
   tx:SetTextColor(1,1,1)
-  tx:SetPoint("RIGHT",dd,"LEFT",10,0)
+
+  dd:SetPoint("LEFT",tx,"RIGHT",-10,0)
 end
 
 local function createCB(self,name,tab)
-  self[name]=CreateFrame("CHeckButton",nil,tab,"ChatConfigCheckButtonTemplate")
+  self[name]=CreateFrame("CheckButton",nil,tab,"ChatConfigCheckButtonTemplate")
   local cb=self[name]
 
   cb.text=cb:CreateFontString()
   local tx=cb.text
   tx:SetFont(font,12,fontExtra)
   tx:SetTextColor(1,1,1)
-  tx:SetPoint("RIGHT",cb,"LEFT",-12,0)
-  
+
+  cb:SetPoint("LEFT",tx,"RIGHT",12,0)
   
 end
 
@@ -167,7 +172,8 @@ local function createCS(self,name,tab)
   local tx=cp.text
   tx:SetFont(font,12,fontExtra)
   tx:SetTextColor(1,1,1)
-  tx:SetPoint("RIGHT",cp,"LEFT",-12,0)
+  
+  cp:SetPoint("LEFT",tx,"RIGHT",8,1)
 end
 
 --create main frame
@@ -255,12 +261,15 @@ hd1b3.text:SetText("Families")
 end
 
 --create general settings frame
-do
+
 int.generalFrame=CreateFrame("Frame","eFGeneral",hd1)
 gf=int.generalFrame
 gf:Hide()
 hd1b1.relatedFrame=gf
 gf:SetAllPoints()
+
+--UNIT FRAME
+do
 
 gf.frameDim=CreateFrame("Frame",nil,gf)
 local fD=gf.frameDim
@@ -269,6 +278,8 @@ fD:SetHeight(250)
 fD:SetWidth(gf:GetWidth()*0.92 )
 fD:SetBackdrop(bd2)
 
+--header/title
+do
 fD.mainTitle=fD:CreateFontString(nil,"OVERLAY")
 local t=fD.mainTitle
 t:SetFont(titleFont,15,titleFontExtra)
@@ -283,7 +294,10 @@ tS:SetHeight(9)
 tS:SetTexture(titleSpacer)
 tS:SetWidth(fD:GetWidth()*0.95)
 tS:SetVertexColor(titleFontColor2[1],titleFontColor2[2],titleFontColor2[3])
+end 
 
+--Dimensions
+do 
 fD.title=fD:CreateFontString(nil,"OVERLAY")
 local t=fD.title
 t:SetFont(titleFont,15,titleFontExtra)
@@ -298,8 +312,8 @@ tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
 tS:SetWidth(110)
 
-createNumberEB(fD,"ebHeight",gf)
-fD.ebHeight:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
+createNumberEB(fD,"ebHeight",fD)
+fD.ebHeight.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
 fD.ebHeight.text:SetText("Height:")
 fD.ebHeight:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
@@ -308,8 +322,8 @@ if h==0 then h=eF.para.units.height; self:SetText(h)
 else eF.para.units.height=h; eF.units:updateSize() end
 end)
 
-createNumberEB(fD,"ebWidth",gf)
-fD.ebWidth:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
+createNumberEB(fD,"ebWidth",fD)
+fD.ebWidth.text:SetPoint("RIGHT",fD.ebHeight.text,"RIGHT",0,-ySpacing)
 --fD.ebWidth:SetText(eF.para.units.width) ebWidth:SetText(eF.para.units.width)
 fD.ebWidth.text:SetText("Width:")
 fD.ebWidth:SetScript("OnEnterPressed", function(self)
@@ -319,6 +333,10 @@ if w==0 then w=eF.para.units.width; self:SetText(w)
 else eF.para.units.width=w; eF.units:updateSize() end
 end)
 
+end
+
+--Health Frame
+do
 fD.title2=fD:CreateFontString(nil,"OVERLAY")
 local t=fD.title2
 t:SetFont(titleFont,15,titleFontExtra)
@@ -333,8 +351,8 @@ tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
 tS:SetWidth(130)
 
-createCB(fD,"hClassColor",gf)
-fD.hClassColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
+createCB(fD,"hClassColor",fD)
+fD.hClassColor.text:SetPoint("TOPLEFT",tS,"TOPLEFT",30,-initSpacing)
 --fD.hColor:SetText("byClass")
 fD.hClassColor.text:SetText("Class color:")
 fD.hClassColor:SetScript("OnClick",function(self)
@@ -347,8 +365,8 @@ fD.hClassColor:SetScript("OnClick",function(self)
   eF.units:updateHealthVis()
 end)
 
-createCS(fD,"hColor",gf)
-fD.hColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
+createCS(fD,"hColor",fD)
+fD.hColor.text:SetPoint("RIGHT",fD.hClassColor.text,"RIGHT",0,-ySpacing)
 fD.hColor.text:SetText("Color:")
 fD.hColor.getOldRGBA=function(self)
   local r=eF.para.units.hpR
@@ -370,7 +388,7 @@ fD.hColor.opacityFunc=function()
   eF.units:updateHealthVis()
 end
 
-fD.hColor.blocker=CreateFrame("Frame",nil,gf)
+fD.hColor.blocker=CreateFrame("Frame",nil,fD)
 local hCB=fD.hColor.blocker
 hCB:SetFrameLevel(fD.hColor:GetFrameLevel()+1)
 hCB:SetPoint("TOPRIGHT",fD.hColor,"TOPRIGHT",2,2)
@@ -381,8 +399,8 @@ hCB.texture:SetAllPoints()
 hCB.texture:SetColorTexture(0.1,0.1,0.1,0.5)
 
 
-createDD(fD,"hDir",gf)
-fD.hDir:SetPoint("TOPLEFT",fD.hClassColor,"TOPLEFT",-22,-46)
+createDD(fD,"hDir",fD)
+fD.hDir.text:SetPoint("RIGHT",fD.hColor.text,"RIGHT",0,-ySpacing)
 --fD.hDir:SetText(eF.para.units.healthGrow) --SETTING INIT VAL
 fD.hDir.text:SetText("Orientation:")
 fD.hDir.initialize=function(frame,level,menuList)
@@ -403,14 +421,8 @@ fD.hDir.initialize=function(frame,level,menuList)
 end
 UIDropDownMenu_SetWidth(fD.hDir,55)
 
---[[
-createNumberEB(fD,"hGrad",gf)
-fD.hGrad:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-65)
-fD.hGrad:SetText("true")
-fD.hGrad.text:SetText("Gradient:")]]
-
-createNumberEB(fD,"gradStart",gf)
-fD.gradStart:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-90)
+createNumberEB(fD,"gradStart",fD)
+fD.gradStart.text:SetPoint("RIGHT",fD.hDir.text,"RIGHT",0,-ySpacing)
 fD.gradStart.text:SetText("Start grad.:")
 fD.gradStart:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
@@ -424,8 +436,8 @@ eF.units.hpGrad1B=n;
 eF.units:updateGrad() 
 end)
 
-createNumberEB(fD,"gradFinal",gf)
-fD.gradFinal:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-115)
+createNumberEB(fD,"gradFinal",fD)
+fD.gradFinal.text:SetPoint("RIGHT",fD.gradStart.text,"RIGHT",0,-ySpacing)
 fD.gradFinal.text:SetText("Final grad.:")
 fD.gradFinal:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
@@ -439,6 +451,10 @@ eF.units.hpGrad2B=n;
 eF.units:updateGrad() 
 end)
 
+end--end of Health Frame
+
+--Name
+do
 fD.title3=fD:CreateFontString(nil,"OVERLAY")
 local t=fD.title3
 t:SetFont(titleFont,15,titleFontExtra)
@@ -454,8 +470,8 @@ tS:SetTexture(titleSpacer)
 tS:SetWidth(130)
 
 
-createCB(fD,"nClassColor",gf)
-fD.nClassColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
+createCB(fD,"nClassColor",fD)
+fD.nClassColor.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
 --fD.nColor:SetText("byClass")
 fD.nClassColor.text:SetText("Class color:")
 fD.nClassColor:SetScript("OnClick",function(self)
@@ -469,8 +485,8 @@ fD.nClassColor:SetScript("OnClick",function(self)
 end)
 
 
-createCS(fD,"nColor",gf)
-fD.nColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
+createCS(fD,"nColor",fD)
+fD.nColor.text:SetPoint("RIGHT",fD.nClassColor.text,"RIGHT",0,-ySpacing)
 fD.nColor.text:SetText("Color:")
 fD.nColor.getOldRGBA=function(self)
   local r=eF.para.units.textR
@@ -492,7 +508,7 @@ fD.nColor.opacityFunc=function()
   eF.units:updateTextColor()
 end
 
-fD.nColor.blocker=CreateFrame("Frame",nil,gf)
+fD.nColor.blocker=CreateFrame("Frame",nil,fD)
 local nCB=fD.nColor.blocker
 nCB:SetFrameLevel(fD.nColor:GetFrameLevel()+1)
 nCB:SetPoint("TOPRIGHT",fD.nColor,"TOPRIGHT",2,2)
@@ -504,8 +520,8 @@ nCB.texture:SetColorTexture(0.1,0.1,0.1,0.5)
 
 
 
-createNumberEB(fD,"nMax",gf)
-fD.nMax:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-115)
+createNumberEB(fD,"nMax",fD)
+fD.nMax.text:SetPoint("RIGHT",fD.nColor.text,"RIGHT",0,-ySpacing)
 fD.nMax.text:SetText("Characters:")
 fD.nMax:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
@@ -514,8 +530,8 @@ if n==0 then n=eF.para.units.textLim; self:SetText(n)
 else eF.para.units.textLim=n; eF.units.textLim=n; eF.units:updateTextLim() end
 end)
 
-createNumberEB(fD,"nSize",gf)
-fD.nSize:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-65)
+createNumberEB(fD,"nSize",fD)
+fD.nSize.text:SetPoint("RIGHT",fD.nMax.text,"RIGHT",0,-ySpacing)
 fD.nSize.text:SetText("Font size:")
 fD.nSize:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
@@ -524,10 +540,20 @@ if n==0 then n=eF.para.units.textSize; self:SetText(n)
 else eF.para.units.textSize=n; eF.units.textSize=n; eF.units:updateTextFont() end
 end)
 
-createDD(fD,"nFont",gf)
-fD.nFont:SetPoint("TOPLEFT",fD.nSize,"TOPLEFT",-22,-25)
+
+createNumberEB(fD,"nAlpha",fD)
+fD.nAlpha.text:SetPoint("RIGHT",fD.nSize.text,"RIGHT",0,-ySpacing)
+fD.nAlpha.text:SetText("Alpha:")
+fD.nAlpha:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+a=self:GetNumber()
+eF.para.units.textA=a; eF.units.textA=a; eF.units:updateTextColor() 
+end)
+
+
+createDD(fD,"nFont",fD)
+fD.nFont.text:SetPoint("RIGHT",fD.nAlpha.text,"RIGHT",0,-ySpacing)
 fD.nFont.text:SetText("Font:")
-UIDropDownMenu_SetWidth(fD.nFont,90)
 fD.nFont.initialize=function(frame,level,menuList)
  local info = UIDropDownMenu_CreateInfo()
  for i=1,#eF.fonts do
@@ -547,19 +573,8 @@ fD.nFont.initialize=function(frame,level,menuList)
  end
 end
 
--- eF.units:updateTextFont() 
-
-createNumberEB(fD,"nAlpha",gf)
-fD.nAlpha:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-140)
-fD.nAlpha.text:SetText("Alpha:")
-fD.nAlpha:SetScript("OnEnterPressed", function(self)
-self:ClearFocus()
-a=self:GetNumber()
-eF.para.units.textA=a; eF.units.textA=a; eF.units:updateTextColor() 
-end)
-
-createDD(fD,"nPos",gf)
-fD.nPos:SetPoint("TOPLEFT",fD.nAlpha,"TOPLEFT",-22,-25)
+createDD(fD,"nPos",fD)
+fD.nPos.text:SetPoint("RIGHT",fD.nFont.text,"RIGHT",0,-ySpacing)
 fD.nPos.text:SetText("Position:")
 fD.nPos.initialize=function(frame,level,menuList)
  local info = UIDropDownMenu_CreateInfo()
@@ -578,6 +593,12 @@ fD.nPos.initialize=function(frame,level,menuList)
  end
 end
 
+
+
+end--end of Name
+
+--Border
+do
 fD.title4=fD:CreateFontString(nil,"OVERLAY")
 local t=fD.title4
 t:SetFont(titleFont,15,titleFontExtra)
@@ -592,8 +613,8 @@ tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
 tS:SetWidth(fD.titleSpacer:GetWidth())
 
-createCS(fD,"bColor",gf)
-fD.bColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
+createCS(fD,"bColor",fD)
+fD.bColor.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
 fD.bColor.text:SetText("Color:")
 fD.bColor.getOldRGBA=function(self)
   local r=eF.para.units.borderR
@@ -617,8 +638,8 @@ fD.bColor.opacityFunc=function()
 end
 
 
-createNumberEB(fD,"bWid",gf)
-fD.bWid:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
+createNumberEB(fD,"bWid",fD)
+fD.bWid.text:SetPoint("RIGHT",fD.bColor.text,"RIGHT",0,-ySpacing)
 fD.bWid.text:SetText("Width:")
 fD.bWid:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
@@ -631,6 +652,8 @@ for i=1,45 do
   eF.units[id]:updateBorders();
 end
 end)
+
+end--end of border
 
 end
 
