@@ -23,6 +23,8 @@ eF.units.onEvent=eF.rep.unitsEventHandler
 eF.units.onGroupUpdate=eF.rep.unitsOnGroupUpdate
 eF.units.updateSize=eF.rep.updateUnitFrameSize
 eF.units.updateTextFont=eF.rep.updateUnitFrameTextFont
+eF.units.updateHealthVis=eF.rep.updateUnitFrameHealthVisuals
+eF.units.updateTextColor=eF.rep.updateUnitFrameTextColor
 eF.units.updateTextColor=eF.rep.updateUnitFrameTextColor
 eF.units.updateTextLim=eF.rep.updateUnitFrameTextLim
 eF.units.updateTextPos=eF.rep.updateUnitFrameTextPos
@@ -33,7 +35,7 @@ eF.units:RegisterEvent("PLAYER_ENTERING_WORLD")
 eF.units:SetScript("OnEvent",units.onEvent)
 --apply all relevant non-table parameters
 for k,v in pairs(eF.para.units) do
-  if type(v)~="table" then eF.units[k]=v end
+  if type(v)~="table" then eF.units[k]=v; end
 end 
 for k,v in pairs(eF.para.layout) do
   if type(v)~="table" then eF.units[k]=v end
@@ -95,13 +97,14 @@ local function unitUpdateText(self)
   local name=UnitName(unit)
   local units=eF.units
   if units.textLim then name=strsub(name,1,units.textLim) end
+
   self.text:SetText(name)
   
   if units.textColorByClass then
     local _,CLASS=UnitClass(unit)
     local r,g,b=GetClassColor(CLASS) 
     local a=units.textA or 1
-    self.text:SetTextColor(r,g,b,a)
+    self.text:SetTextColor(r,g,b,a) 
   end
   
 end
@@ -223,15 +226,20 @@ local function createUnitFrame(self,unit)
   do --create HP bar
   self[unit].hp=CreateFrame("StatusBar",nil,self[unit],"TextStatusBar") 
   if self.healthGrow=="up" then 
-    self[unit].hp:SetPoint("BOTTOMLEFT"); self[unit].hp:SetPoint("BOTTOMRIGHT");  self[unit].hp:SetHeight(self.height); self[unit].hp:SetOrientation("VERTICAL")
+    self[unit].hp:SetPoint("BOTTOMLEFT"); self[unit].hp:SetPoint("BOTTOMRIGHT");  self[unit].hp:SetHeight(self.height); self[unit].hp:SetOrientation("VERTICAL"); self[unit].hp:SetReverseFill(false)
   elseif self.healthGrow=="right" then
-    self[unit].hp:SetPoint("BOTTOMLEFT"); self[unit].hp:SetPoint("TOPLEFT"); self[unit].hp:SetWidth(self.width); self[unit].hp:SetOrientation("HORIZONTAL")
+    self[unit].hp:SetPoint("BOTTOMLEFT"); self[unit].hp:SetPoint("TOPLEFT"); self[unit].hp:SetWidth(self.width); self[unit].hp:SetOrientation("HORIZONTAL"); self[unit].hp:SetReverseFill(false)  
   elseif self.healthGrow=="down" then
-    self[unit].hp:SetPoint("TOPRIGHT"); self[unit].hp:SetPoint("TOPLEFT"); self[unit].hp:SetHeight(self.height); self[unit].hp:SetOrientation("VERTICAL")
+    self[unit].hp:SetPoint("TOPRIGHT"); self[unit].hp:SetPoint("TOPLEFT"); self[unit].hp:SetHeight(self.height); self[unit].hp:SetOrientation("VERTICAL"); self[unit].hp:SetReverseFill(true)
   elseif self.healthGrow=="left" then
-    self[unit].hp:SetPoint("TOPRIGHT"); self[unit].hp:SetPoint("BOTTOMRIGHT"); self[unit].hp:SetWidth(self.width); self[unit].hp:SetOrientation("HORIZONTAL")
+    self[unit].hp:SetPoint("TOPRIGHT"); self[unit].hp:SetPoint("BOTTOMRIGHT"); self[unit].hp:SetWidth(self.width); self[unit].hp:SetOrientation("HORIZONTAL"); self[unit].hp:SetReverseFill(true)
   end
-
+  
+  if not eF.para.layout.byClassColor then
+    local r,g,b,alpha=eF.para.units.hpR,eF.para.units.hpG,eF.para.units.hpB,eF.para.units.hpA
+    self[unit].hp:SetStatusBarTexture(r,g,b,alpha)
+  end
+  
   if self.hpTexture then 
     self[unit].hp:SetStatusBarTexture(self.hpTexture,0,0.8,0)
    
@@ -355,23 +363,10 @@ local function unitsOnGroupUpdate(self)
       local unit=lst[n]  
       local class,CLASS=UnitClass(unit)
       if self.byClassColor then
-
+      
         local alpha=units.hpA or 1
         local r,g,b=GetClassColor(CLASS)       
-        if units.hpTexture then 
-          units[unit].hp:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar",0,0.8,0)        
-          if units.hpR then 
-            local alpha=units.hpA or 1 
-            units[unit].hp:SetStatusBarColor(units.hpR,units.hpG,units.hpB,alpha)    
-          end          
-        else 
-          units[unit].hp:SetStatusBarTexture(r,g,b,alpha)  
-        end    
-          
-        local hpTexture=units[unit].hp:GetStatusBarTexture()       
-        if units.hpGrad then 
-          hpTexture:SetGradientAlpha(units.hpGradOrientation,units.hpGrad1R,units.hpGrad1G,units.hpGrad1B,units.hpGrad1A,units.hpGrad2R,units.hpGrad2G,units.hpGrad2B,units.hpGrad2A)
-        end
+        units[unit].hp:SetStatusBarTexture(r,g,b,alpha)
         --units[unit].hp:SetStatusBarColor(r,g,b,hpA)
       end--end of byClassColor
         
@@ -624,17 +619,96 @@ local function updateUnitFrameGrad(self)
     local id
     if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
     local hpTexture=self[id].hp:GetStatusBarTexture()
-    hpTexture:SetGradientAlpha(self.hpGradOrientation,r1,g1,b1,1,r2,g2,b2,1)
+    
+    hpTexture:SetGradient(self.hpGradOrientation,r1,g1,b1,r2,g2,b2)
   end
 
 end
 eF.rep.updateUnitFrameGrad=updateUnitFrameGrad
+ 
+local function updateUnitFrameHealthVisuals(self)
+  local para=eF.para.units
+  local hG=para.healthGrow
+  local byCC=eF.para.layout.byClassColor
+ 
+ --update orientation
+  for i=1,45 do
+    local unit
+    if i<6 then unit=eF.partyLoop[i] else unit=eF.raidLoop[i-5] end
+    
+    if self.healthGrow=="up" then 
+      self[unit].hp:SetPoint("BOTTOMLEFT"); self[unit].hp:SetPoint("BOTTOMRIGHT");  self[unit].hp:SetHeight(self.height); self[unit].hp:SetOrientation("VERTICAL"); self[unit].hp:SetReverseFill(false)
+    elseif self.healthGrow=="right" then
+      self[unit].hp:SetPoint("BOTTOMLEFT"); self[unit].hp:SetPoint("TOPLEFT"); self[unit].hp:SetWidth(self.width); self[unit].hp:SetOrientation("HORIZONTAL"); self[unit].hp:SetReverseFill(false)
+    elseif self.healthGrow=="down" then
+      self[unit].hp:SetPoint("TOPRIGHT"); self[unit].hp:SetPoint("TOPLEFT"); self[unit].hp:SetHeight(self.height); self[unit].hp:SetOrientation("VERTICAL"); self[unit].hp:SetReverseFill(true)
+    elseif self.healthGrow=="left" then
+      self[unit].hp:SetPoint("TOPRIGHT"); self[unit].hp:SetPoint("BOTTOMRIGHT"); self[unit].hp:SetWidth(self.width); self[unit].hp:SetOrientation("HORIZONTAL"); self[unit].hp:SetReverseFill(true)
+    end 
+  end
+ 
+  --update color if byCC
+  if byCC then
+    local lst
+    if raid then lst=eF.raidLoop
+    else lst=eF.partyLoop end  
+    local alpha=self.hpA or 1
+    
+    for i=1,self.num do
+      local unit=lst[i]
+      local _,CLASS=UnitClass(unit)
+      local r,g,b=0,0,0
+      if CLASS then r,g,b=GetClassColor(CLASS) end
+      self[unit].hp:SetStatusBarTexture(r,g,b,a)
+    end
+  
+  else
+    local r,g,b,a=self.hpR,self.hpG,self.hpB,self.hpA
+    for i=1,45 do
+      local unit
+      if i<6 then unit=eF.partyLoop[i] else unit=eF.raidLoop[i-5] end
+      self[unit].hp:SetStatusBarTexture(r,g,b,a)
+    end
+  
+  end
+ 
+end
+eF.rep.updateUnitFrameHealthVisuals=updateUnitFrameHealthVisuals
+
+local function updateUnitFrameTextColor(self)
+  local para=eF.para.units
+  local byCC=eF.para.units.textColorByClass
+  local a=self.textA or 1
+  --update color if byCC
+  if byCC then
+    local lst
+    if raid then lst=eF.raidLoop
+    else lst=eF.partyLoop end  
+    
+    for i=1,self.num do
+      local unit=lst[i]
+      local _,CLASS=UnitClass(unit)
+      local r,g,b=0,0,0
+      if CLASS then r,g,b=GetClassColor(CLASS) end
+      self[unit].text:SetTextColor(r,g,b,a)
+    end
+  
+  else
+    
+    local r,g,b=self.textR,self.textG,self.textB
+    for i=1,45 do
+      local unit
+      if i<6 then unit=eF.partyLoop[i] else unit=eF.raidLoop[i-5] end
+      self[unit].text:SetTextColor(r,g,b,a)
+    end
+  
+  end
+ 
+end
+eF.rep.updateUnitFrameTextColor=updateUnitFrameTextColor
 
 --initUnitsFrame()
 --initUnitsUnits()
-
-
-
 
 
 

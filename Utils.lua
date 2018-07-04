@@ -71,8 +71,8 @@ eF.para.colors.debuff={Disease={0.6,0.4,0},Poison={0,0.6,0},Curse={0.6,0,0.1},Ma
 eF.partyLoop={"player","party1","party2","party3","party4"}
 eF.raidLoop={}
 eF.positions={"CENTER","RIGHT","TOPRIGHT","TOP","TOPLEFT","LEFT","BOTTOMLEFT","BOTTOM","BOTTOMRIGHT"}
-
-
+eF.orientations={"up","down","right","left"}
+eF.fonts={"FRIZQT__","ARIALN","skurri","MORPHEUS"}
 
 for i=1,40 do
   local s="raid"..tostring(i)
@@ -99,9 +99,11 @@ function eF.borderInfo(pos)
 end
 
 function eF.toDecimal(f,d)
+  if not f then return end
+  if not d then return f end
   local m=math.pow(10,d)
   f=f*m
-  f=floor(f)
+  f=floor(f+0.5)
   f=f/m
   return f
 end

@@ -72,7 +72,7 @@ end
 local function createDD(self,name,tab)
   self[name]=CreateFrame("Frame","eFDropDown"..name,tab,"UIDropDownMenuTemplate")
   local dd=self[name]
-  UIDropDownMenu_SetWidth(dd,85)
+  UIDropDownMenu_SetWidth(dd,70)
 
 
   dd.text=dd:CreateFontString()
@@ -82,6 +82,18 @@ local function createDD(self,name,tab)
   tx:SetPoint("RIGHT",dd,"LEFT",10,0)
 end
 
+local function createCB(self,name,tab)
+  self[name]=CreateFrame("CHeckButton",nil,tab,"ChatConfigCheckButtonTemplate")
+  local cb=self[name]
+
+  cb.text=cb:CreateFontString()
+  local tx=cb.text
+  tx:SetFont(font,12,fontExtra)
+  tx:SetTextColor(1,1,1)
+  tx:SetPoint("RIGHT",cb,"LEFT",-12,0)
+  
+  
+end
 
 local function frameToggle(self) 
   if not self then return end
@@ -121,8 +133,8 @@ local function createHDel(self,name)
 end
 
 --http://wowwiki.wikia.com/wiki/UIOBJECT_ColorSelect
-local function createCS(self,name)
-  self[name]=CreateFrame("Button",nil,self)
+local function createCS(self,name,tab)
+  self[name]=CreateFrame("Button",nil,tab)
   local cp=self[name]
   cp:SetWidth(35)
   cp:SetHeight(20)
@@ -135,6 +147,7 @@ local function createCS(self,name)
   cp.getOldRGBA=function() return 1,1,1,1 end
   
   cp:SetScript("OnClick",function(self)
+    if self.blocked then return end 
     local r,g,b,a=self:getOldRGBA()
     ColorPickerFrame:SetColorRGB(r,g,b)
     if self.hasOpacity then ColorPickerFrame.opacity=a end
@@ -320,24 +333,85 @@ tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
 tS:SetWidth(130)
 
-createNumberEB(fD,"hColor",gf)
-fD.hColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
-fD.hColor:SetText("byClass")
-fD.hColor.text:SetText("Color:")
+createCB(fD,"hClassColor",gf)
+fD.hClassColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
+--fD.hColor:SetText("byClass")
+fD.hClassColor.text:SetText("Class color:")
+fD.hClassColor:SetScript("OnClick",function(self)
+  local ch=self:GetChecked()
+  self:SetChecked(ch)
+  fD.hColor.blocked=ch
+  eF.para.layout.byClassColor=ch
+  if ch then fD.hColor.blocker:Show() else fD.hColor.blocker:Hide() end 
+  eF.units.byClassColor=ch
+  eF.units:updateHealthVis()
+end)
 
-createNumberEB(fD,"hDir",gf)
-fD.hDir:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
+createCS(fD,"hColor",gf)
+fD.hColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
+fD.hColor.text:SetText("Color:")
+fD.hColor.getOldRGBA=function(self)
+  local r=eF.para.units.hpR
+  local g=eF.para.units.hpG
+  local b=eF.para.units.hpB
+  return r,g,b
+end
+
+fD.hColor.opacityFunc=function()
+  local r,g,b=ColorPickerFrame:GetColorRGB()
+  local a=OpacitySliderFrame:GetValue()
+  fD.hColor.thumb:SetVertexColor(r,g,b)
+  eF.para.units.hpR=r
+  eF.para.units.hpG=g
+  eF.para.units.hpB=b
+  eF.units.hpR=r
+  eF.units.hpG=g
+  eF.units.hpB=b
+  eF.units:updateHealthVis()
+end
+
+fD.hColor.blocker=CreateFrame("Frame",nil,gf)
+local hCB=fD.hColor.blocker
+hCB:SetFrameLevel(fD.hColor:GetFrameLevel()+1)
+hCB:SetPoint("TOPRIGHT",fD.hColor,"TOPRIGHT",2,2)
+hCB:SetHeight(22)
+hCB:SetWidth(120)
+hCB.texture=hCB:CreateTexture(nil,"OVERLAY")
+hCB.texture:SetAllPoints()
+hCB.texture:SetColorTexture(0.1,0.1,0.1,0.5)
+
+
+createDD(fD,"hDir",gf)
+fD.hDir:SetPoint("TOPLEFT",fD.hClassColor,"TOPLEFT",-22,-46)
 --fD.hDir:SetText(eF.para.units.healthGrow) --SETTING INIT VAL
 fD.hDir.text:SetText("Orientation:")
+fD.hDir.initialize=function(frame,level,menuList)
+ local info = UIDropDownMenu_CreateInfo()
+ for i=1,#eF.orientations do
+   local v=eF.orientations[i]
+   info.text, info.checked, info.arg1 = v,false,v
+   info.func=function(self,arg1,arg2,checked)
+     eF.para.units.healthGrow=arg1
+     eF.units.healthGrow=arg1
+     eF.units:updateHealthVis()
+     UIDropDownMenu_SetText(frame,v)
+     UIDropDownMenu_SetSelectedName(frame,v)
+     CloseDropDownMenus()
+   end
+   UIDropDownMenu_AddButton(info)
+ end
+end
+UIDropDownMenu_SetWidth(fD.hDir,55)
 
+--[[
 createNumberEB(fD,"hGrad",gf)
 fD.hGrad:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-65)
 fD.hGrad:SetText("true")
-fD.hGrad.text:SetText("Gradient:")
+fD.hGrad.text:SetText("Gradient:")]]
 
 createNumberEB(fD,"gradStart",gf)
 fD.gradStart:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-90)
-fD.gradStart.text:SetText("Start grad.")
+fD.gradStart.text:SetText("Start grad.:")
 fD.gradStart:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
 n=self:GetNumber()
@@ -355,10 +429,13 @@ fD.gradFinal:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-115)
 fD.gradFinal.text:SetText("Final grad.:")
 fD.gradFinal:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
-g=self:GetNumber()
+n=self:GetNumber()
 eF.para.units.hpGrad2R=n;
 eF.para.units.hpGrad2G=n;
 eF.para.units.hpGrad2B=n;
+eF.units.hpGrad2R=n;
+eF.units.hpGrad2G=n;
+eF.units.hpGrad2B=n;
 eF.units:updateGrad() 
 end)
 
@@ -376,13 +453,59 @@ tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
 tS:SetWidth(130)
 
-createNumberEB(fD,"nColor",gf)
-fD.nColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
-fD.nColor:SetText("byClass")
+
+createCB(fD,"nClassColor",gf)
+fD.nClassColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
+--fD.nColor:SetText("byClass")
+fD.nClassColor.text:SetText("Class color:")
+fD.nClassColor:SetScript("OnClick",function(self)
+  local ch=self:GetChecked()
+  self:SetChecked(ch)
+  fD.nColor.blocked=ch
+  eF.para.units.textColorByClass=ch
+  eF.units.textColorByClass=ch
+  if ch then fD.nColor.blocker:Show() else fD.nColor.blocker:Hide() end 
+  eF.units:updateTextColor() 
+end)
+
+
+createCS(fD,"nColor",gf)
+fD.nColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
 fD.nColor.text:SetText("Color:")
+fD.nColor.getOldRGBA=function(self)
+  local r=eF.para.units.textR
+  local g=eF.para.units.textG
+  local b=eF.para.units.textB
+  return r,g,b
+end
+
+fD.nColor.opacityFunc=function()
+  local r,g,b=ColorPickerFrame:GetColorRGB()
+  local a=OpacitySliderFrame:GetValue()
+  fD.nColor.thumb:SetVertexColor(r,g,b)
+  eF.para.units.textR=r
+  eF.para.units.textG=g
+  eF.para.units.textB=b
+  eF.units.textR=r
+  eF.units.textG=g
+  eF.units.textB=b
+  eF.units:updateTextColor()
+end
+
+fD.nColor.blocker=CreateFrame("Frame",nil,gf)
+local nCB=fD.nColor.blocker
+nCB:SetFrameLevel(fD.nColor:GetFrameLevel()+1)
+nCB:SetPoint("TOPRIGHT",fD.nColor,"TOPRIGHT",2,2)
+nCB:SetHeight(22)
+nCB:SetWidth(120)
+nCB.texture=nCB:CreateTexture(nil,"OVERLAY")
+nCB.texture:SetAllPoints()
+nCB.texture:SetColorTexture(0.1,0.1,0.1,0.5)
+
+
 
 createNumberEB(fD,"nMax",gf)
-fD.nMax:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-40)
+fD.nMax:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-115)
 fD.nMax.text:SetText("Characters:")
 fD.nMax:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
@@ -401,29 +524,43 @@ if n==0 then n=eF.para.units.textSize; self:SetText(n)
 else eF.para.units.textSize=n; eF.units.textSize=n; eF.units:updateTextFont() end
 end)
 
-createNumberEB(fD,"nFont",gf)
-fD.nFont:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-90)
+createDD(fD,"nFont",gf)
+fD.nFont:SetPoint("TOPLEFT",fD.nSize,"TOPLEFT",-22,-25)
 fD.nFont.text:SetText("Font:")
-fD.nFont:SetScript("OnEnterPressed", function(self)
-self:ClearFocus()
-s=self:GetNumber()
-if s==0 then s=eF.para.units.textSize; self:SetText(s)
-else eF.para.units.textSize=s; eF.units:updateTextFont() end
-end)
+UIDropDownMenu_SetWidth(fD.nFont,90)
+fD.nFont.initialize=function(frame,level,menuList)
+ local info = UIDropDownMenu_CreateInfo()
+ for i=1,#eF.fonts do
+   local v=eF.fonts[i]
+   info.text, info.checked, info.arg1 = v,false,v
+   info.func=function(self,arg1,arg2,checked)
+     eF.para.units.textFont="Fonts\\"..arg1..".ttf"
+     eF.units.textFont="Fonts\\"..arg1..".ttf"
+     eF.units:updateTextPos()
+     UIDropDownMenu_SetText(frame,v)
+     UIDropDownMenu_SetSelectedName(frame,v)
+     CloseDropDownMenus()
+     eF.units:updateTextFont()
+   end
+   
+   UIDropDownMenu_AddButton(info)
+ end
+end
+
+-- eF.units:updateTextFont() 
 
 createNumberEB(fD,"nAlpha",gf)
-fD.nAlpha:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-115)
+fD.nAlpha:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-140)
 fD.nAlpha.text:SetText("Alpha:")
 fD.nAlpha:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
 a=self:GetNumber()
-eF.para.units.textAlpha=a; eF.units:updateTextColor() 
+eF.para.units.textA=a; eF.units.textA=a; eF.units:updateTextColor() 
 end)
 
 createDD(fD,"nPos",gf)
 fD.nPos:SetPoint("TOPLEFT",fD.nAlpha,"TOPLEFT",-22,-25)
 fD.nPos.text:SetText("Position:")
-
 fD.nPos.initialize=function(frame,level,menuList)
  local info = UIDropDownMenu_CreateInfo()
  for i=1,#eF.positions do
@@ -455,7 +592,7 @@ tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
 tS:SetWidth(fD.titleSpacer:GetWidth())
 
-createCS(fD,"bColor")
+createCS(fD,"bColor",gf)
 fD.bColor:SetPoint("TOPRIGHT",tS,"TOPRIGHT",0,-15)
 fD.bColor.text:SetText("Color:")
 fD.bColor.getOldRGBA=function(self)
@@ -486,13 +623,12 @@ fD.bWid.text:SetText("Width:")
 fD.bWid:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
 w=self:GetNumber()
-if w==0 then w=eF.para.units.borderSize; self:SetText(w)
-else eF.para.units.borderSize=w; eF.units.borderSize=w;
-  for i=1,45 do
-    local id
-    if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
-    eF.units[id]:updateBorders();
-  end
+eF.para.units.borderSize=w
+eF.units.borderSize=w
+for i=1,45 do
+  local id
+  if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
+  eF.units[id]:updateBorders();
 end
 end)
 
@@ -504,16 +640,34 @@ function intSetInitValues()
   local fD=gF.frameDim
   local para=eF.para
   local units=para.units
+  local layout=para.layout
+  local ssub=string.sub
   
   fD.ebHeight:SetText(units.height)
   fD.ebWidth:SetText(units.width)
-  fD.hDir:SetText(units.healthGrow)
+  UIDropDownMenu_SetSelectedName(fD.hDir,units.healthGrow)
+  UIDropDownMenu_SetText(fD.hDir,units.healthGrow)
   fD.gradStart:SetText( eF.toDecimal(units.hpGrad1R,2) or "nd")
   fD.gradFinal:SetText( eF.toDecimal(units.hpGrad2R,2) or "nd")
   fD.nMax:SetText(units.textLim)
   fD.nSize:SetText(units.textSize)
-  fD.nFont:SetText(units.textFont)
-  fD.nAlpha:SetText(units.textA)
+  
+  fD.hClassColor:SetChecked(layout.byClassColor)
+  fD.hColor.blocked=layout.byClassColor
+  if layout.byClassColor then fD.hColor.blocker:Show() else fD.hColor.blocker:Hide() end
+  fD.hColor.thumb:SetVertexColor(units.hpR,units.hpG,units.hpB)
+  
+  fD.nClassColor:SetChecked(units.textColorByClass)
+  fD.nColor.blocked=units.textColorByClass
+  if units.textColorByClass then fD.nColor.blocker:Show() else fD.nColor.blocker:Hide() end
+  fD.nColor.thumb:SetVertexColor(units.textR,units.textG,units.textB)
+  
+  
+  local font=ssub(units.textFont,7,-5)
+  UIDropDownMenu_SetSelectedName(fD.nFont,font)
+  UIDropDownMenu_SetText(fD.nFont,font)
+  
+  fD.nAlpha:SetText(eF.toDecimal(units.textA,2) or "nd")
   UIDropDownMenu_SetSelectedName(fD.nPos,units.textPos)
   UIDropDownMenu_SetText(fD.nPos,units.textPos)
 

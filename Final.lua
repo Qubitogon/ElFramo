@@ -4,6 +4,9 @@ function initialise(self)
   if _eF_savVar then eF.profiles=_eF_savVar.profiles end
   local set=_eF_initProfile or "test" 
   eF.rep.setProfile(set)
+  
+  --eF.para.units.textFont="Fonts\\FRIZQT__.ttf"
+
 
   --eLFramo.lua
   eF.rep.initUnitsFrame()
