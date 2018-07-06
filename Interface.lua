@@ -14,11 +14,23 @@ local titleFontColor2={0.9,0.9,0.6}
 local titleSpacer="Interface\\OPTIONSFRAME\\UI-OptionsFrame-Spacer"
 local bd2={edgeFile ="Interface\\Tooltips\\UI-Tooltip-Border" ,edgeSize = 10, insets ={ left = 0, right = 0, top = 0, bottom = 0 }}
 local bd={edgeFile ="Interface\\DialogFrame\\UI-DialogBox-Border",edgeSize = 20, insets ={ left = 0, right = 0, top = 0, bottom = 0 }}
-local int,tb,hd1,hd1b1,hd1b2,hd1b3,gf
+local int,tb,hd1,hd1b1,hd1b2,hd1b3,gf,ff
 local ySpacing=25
 local initSpacing=15
+local familyHeight=30
 
-function header1ReleaseAll()
+local function ScrollFrame_OnMouseWheel(self,delta)
+  local v=self:GetVerticalScroll() - (delta*familyHeight/2)
+  if (v<0) then
+    v=0;
+  elseif (v>self:GetVerticalScrollRange()) then
+    v=self:GetVerticalScrollRange();
+  end
+  
+  self:SetVerticalScroll(v)
+end
+
+local function header1ReleaseAll()
   hd1.button1:Enable()
   hd1.button2:Enable()
   hd1.button3:Enable()
@@ -27,7 +39,7 @@ function header1ReleaseAll()
   if hd1.button3.relatedFrame then hd1.button3.relatedFrame:Hide() end
 end
 
-function makeHeader1Button(self)
+local function makeHeader1Button(self)
   self:SetHeight(39)
   self:SetWidth(100)
   self:SetBackdrop(bd)
@@ -176,6 +188,63 @@ local function createCS(self,name,tab)
   cp:SetPoint("LEFT",tx,"RIGHT",8,1)
 end
 
+local function createFamily(self,n)
+
+  local para=eF.para.families[n]
+  if self.families[n] then self.families[n]=nil end
+  
+  --button creation
+  self.families[n]=CreateFrame("Button",nil,self)
+  local f=self.families[n]
+  f:SetWidth(eF.interface.familiesFrame.famList:GetWidth()-25)
+  f:SetHeight(familyHeight)
+  f:SetPoint("TOPRIGHT",self,"TOPRIGHT",-5,-5-(familyHeight+2)*(n-1))
+  f:SetBackdrop(bd2)
+  f.para=para
+  
+
+  
+  -- normal texture
+  do
+  f.bg=f:CreateTexture(nil,"BACKGROUND")
+  f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
+  f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
+  f.bg:SetColorTexture(1,1,1,0.1)
+  f:SetNormalTexture(f.bg)
+  end
+   
+   
+  --pushed texture
+  do
+  f.bg=f:CreateTexture(nil,"BACKGROUND")
+  f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
+  f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
+  f.bg:SetColorTexture(0.9,0.9,0.6,0.3)
+  f:SetPushedTexture(f.bg)
+  end
+  
+   
+  --Highlight creation
+  do
+  f.hl=f:CreateTexture(nil,"BACKGROUND")
+  f.hl:SetPoint("BOTTOM",f,"BOTTOM",0,-1)
+  f.hl:SetHeight(f:GetHeight()*0.3)
+  f.hl:SetWidth(f:GetWidth()*0.8)
+  f.hl:SetTexture("Interface\\BUTTONS\\UI-SILVER-BUTTON-HIGHLIGHT")
+  f:SetHighlightTexture(f.hl)
+  end
+  --text creation
+  do
+  f.text=f:CreateFontString()
+  f.text:SetPoint("CENTER")
+  f.text:SetFont("Fonts\\ARIALN.ttf",17,fontExtra)
+  f.text:SetTextColor(0.9,0.9,0.9)
+  f.text:SetText(para.displayName)
+  end
+  
+  
+end
+
 --create main frame
 do
 eF.interface=CreateFrame("Frame","eFInterface",UIParent)
@@ -238,6 +307,8 @@ hd1.bg:SetPoint("TOPLEFT",hd1,"TOPLEFT",5,-5)
 hd1.bg:SetPoint("BOTTOMRIGHT",hd1,"BOTTOMRIGHT",-5,5)
 hd1.bg:SetColorTexture(0.1,0.1,0.1)
 end
+
+
 
 --create header 1 buttons
 do
@@ -657,6 +728,63 @@ end--end of border
 
 end
 
+--FAMILIES FRAME
+do
+int.familiesFrame=CreateFrame("Frame","eFFamilies",hd1)
+ff=int.familiesFrame
+ff:Hide()
+hd1b3.relatedFrame=ff
+ff:SetAllPoints()
+
+
+local fL,sc
+
+--create Scroll Frame
+do
+ff.famList=CreateFrame("ScrollFrame","eFFamScroll",ff,"UIPanelScrollFrameTemplate")
+fL=ff.famList
+fL:SetPoint("TOPLEFT",ff,"TOPLEFT",ff:GetWidth()*0.02,-60)
+fL:SetPoint("BOTTOMRIGHT",ff,"BOTTOMLEFT",ff:GetWidth()*0.22,20)
+fL:SetClipsChildren(true)
+--fL:HookScript("OnMouseWheel",function()  print("scsr") end)
+fL:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)
+
+--create Border
+fL.border=CreateFrame("Frame",nil,ff)
+fL.border:SetPoint("TOPLEFT",fL,"TOPLEFT",-5,5)
+fL.border:SetPoint("BOTTOMRIGHT",fL,"BOTTOMRIGHT",5,-5)
+fL.border:SetBackdrop(bd)
+
+
+--reposition scrollbar and craete its texture
+fL.ScrollBar:ClearAllPoints()
+fL.ScrollBar:SetPoint("TOPLEFT",fL,"TOPLEFT",6,-18)
+fL.ScrollBar:SetPoint("BOTTOMRIGHT",fL,"BOTTOMLEFT",16,18)
+fL.ScrollBar.bg=fL.ScrollBar:CreateTexture(nil,"BACKGROUND")
+fL.ScrollBar.bg:SetAllPoints()
+fL.ScrollBar.bg:SetColorTexture(0,0,0,0.5) 
+
+--make background
+fL.bg=fL:CreateTexture(nil,"BACKGROUND")
+fL.bg:SetAllPoints()
+fL.bg:SetColorTexture(0,0,0,0.3)
+
+--create scrollchild
+fL.scrollChild=CreateFrame("Frame","eFFamScrollChild",fL)
+sc=fL.scrollChild
+fL:SetScrollChild(sc)
+sc.createFamily=createFamily
+sc:SetWidth(fL:GetWidth())
+sc:SetHeight(600)
+sc:SetPoint("TOP",fL,"TOP")
+sc.families={}
+
+end
+
+
+
+end--end of family frames
+
 function intSetInitValues()
   local int=eF.interface
   local gF=int.generalFrame
@@ -665,6 +793,9 @@ function intSetInitValues()
   local units=para.units
   local layout=para.layout
   local ssub=string.sub
+  local ff=int.familiesFrame
+  local fL=ff.famList
+  local sc=ff.famList.scrollChild
   
   fD.ebHeight:SetText(units.height)
   fD.ebWidth:SetText(units.width)
@@ -696,6 +827,10 @@ function intSetInitValues()
 
   fD.bColor.thumb:SetVertexColor(units.borderR,units.borderG,units.borderB)
   fD.bWid:SetText(units.borderSize)
+  
+  sc:createFamily(1)
+  sc:createFamily(2)
+  sc:createFamily(3)
 end
 eF.rep.intSetInitValues=intSetInitValues
 
