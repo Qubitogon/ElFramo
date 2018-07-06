@@ -158,6 +158,22 @@ local function createHDel(self,name)
   
 end
 
+local function hideAllFamilyParas()
+  local ff=eF.interface.familiesFrame
+  ff.dumbFamilyFrame:Hide()
+  ff.smartFamilyFrame:Hide()
+end
+
+local function showSmartFamilyPara()
+  local sff=eF.interface.familiesFrame.smartFamilyFrame
+  sff:Show()
+end
+
+local function showDumbFamilyPara()
+  local dff=eF.interface.familiesFrame.dumbFamilyFrame
+  dff:Show()
+end
+
 --http://wowwiki.wikia.com/wiki/UIOBJECT_ColorSelect
 local function createCS(self,name,tab)
   self[name]=CreateFrame("Button",nil,tab)
@@ -207,12 +223,14 @@ local function createFamily(self,n)
   local f=self.families[n]
   f:SetWidth(eF.interface.familiesFrame.famList:GetWidth()-25)
   f:SetHeight(familyHeight)
-  f:SetPoint("TOPRIGHT",self,"TOPRIGHT",-5,-5-(familyHeight+2)*(n-1))
+  f:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-(familyHeight+2)*(n-1))
   f:SetBackdrop(bd2)
   f.para=para
   
   f:SetScript("OnClick",function(self)
     releaseAllFamilies()
+    hideAllFamilyParas()
+    if self.para.smart then  showSmartFamilyPara() else showDumbFamilyPara() end
     self:Disable()
     end)
   
@@ -321,8 +339,6 @@ hd1.bg:SetPoint("BOTTOMRIGHT",hd1,"BOTTOMRIGHT",-5,5)
 hd1.bg:SetColorTexture(0.1,0.1,0.1)
 end
 
-
-
 --create header 1 buttons
 do
 hd1.button1=CreateFrame("Button","eFHeader1Button1",hd1)
@@ -345,12 +361,13 @@ hd1b3.text:SetText("Families")
 end
 
 --create general settings frame
-
+do
 int.generalFrame=CreateFrame("Frame","eFGeneral",hd1)
 gf=int.generalFrame
 gf:Hide()
 hd1b1.relatedFrame=gf
 gf:SetAllPoints()
+end
 
 --UNIT FRAME
 do
@@ -791,14 +808,51 @@ sc:SetWidth(fL:GetWidth())
 sc:SetHeight(600)
 sc:SetPoint("TOP",fL,"TOP")
 sc.families={}
-
 end
 
+--create smart Family Frame
+do
+ff.smartFamilyFrame=CreateFrame("Frame","eFSFF",ff)
+local sff=ff.smartFamilyFrame
+sff:SetPoint("TOPLEFT",ff.famList.border,"TOPRIGHT",20,0)
+sff:SetPoint("BOTTOMRIGHT",ff.famList.border,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
+sff:SetBackdrop(bd)
+
+sff.bg=sff:CreateTexture(nil,"BACKGROUND")
+sff.bg:SetAllPoints()
+sff.bg:SetColorTexture(0,0,0,0.3)
+
+sff.text=sff:CreateFontString(nil,"OVERLAY")
+sff.text:SetPoint("CENTER")
+sff.text:SetFont(titleFont,20,titleFontExtra)
+sff.text:SetTextColor(0.9,0.9,0.9)
+sff.text:SetText("smart Family stuff goes here")
+end
+
+--create dumb family frame
+
+do
+ff.dumbFamilyFrame=CreateFrame("Frame","eFDFF",ff)
+local dff=ff.dumbFamilyFrame
+dff:SetPoint("TOPLEFT",ff.famList.border,"TOPRIGHT",20,0)
+dff:SetPoint("BOTTOMRIGHT",ff.famList.border,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
+dff:SetBackdrop(bd)
+
+dff.bg=dff:CreateTexture(nil,"BACKGROUND")
+dff.bg:SetAllPoints()
+dff.bg:SetColorTexture(0,0,0,0.3)
+
+dff.text=dff:CreateFontString(nil,"OVERLAY")
+dff.text:SetPoint("CENTER")
+dff.text:SetFont(titleFont,20,titleFontExtra)
+dff.text:SetTextColor(0.9,0.9,0.9)
+dff.text:SetText("dumb Family stuff goes here")
+end
 
 
 end--end of family frames
 
-function intSetInitValues()
+local function intSetInitValues()
   local int=eF.interface
   local gF=int.generalFrame
   local fD=gF.frameDim
@@ -809,8 +863,11 @@ function intSetInitValues()
   local ff=int.familiesFrame
   local fL=ff.famList
   local sc=ff.famList.scrollChild
+  local paraFam=eF.para.families
   --eF.interface.familiesFrame.famList.scrollChild.families
-
+  
+  --general frame
+  do
   fD.ebHeight:SetText(units.height)
   fD.ebWidth:SetText(units.width)
   UIDropDownMenu_SetSelectedName(fD.hDir,units.healthGrow)
@@ -830,7 +887,6 @@ function intSetInitValues()
   if units.textColorByClass then fD.nColor.blocker:Show() else fD.nColor.blocker:Hide() end
   fD.nColor.thumb:SetVertexColor(units.textR,units.textG,units.textB)
   
-  
   local font=ssub(units.textFont,7,-5)
   UIDropDownMenu_SetSelectedName(fD.nFont,font)
   UIDropDownMenu_SetText(fD.nFont,font)
@@ -841,10 +897,18 @@ function intSetInitValues()
 
   fD.bColor.thumb:SetVertexColor(units.borderR,units.borderG,units.borderB)
   fD.bWid:SetText(units.borderSize)
+  end
   
-  sc:createFamily(1)
-  sc:createFamily(2)
-  sc:createFamily(3)
+  --family frame
+  do 
+  
+  for i=1,#paraFam do
+    sc:createFamily(i)
+  end
+  hideAllFamilyParas()
+  
+  end
+  
 end
 eF.rep.intSetInitValues=intSetInitValues
 
