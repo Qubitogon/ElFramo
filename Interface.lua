@@ -30,6 +30,15 @@ local function ScrollFrame_OnMouseWheel(self,delta)
   self:SetVerticalScroll(v)
 end
 
+local function releaseAllFamilies()
+  local fam=eF.interface.familiesFrame.famList.scrollChild.families
+  
+  for i=1,#fam do
+    fam[i]:Enable()
+  end
+  
+end
+
 local function header1ReleaseAll()
   hd1.button1:Enable()
   hd1.button2:Enable()
@@ -202,7 +211,10 @@ local function createFamily(self,n)
   f:SetBackdrop(bd2)
   f.para=para
   
-
+  f:SetScript("OnClick",function(self)
+    releaseAllFamilies()
+    self:Disable()
+    end)
   
   -- normal texture
   do
@@ -241,6 +253,7 @@ local function createFamily(self,n)
   f.text:SetTextColor(0.9,0.9,0.9)
   f.text:SetText(para.displayName)
   end
+  
   
   
 end
@@ -796,7 +809,8 @@ function intSetInitValues()
   local ff=int.familiesFrame
   local fL=ff.famList
   local sc=ff.famList.scrollChild
-  
+  --eF.interface.familiesFrame.famList.scrollChild.families
+
   fD.ebHeight:SetText(units.height)
   fD.ebWidth:SetText(units.width)
   UIDropDownMenu_SetSelectedName(fD.hDir,units.healthGrow)
