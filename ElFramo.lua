@@ -339,11 +339,12 @@ local function unitsFrameOnUpdate(self,elapsed)
     local frame=self[tbl[i]]
     if frame.updateRange and self.num>1 then frame:updateRange() end   --if youre alone in the group it's fucked  
     
+    --[[
     local c=frame.onUpdateList
     for j=1,#c do
       local v=c[j]
       v[1](v[2])
-    end
+    end ]]
     
   end--end of for i=1,self.num
 end
@@ -422,7 +423,6 @@ local function unitLoad(self,ins,enc)
   self.onAuraList={}
   self.onBuffList={}
   self.onDebuffList={}
-  self.onUpdateList={}
   self.onPowerList={}
   self.onPostAuraList={}
   for j=1,nj do 
@@ -451,9 +451,10 @@ local function unitLoad(self,ins,enc)
           insert(self.onPowerList,onPower[l])
         end
         
+        --[[ onupdate revamt
         for l=1,#onUpdate do
           insert(self.onUpdateList,onUpdate[l])
-        end
+        end]]
         
         for l=1,#onPostAura do
           insert(self.onPostAuraList,onPostAura[l])

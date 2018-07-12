@@ -167,6 +167,7 @@ end
 local function showSmartFamilyPara()
   local sff=eF.interface.familiesFrame.smartFamilyFrame
   sff:Show()
+  sff:setValues()
 end
 
 local function showDumbFamilyPara()
@@ -230,7 +231,9 @@ local function createFamily(self,n)
   f:SetScript("OnClick",function(self)
     releaseAllFamilies()
     hideAllFamilyParas()
-    if self.para.smart then  showSmartFamilyPara() else showDumbFamilyPara() end
+    eF.activePara=para
+    eF.activeButton=self
+    if self.para.smart then showSmartFamilyPara() else showDumbFamilyPara() end
     self:Disable()
     end)
   
@@ -273,6 +276,20 @@ local function createFamily(self,n)
   end
   
   
+  
+end
+
+local function setSFFActiveValues(self)
+  local para=eF.activePara
+  self.name:SetText(para.displayName)
+  
+  local typ=para.type
+  if typ=="b" then typ="Blacklist" elseif typ=="w" then typ="Whitelist" end
+  UIDropDownMenu_SetSelectedName(self.type,typ)
+  UIDropDownMenu_SetText(self.type,typ)
+  
+  UIDropDownMenu_SetSelectedName(self.trackType,para.trackType)
+  UIDropDownMenu_SetText(self.trackType,para.trackType)
   
 end
 
@@ -827,10 +844,90 @@ sff.text:SetPoint("CENTER")
 sff.text:SetFont(titleFont,20,titleFontExtra)
 sff.text:SetTextColor(0.9,0.9,0.9)
 sff.text:SetText("smart Family stuff goes here")
+
+sff.setValues=setSFFActiveValues
+
+--create general settings stuff
+do
+sff.title1=sff:CreateFontString(nil,"OVERLAY")
+local t=sff.title1
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("General")
+t:SetPoint("TOPLEFT",sff,"TOPLEFT",25,-25)
+
+sff.titleSpacer=sff:CreateTexture(nil,"BACKGROUND")
+local tS=sff.titleSpacer
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(110)
+
+createNumberEB(sff,"name",sff)
+sff.name.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+sff.name.text:SetText("Name:")
+sff.name:SetWidth(80)
+sff.name:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+name=self:GetText()
+if not name or name=="" then name=eF.activePara.displayName; self:SetText(name)
+else 
+  eF.activePara.displayName=name; 
+  eF.activeButton.text:SetText(name)
+end
+end)
+
+createDD(sff,"type",sff)
+sff.type.text:SetPoint("RIGHT",sff.name.text,"RIGHT",0,-ySpacing)
+sff.type.text:SetText("Type:")
+sff.type.initialize=function(frame,level,menuList)
+ local info = UIDropDownMenu_CreateInfo()
+ local lst={"Blacklist","Whitelist"}
+ for i=1,#lst do
+   local v=lst[i]
+   info.text, info.checked, info.arg1 = v,false,v
+   info.func=function(self,arg1,arg2,checked)
+     local rv
+     if arg1=="Blacklist" then rv="b" elseif arg1=="Whitelist" then rv="w" end
+     eF.activePara.type=rv
+     UIDropDownMenu_SetText(frame,v)
+     UIDropDownMenu_SetSelectedName(frame,v)
+     CloseDropDownMenus()
+   end
+   UIDropDownMenu_AddButton(info)
+ end
+end
+UIDropDownMenu_SetWidth(sff.type,80)
+--NYI: update without reload
+
+createDD(sff,"trackType",sff)
+sff.trackType.text:SetPoint("RIGHT",sff.type.text,"RIGHT",0,-ySpacing)
+sff.trackType.text:SetText("Tracks:")
+sff.trackType.initialize=function(frame,level,menuList)
+ local info = UIDropDownMenu_CreateInfo()
+ local lst={"Buffs","Debuffs"}
+ for i=1,#lst do
+   local v=lst[i]
+   info.text, info.checked, info.arg1 = v,false,v
+   info.func=function(self,arg1,arg2,checked)
+     eF.activePara.trackType=rv
+     UIDropDownMenu_SetText(frame,v)
+     UIDropDownMenu_SetSelectedName(frame,v)
+     CloseDropDownMenus()
+   end
+   UIDropDownMenu_AddButton(info)
+ end
+end
+UIDropDownMenu_SetWidth(sff.trackType,80)
+end--end of general settings
+--NYI: update without reload
+
+
+
 end
 
---create dumb family frame
 
+--create dumb family frame
 do
 ff.dumbFamilyFrame=CreateFrame("Frame","eFDFF",ff)
 local dff=ff.dumbFamilyFrame
@@ -851,6 +948,7 @@ end
 
 
 end--end of family frames
+
 
 local function intSetInitValues()
   local int=eF.interface

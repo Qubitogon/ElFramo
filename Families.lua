@@ -1,201 +1,5 @@
 local _,eF=...
 
---[[
-
-eF.para.families={[1]={displayName="void",
-                       smart=false,
-                       count=4,
-                       [1]={displayName="ReM",
-                            type="icon",
-                            trackType="name",
-                            buff=true,
-                            frameLevel=4,
-                            arg1="Renewing Mist",
-                            xPos=-2,
-                            yPos=0,
-                            height=15,
-                            width=15,
-                            anchor="TOPRIGHT",
-                            anchorTo="TOPRIGHT",
-                            cdWheel=false,
-                            cdReverse=true,
-                            texture=627487,
-                            hasText=true,
-                            hasTexture=false,
-                            textType="t",
-                            textAnchor="CENTER",
-                            textAnchorTo="CENTER",
-                            textXOS=0,
-                            textYOS=0,
-                            textFont="Fonts\\FRIZQT__.ttf",
-                            textExtra="OUTLINE",
-                            textSize=14,
-                            textR=0.85,
-                            textG=0.85,
-                            textB=0.85,
-                            textA=1,
-                            textDecimals=0,
-                            ownOnly=false,
-                            loadAlways=true,
-                            }, --end of [1][1]
-                       [2]={displayName="SooM",
-                            type="icon",
-                            trackType="name",
-                            buff=true,
-                            arg1="Soothing Mist",
-                            xPos=0,
-                            yPos=0,
-                            frameLevel=4,
-
-                            height=20,
-                            width=20,
-                            anchor="TOPLEFT",
-                            anchorTo="TOPLEFT",
-                            cdWheel=true,
-                            cdReverse=true,
-                            hasBorder=true,
-                            borderType="debuffColor",
-                            texture=606550,
-                            hasText=false,
-                            hasTexture=true,
-                            textType="t",
-                            textAnchor="CENTER",
-                            textAnchorTo="CENTER",
-                            textXOS=0,
-                            textYOS=0,
-                            textFont="Fonts\\FRIZQT__.ttf",
-                            textExtra="OUTLINE",
-                            textSize=14,
-                            textR=0.85,
-                            textG=0.85,
-                            textB=0.85,
-                            textA=1,
-                            textDecimals=0,
-                            ownOnly=false,
-                            loadAlways=true,
-                            },    
-                       [3]={displayName="TankSquare",
-                            type="icon",
-                            trackType="static",
-                            xPos=0,
-                            yPos=0,
-                            height=5,
-                            width=5,
-                            anchor="TOPLEFT",
-                            anchorTo="TOPLEFT",
-                            hasTexture=true,
-                            hasColorTexture=true,
-                            frameLevel=3,
-
-                            textureR=0.1,
-                            textureG=0.1,
-                            textureB=0.5,
-                            loadAlways=false,   
-                            loadRole=true,
-                            loadRoleList={"TANK"},                            
-                            },
-                       [4]={displayName="PowerBar",
-                            type="bar",
-                            trackType="power",
-                            frameLevel=2,
-
-                            xPos=3,
-                            yPos=0,
-                            lFix=7,
-                            lMax=50,
-                            grow="up",
-                            --anchor="BOTTOMLEFT",--anchor decided based on where it grows; up->top, right-> left etc
-                            anchorTo="BOTTOMLEFT",
-                            loadAlways=false,
-                            loadRole=true,
-                            loadRoleList={"HEALER"}, 
-                            loadClass=true,
-                            loadClassList={"Monk"}
-                            },                      
-                         }, --end of ...families[1] 
-                  [2]={displayName="blacktest",
-                       smart=true,
-                       count=3,
-                       type="b",
-                       xPos=0,
-                       yPos=0,
-                       spacing=1,
-                       height=20,
-                       frameLevel=4,
-                       width=20,
-                       anchor="BOTTOMLEFT",
-                       anchorTo="BOTTOMLEFT",
-                       buff=false,
-                       arg1={"Soothing Mist","Renewing Mist","Enveloping Mist","Essence Font"},
-                       smartIcons=true,
-                       grow="right",
-                       growAnchor="BOTTOMLEFT",
-                       growAnchorTo="BOTTOMLEFT",
-                       cdReverse=true,
-                       cdWheel=true,
-                       hasBorder=true,
-                       borderType="debuffColor",
-                       hasText=true,
-                       hasTexture=true,
-                       ignorePermanents=true,
-                       ignoreDurationAbove=20,
-                       textType="t",
-                       textAnchor="CENTER",
-                       textAnchorTo="CENTER",
-                       textXOS=0,
-                       textYOS=0,
-                       textSize=15,
-                       textR=0.85,
-                       textG=0.85,
-                       textB=0.85,
-                       textA=1,
-                       textDecimals=0,
-                       ownOnly=false,
-                       loadAlways=true,
-                       },   --end of families[2]  
-                  [3]={displayName="white",
-                       smart=true,
-                       count=3,
-                       type="w",
-                       arg1={"Essence Font","Enveloping Mist"},
-                       xPos=0,
-                       yPos=0,
-                       spacing=1,
-                       height=20,
-                       frameLevel=4,
-                       width=20,
-                       anchor="LEFT",
-                       anchorTo="LEFT",
-                       buff=true,
-                       smartIcons=true,
-                       grow="right",
-                       growAnchor="LEFT",
-                       growAnchorTo="LEFT",
-                       cdReverse=true,
-                       cdWheel=true,
-                       hasText=true,
-                       hasTexture=true,
-                       ignorePermanents=true,
-                       ignoreDurationAbove=nil,
-                       textType="t",
-                       textAnchor="CENTER",
-                       textAnchorTo="CENTER",
-                       textIgnoreDurationAbove=99,
-                       textXOS=0,
-                       textYOS=0,
-                       textSize=15,
-                       textR=0.85,
-                       textG=0.85,
-                       textB=0.85,
-                       textA=1,
-                       textDecimals=0,
-                       ownOnly=false,
-                       loadAlways=true,
-                       },   --end of families[2]  
-                  }--end of all  
-                  
-]]
-
 local function createFamilyFrames()
   local units=eF.units
   local insert=table.insert  
@@ -206,7 +10,7 @@ local function createFamilyFrames()
     if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
     frame.onAuraList={}
     frame.onBuffList={}
-    frame.onDebuffList={}
+    --frame.onDebuffList={}
     frame.onUpdateList={}
     frame.onPowerList={}
     
@@ -232,7 +36,7 @@ local function createFamilyFrames()
         frame[j].onAuraList={}
         frame[j].onBuffList={}
         frame[j].onDebuffList={}
-        frame[j].onUpdateList={}
+        --frame[j].onUpdateList={}
         frame[j].onPowerList={}
         frame[j].onPostAuraList={}
         
@@ -245,20 +49,17 @@ local function createFamilyFrames()
         end  
                
         if frame[j].para.type=="b" then 
-          if frame[j].para.buff then insert(frame[j].onBuffList,{eF.rep.blacklistFamilyAdopt,frame[j]})  
-          else insert(frame[j].onDebuffList,{eF.rep.blacklistFamilyAdopt,frame[j]}) end
+          if frame[j].para.trackType=="Buffs" then insert(frame[j].onBuffList,{eF.rep.blacklistFamilyAdopt,frame[j]})  
+          elseif frame[j].para.trackType=="Debuffs" then insert(frame[j].onDebuffList,{eF.rep.blacklistFamilyAdopt,frame[j]}) end
           insert(frame[j].onAuraList,{eF.rep.smartFamilyDisableAll,frame[j]})
         end
         
          if frame[j].para.type=="w" then 
-          if frame[j].para.buff then insert(frame[j].onBuffList,{eF.rep.whitelistFamilyAdopt,frame[j]})  
-          else insert(frame[j].onDebuffList,{eF.rep.whitelistFamilyAdopt,frame[j]}) end
+          if frame[j].para.trackType=="Buffs" then insert(frame[j].onBuffList,{eF.rep.whitelistFamilyAdopt,frame[j]})  
+          elseif frame[j].para.trackType=="Debuffs" then insert(frame[j].onDebuffList,{eF.rep.whitelistFamilyAdopt,frame[j]}) end
           insert(frame[j].onAuraList,{eF.rep.smartFamilyDisableAll,frame[j]})
         end
         
-        if frame[j].para.hasText then 
-          insert(frame[j].onUpdateList,{eF.rep.smartFamilyUpdateTexts,frame[j]})
-        end
         
         if frame[j].para.hasBorder and frame[j].para.borderType=="debuffColor" then 
           insert(frame[j].onPostAuraList,{eF.rep.smartFamilyDebuffTypeBorderColor,frame[j]})
@@ -289,8 +90,8 @@ local function createFamilyFrames()
           frame[j][k].disable=eF.rep.iconFrameDisable
           frame[j][k].enable=eF.rep.iconFrameEnable
           frame[j][k]:disable()
+          frame[j][k].onUpdateList={}
           
-        --iconUpdateTextTypeT
           ----------------------VISUALS
         
           if frame[j].para.hasTexture then
@@ -318,7 +119,7 @@ local function createFamilyFrames()
             if frame.families[j].cdReverse then frame[j][k].cdFrame:SetReverse(true) end
             frame[j][k].cdFrame:SetAllPoints()
             frame[j][k].cdFrame:SetFrameLevel( frame[j][k]:GetFrameLevel())
-            frame[j][k].updateCDWheel=eF.rep.iconUpdateCDWheel
+            frame[j][k].updateCDWheel=eF.rep.iconUpdateCDWheel 
           end--end of if .cdwheel
           
           --text
@@ -338,14 +139,21 @@ local function createFamilyFrames()
             frame[j][k].text:SetPoint(frame.families[j].textAnchor,frame[j][k],frame.families[j].textAnchorTo,xOS,yOS)
             frame[j][k].text:SetTextColor(r,g,b,a)
             if iDA then frame[j][k].textIgnoreDurationAbove=iDA end
-            if frame[j][k].para.textType=="t" then frame[j][k].updateText= eF.rep.iconUpdateTextTypeT end 
+            
+            if frame[j][k].para.textType=="t" then insert(frame[j][k].onUpdateList,eF.rep.iconUpdateTextTypeT) end 
           end--end of if frame.hasText
                     
-          
+                
+        --give the OnUpdate function to the frame
+        frame[j][k].onUpdateFunc=eF.rep.frameOnUpdateFunction
+        frame[j][k]:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction)
+        
         end --end for k=1,frame.families.count
        
+  
+        
               
-      else --else of if smart 
+      else --------------------------------else of if smart 
       
         frame[j].para=frame.families[j]
         frame[j]:SetPoint("CENTER")
@@ -378,14 +186,29 @@ local function createFamilyFrames()
             
             if frame.families[j][k].trackType=="name" then  
               insert(frame[j][k].onAuraList,{eF.rep.iconFrameDisable,frame[j][k]})
-              if frame[j][k].para.buff then insert(frame[j][k].onBuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]})
-              else insert(frame[j][k].onDebuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]}) end           
-            elseif frame[j][k].para.trackType=="static" then            
+              if frame[j][k].para.trackGroup=="Buffs" then insert(frame[j][k].onBuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]})
+              elseif frame[j][k].para.trackGroup=="Debuffs" then insert(frame[j][k].onDebuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]}) end           
+            elseif frame[j][k].para.trackGroup=="static" then            
                frame[j][k].static=true
             end
             
+            
+            if frame.families[j][k].trackType=="Buffs" then
+              insert(frame[j][k].onAuraList,{eF.rep.iconFrameDisable,frame[j][k]})
+              if frame.families[j][k].trackBy=="Name" then      
+                insert(frame[j][k].onBuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]})
+              end
+            end
+            
+            if frame.families[j][k].trackType=="Debuffs" then
+              insert(frame[j][k].onAuraList,{eF.rep.iconFrameDisable,frame[j][k]})
+              if frame.families[j][k].trackBy=="Name" then      
+                insert(frame[j][k].onDebuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]})
+              end
+            end
+                                                         
             if frame[j][k].para.hasText and frame[j][k].para.textType=="t" then
-              insert(frame[j][k].onUpdateList,{eF.rep.iconUpdateTextTypeT,frame[j][k]})
+              insert(frame[j][k].onUpdateList,eF.rep.iconUpdateTextTypeT)
             end
             
             if frame[j][k].para.hasTexture and (not frame[j][k].para.texture or frame[j][k].para.smartIcon) and not frame[j][k].para.hasColorTexture then
@@ -453,8 +276,8 @@ local function createFamilyFrames()
               frame[j][k].text:SetPoint(frame.families[j][k].textAnchor,frame[j][k],frame.families[j][k].textAnchorTo,xOS,yOS)
               frame[j][k].text:SetTextColor(r,g,b,a)
             end--end of if frame.hasText
-          end --end of if type=="icon"
-                    
+          end --end of if type=="icon"         
+          
           if frame.families[j][k].type=="bar" then
           
             frame[j][k]=CreateFrame("StatusBar",nil,frame[j],"TextStatusBar")
@@ -530,6 +353,13 @@ local function createFamilyFrames()
           end
           
           end--end of do
+          
+          
+          --give the OnUpdate function to the frame
+          frame[j][k].onUpdateFunc=eF.rep.frameOnUpdateFunction
+          if #frame[j][k].onUpdateList>0 then
+            frame[j][k]:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction)
+          end
           
         end --end for k=1,frame.families.count
       end--end of if frame.families[j].smart else
@@ -657,7 +487,6 @@ end
 eF.rep.smartFamilyUpdateTexts=smartFamilyUpdateTexts
 
 local function iconUpdateTextTypeT(self)
-  if not self.filled then return end
   local t=GetTime()
   local s
   local iDA=self.textIgnoreDurationAbove
@@ -747,6 +576,13 @@ local function checkLoad(self,role,enc,ins,class)
 end
 eF.rep.checkLoad=checkLoad
 
+local function frameOnUpdateFunction(self)
+  local lst=self.onUpdateList
+  for i=1,#lst do
+    lst[i](self)
+  end
+end
+eF.rep.frameOnUpdateFunction=frameOnUpdateFunction
 --createFamilyFrames()
 
 
