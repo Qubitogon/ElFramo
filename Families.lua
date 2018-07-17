@@ -1,6 +1,6 @@
 local _,eF=...
 
-local function createFamilyFrames()
+local function initCreateFamilyFrames()
   local units=eF.units
   local insert=table.insert  
   
@@ -10,371 +10,21 @@ local function createFamilyFrames()
     if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
     frame.onAuraList={}
     frame.onBuffList={}
-    --frame.onDebuffList={}
+    frame.onDebuffList={}
     frame.onUpdateList={}
     frame.onPowerList={}
-    
+    frame.createFamily=eF.rep.createFamilyFrame
     eF.units.familyCount=#frame.families
     for j=1,#frame.families do
-      frame[j]=CreateFrame("Frame",nil,frame)
-      frame[j]:SetSize(1,1)
-      frame[j].filled=false
-      
-      --------------------SMART FAMILIES
-      if frame.families[j].smart then
-        frame[j].disable=eF.rep.smartFamilyDisableAll
-        frame[j].enable=eF.rep.smartFamilyEnableAll
-        frame[j].smart=true       
-        frame[j].para=frame.families[j]
-        frame[j]:SetFrameLevel(frame[j].para.frameLevel+frame:GetFrameLevel()-1)
-        frame[j].active=0
-        frame[j]:SetPoint(frame.families[j].anchor, frame, frame.families[j].anchorTo,frame.families[j].xPos,frame.families[j].yPos)
-        
-        ------LOAD STUFF
-        frame[j].checkLoad=eF.rep.checkLoad
-        frame[j].loaded=false
-        frame[j].onAuraList={}
-        frame[j].onBuffList={}
-        frame[j].onDebuffList={}
-        --frame[j].onUpdateList={}
-        frame[j].onPowerList={}
-        frame[j].onPostAuraList={}
-        
-        if frame[j].para.loadAlways then frame[j].loadAlways=true 
-        else 
-          if frame[j].para.loadRole then frame[j].loadRole=true; frame[j].loadRoleList=frame[j].para.loadRoleList end
-          if frame[j].para.loadInstance then frame[j].loadInstance=true; frame[j].loadInstanceList = frame[j].para.loadInstanceList end
-          if frame[j].para.loadEncounter then frame[j].loadEncounter=true; frame[j].loadEncounterList=frame[j].para.loadEncounterList end 
-          if frame[j].para.loadClass then frame[j].loadClass=true; frame[j].loadClassList=frame[j].para.loadClassList end
-        end  
-               
-        if frame[j].para.type=="b" then 
-          if frame[j].para.trackType=="Buffs" then insert(frame[j].onBuffList,{eF.rep.blacklistFamilyAdopt,frame[j]})  
-          elseif frame[j].para.trackType=="Debuffs" then insert(frame[j].onDebuffList,{eF.rep.blacklistFamilyAdopt,frame[j]}) end
-          insert(frame[j].onAuraList,{eF.rep.smartFamilyDisableAll,frame[j]})
-        end
-        
-         if frame[j].para.type=="w" then 
-          if frame[j].para.trackType=="Buffs" then insert(frame[j].onBuffList,{eF.rep.whitelistFamilyAdopt,frame[j]})  
-          elseif frame[j].para.trackType=="Debuffs" then insert(frame[j].onDebuffList,{eF.rep.whitelistFamilyAdopt,frame[j]}) end
-          insert(frame[j].onAuraList,{eF.rep.smartFamilyDisableAll,frame[j]})
-        end
-        
-        
-        if frame[j].para.hasBorder and frame[j].para.borderType=="debuffColor" then 
-          insert(frame[j].onPostAuraList,{eF.rep.smartFamilyDebuffTypeBorderColor,frame[j]})
-        end
-        
-        if frame[j].para.hasTexture and (not frame[j].para.texture or frame[j].para.smartIcon) then
-          insert(frame[j].onPostAuraList,{eF.rep.smartFamilyApplySmartIcons,frame[j]})
-        end
-        
-        if frame[j].para.cdWheel then
-          insert(frame[j].onPostAuraList,{eF.rep.smartFamilyUpdateCDWheels,frame[j]})
-        end
-        
-        
-        for k=1,frame.families[j].count do
-          local xOS=0
-          local yOS=0
-          if frame[j].para.grow=="down" then yOS=(k-1)*(frame[j].para.spacing+frame[j].para.height)
-          elseif frame[j].para.grow=="up" then yOS=(1-k)*(frame[j].para.spacing+frame[j].para.height)
-          elseif frame[j].para.grow=="right" then xOS=(k-1)*(frame[j].para.spacing+frame[j].para.width)
-          elseif frame[j].para.grow=="right" then xOS=(1-k)*(frame[j].para.spacing+frame[j].para.width) end
-          
-          frame[j][k]=CreateFrame("Frame",nil,frame[j])
-          frame[j][k].para=eF.para.families[j]
-          frame[j][k]:SetPoint(frame.families[j].growAnchor,frame[j],frame.families[j].growAnchorTo,xOS,yOS)
-          frame[j][k]:SetSize(frame.families[j].width,frame.families[j].height)
-          frame[j][k].adopt=eF.rep.iconUnconditionalAdopt        
-          frame[j][k].disable=eF.rep.iconFrameDisable
-          frame[j][k].enable=eF.rep.iconFrameEnable
-          frame[j][k]:disable()
-          frame[j][k].onUpdateList={}
-          
-          ----------------------VISUALS
-        
-          if frame[j].para.hasTexture then
-            frame[j][k].texture=frame[j][k]:CreateTexture()
-            frame[j][k].texture:SetDrawLayer("BACKGROUND",-2)
-            frame[j][k].texture:SetAllPoints()
-            if frame.families[j].texture then frame[j][k].texture:SetTexture(frame.families[j].texture)  --if frame.families[j][k].texture
-            else frame[j][k].smartIcon=true; frame[j][k].updateTexture=eF.rep.iconApplySmartIcon end
-          end        
-          
-          if frame[j].para.hasBorder then
-            frame[j][k].border=frame[j][k]:CreateTexture(nil,'OVERLAY')
-            frame[j][k].border:SetTexture([[Interface\Buttons\UI-Debuff-Overlays]])
-            frame[j][k].border:SetAllPoints()                     
-            frame[j][k].border:SetTexCoord(.296875, .5703125, 0, .515625)
-            if frame[j].para.borderType=="debuffColor" then
-              frame[j][k].updateBorder=eF.rep.updateBorderColorDebuffType
-              frame[j][k].borderColor=eF.para.colors.debuff
-            end
-          end
-          
-
-          if frame.families[j].cdWheel then
-            frame[j][k].cdFrame=CreateFrame("Cooldown",nil,frame[j][k],"CooldownFrameTemplate")
-            if frame.families[j].cdReverse then frame[j][k].cdFrame:SetReverse(true) end
-            frame[j][k].cdFrame:SetAllPoints()
-            frame[j][k].cdFrame:SetFrameLevel( frame[j][k]:GetFrameLevel())
-            frame[j][k].updateCDWheel=eF.rep.iconUpdateCDWheel 
-          end--end of if .cdwheel
-          
-          --text
-          if frame.families[j].hasText then
-            frame[j][k].text=frame[j][k]:CreateFontString()
-            local font=frame.families[j].textFont or "Fonts\\FRIZQT__.ttf"
-            local size=frame.families[j].textSize or 20
-            local xOS=frame.families[j].textXOS or 0
-            local yOS=frame.families[j].textYOS or 0
-            local r=frame.families[j].textR
-            local g=frame.families[j].textG
-            local b=frame.families[j].textB
-            local a=frame.families[j].textA
-            local extra=frame.families[j].textExtra or "OUTLINE"
-            local iDA=frame[j][k].para.textIgnoreDurationAbove
-            frame[j][k].text:SetFont(font,size,extra)    
-            frame[j][k].text:SetPoint(frame.families[j].textAnchor,frame[j][k],frame.families[j].textAnchorTo,xOS,yOS)
-            frame[j][k].text:SetTextColor(r,g,b,a)
-            if iDA then frame[j][k].textIgnoreDurationAbove=iDA end
-            
-            if frame[j][k].para.textType=="t" then insert(frame[j][k].onUpdateList,eF.rep.iconUpdateTextTypeT) end 
-          end--end of if frame.hasText
-                    
-                
-        --give the OnUpdate function to the frame
-        frame[j][k].onUpdateFunc=eF.rep.frameOnUpdateFunction
-        frame[j][k]:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction)
-        
-        end --end for k=1,frame.families.count
-       
-  
-        
-              
-      else --------------------------------else of if smart 
-      
-        frame[j].para=frame.families[j]
-        frame[j]:SetPoint("CENTER")
-        
-        for k=1,frame.families[j].count do
- 
-          if frame.families[j][k].type=="icon" then
-                    
-            frame[j][k]=CreateFrame("Frame",nil,frame[j])
-            frame[j][k].para=frame.families[j][k]
-            frame[j][k]:SetPoint(frame.families[j][k].anchor,frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
-            frame[j][k]:SetSize(frame.families[j][k].width,frame.families[j][k].height)
-            frame[j][k]:SetFrameLevel(frame[j][k].para.frameLevel+frame:GetFrameLevel())
-
-           
-            frame[j][k].disable=eF.rep.iconFrameDisable
-            frame[j][k].enable=eF.rep.iconFrameEnable
-            frame[j][k]:disable()
-            
-            -----------LOADING STUFF
-            frame[j][k].checkLoad=eF.rep.checkLoad
-            frame[j][k].loaded=false
-            frame[j][k].onAuraList={}
-            frame[j][k].onPostAuraList={}
-            frame[j][k].onBuffList={}
-            frame[j][k].onDebuffList={}
-            frame[j][k].onUpdateList={}
-            frame[j][k].onPowerList={}
-            
-            
-            if frame.families[j][k].trackType=="name" then  
-              insert(frame[j][k].onAuraList,{eF.rep.iconFrameDisable,frame[j][k]})
-              if frame[j][k].para.trackGroup=="Buffs" then insert(frame[j][k].onBuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]})
-              elseif frame[j][k].para.trackGroup=="Debuffs" then insert(frame[j][k].onDebuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]}) end           
-            elseif frame[j][k].para.trackGroup=="static" then            
-               frame[j][k].static=true
-            end
-            
-            
-            if frame.families[j][k].trackType=="Buffs" then
-              insert(frame[j][k].onAuraList,{eF.rep.iconFrameDisable,frame[j][k]})
-              if frame.families[j][k].trackBy=="Name" then      
-                insert(frame[j][k].onBuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]})
-              end
-            end
-            
-            if frame.families[j][k].trackType=="Debuffs" then
-              insert(frame[j][k].onAuraList,{eF.rep.iconFrameDisable,frame[j][k]})
-              if frame.families[j][k].trackBy=="Name" then      
-                insert(frame[j][k].onDebuffList,{eF.rep.iconAdoptAuraByName,frame[j][k]})
-              end
-            end
-                                                         
-            if frame[j][k].para.hasText and frame[j][k].para.textType=="t" then
-              insert(frame[j][k].onUpdateList,eF.rep.iconUpdateTextTypeT)
-            end
-            
-            if frame[j][k].para.hasTexture and (not frame[j][k].para.texture or frame[j][k].para.smartIcon) and not frame[j][k].para.hasColorTexture then
-              insert(frame[j][k].onPostAuraList,{eF.rep.iconApplySmartIcon,frame[j][k]})
-            end
-
-            if frame[j][k].para.hasBorder and frame[j][k].para.borderType=="debuffColor" then 
-              insert(frame[j][k].onPostAuraList,{eF.rep.updateBorderColorDebuffType,frame[j][k]})
-            end
-            
-            if frame[j][k].para.cdWheel then
-              insert(frame[j][k].onPostAuraList,{eF.rep.iconUpdateCDWheel,frame[j][k]})
-            end
-            
-            
-            -------------VISUAL STUFF
-            if frame[j][k].para.hasTexture then 
-              frame[j][k].texture=frame[j][k]:CreateTexture()
-              frame[j][k].texture:SetDrawLayer("BACKGROUND",-2)
-              frame[j][k].texture:SetAllPoints()
-              
-              if frame.families[j][k].texture then frame[j][k].texture:SetTexture(frame.families[j][k].texture)  --if frame.families[j][k].texture
-              elseif frame[j][k].para.hasColorTexture then 
-                local r=frame[j][k].para.textureR or 0
-                local g=frame[j][k].para.textureG or 0
-                local b=frame[j][k].para.textureB or 0
-                local a=frame[j][k].para.textureA or 1
-                frame[j][k].texture:SetColorTexture(r,g,b,a)               
-                else frame[j][k].smartIcon=true;  
-              end
-                            
-            end
-                   
-            if frame[j][k].para.hasBorder then
-              frame[j][k].border=frame[j][k]:CreateTexture(nil,'OVERLAY')
-              frame[j][k].border:SetTexture([[Interface\Buttons\UI-Debuff-Overlays]])
-              frame[j][k].border:SetAllPoints()                     
-              frame[j][k].border:SetTexCoord(.296875, .5703125, 0, .515625)
-              if frame[j][k].para.borderType=="debuffColor" then
-                frame[j][k].updateBorder=eF.rep.updateBorderColorDebuffType
-                frame[j][k].borderColor=eF.para.colors.debuff
-              end            
-            end
-            
-            if frame.families[j][k].cdWheel then
-              frame[j][k].cdFrame=CreateFrame("Cooldown",nil,frame[j][k],"CooldownFrameTemplate")
-              if frame.families[j][k].cdReverse then frame[j][k].cdFrame:SetReverse(true) end
-              frame[j][k].cdFrame:SetAllPoints()
-              frame[j][k].cdFrame:SetFrameLevel( frame[j][k]:GetFrameLevel())
-            end--end of if .cdwheel
-            
-            --text
-            if frame.families[j][k].hasText then
-              frame[j][k].text=frame[j][k]:CreateFontString()
-              local font=frame.families[j][k].textFont or "Fonts\\FRIZQT__.ttf"
-              local size=frame.families[j][k].textSize or 20
-              local xOS=frame.families[j][k].textXOS or 0
-              local yOS=frame.families[j][k].textYOS or 0
-              local r=frame.families[j][k].textR
-              local g=frame.families[j][k].textG
-              local b=frame.families[j][k].textB
-              local a=frame.families[j][k].textA
-              local extra=frame.families[j][k].textExtra or "OUTLINE"
-              frame[j][k].text:SetFont(font,size,extra)    
-              frame[j][k].text:SetPoint(frame.families[j][k].textAnchor,frame[j][k],frame.families[j][k].textAnchorTo,xOS,yOS)
-              frame[j][k].text:SetTextColor(r,g,b,a)
-            end--end of if frame.hasText
-          end --end of if type=="icon"         
-          
-          if frame.families[j][k].type=="bar" then
-          
-            frame[j][k]=CreateFrame("StatusBar",nil,frame[j],"TextStatusBar")
-            frame[j][k].para=frame.families[j][k]
-            frame[j][k]:SetFrameLevel(frame[j][k].para.frameLevel+frame:GetFrameLevel())
-
-            frame[j][k].disable=eF.rep.iconFrameDisable
-            frame[j][k].enable=eF.rep.iconFrameEnable
-            frame[j][k]:disable()
-            
-            -----------LOADING STUFF
-            frame[j][k].checkLoad=eF.rep.checkLoad
-            frame[j][k].loaded=false
-            frame[j][k].onAuraList={}
-            frame[j][k].onBuffList={}
-            frame[j][k].onDebuffList={}
-            frame[j][k].onUpdateList={}
-            frame[j][k].onPowerList={}
-            frame[j][k].onPostAuraList={}
-            
-            if frame[j][k].para.loadAlways then frame[j][k].loadAlways=true 
-            else 
-              if frame[j][k].para.loadRole then frame[j][k].loadRole=true; frame[j][k].loadRoleList=frame[j][k].para.loadRoleList end
-              if frame[j][k].para.loadInstance then frame[j][k].loadInstance=true; frame[j][k].loadInstanceList = frame[j][k].para.loadInstanceList end
-              if frame[j][k].para.loadEncounter then frame[j][k].loadEncounter=true; frame[j][k].loadEncounter=frame[j][k].para.loadEncounter end 
-              if frame[j][k].para.loadClass then frame[j][k].loadClass=true; frame[j][k].loadClassList=frame[j][k].para.loadClassList end
-            end
-                       
-            if frame.families[j][k].trackType=="power" then  
-              insert(frame[j][k].onPowerList,{eF.rep.statusBarPowerUpdate,frame[j][k]})    
-              frame[j][k].id=frame.id
-              frame[j][k].static=true
-            end 
-            
-            --VISUALS
-            
-           
-            if frame[j][k].para.grow=="up" or not frame[j][k].para.grow then 
-              frame[j][k]:SetPoint("BOTTOM",frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
-              frame[j][k]:SetWidth(frame[j][k].para.lFix)
-              frame[j][k]:SetHeight(frame[j][k].para.lMax)
-              frame[j][k]:SetOrientation("VERTICAL")
-            elseif frame[j][k].para.grow=="down" then 
-              frame[j][k]:SetPoint("TOP",frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
-              frame[j][k]:SetWidth(frame[j][k].para.lFix)
-              frame[j][k]:SetHeight(frame[j][k].para.lMax)
-              frame[j][k]:SetOrientation("VERTICAL")
-            elseif frame[j][k].para.grow=="right" then 
-              frame[j][k]:SetPoint("LEFT",frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
-              frame[j][k]:SetWidth(frame[j][k].para.lMax)
-              frame[j][k]:SetHeight(frame[j][k].para.lFix)
-              frame[j][k]:SetOrientation("HORIZONTAL") 
-            else
-              frame[j][k]:SetPoint("RIGHT",frame,frame.families[j][k].anchorTo,frame.families[j][k].xPos,frame.families[j][k].yPos)
-              frame[j][k]:SetWidth(frame[j][k].para.lMax)
-              frame[j][k]:SetHeight(frame[j][k].para.lFix)
-              frame[j][k]:SetOrientation("HORIZONTAL")
-            end
-            
-            frame[j][k]:SetStatusBarTexture(0.1,0.1,0.7,1)  
-            frame[j][k]:SetMinMaxValues(0,1)
-            
-          end--end of if bar
-          
-          
-          do  --loading conditions
-          if frame[j][k].para.loadAlways then frame[j][k].loadAlways=true 
-          else 
-            if frame[j][k].para.loadRole then frame[j][k].loadRole=true; frame[j][k].loadRoleList=frame[j][k].para.loadRoleList end
-            if frame[j][k].para.loadInstance then frame[j][k].loadInstance=true; frame[j][k].loadInstanceList = frame[j][k].para.loadInstanceList end
-            if frame[j][k].para.loadEncounter then frame[j][k].loadEncounter=true; frame[j][k].loadEncounter=frame[j][k].para.loadEncounter end 
-            if frame[j][k].para.loadClass then frame[j][k].loadClass=true; frame[j][k].loadClassList=frame[j][k].para.loadClassList end
-          end
-          
-          end--end of do
-          
-          
-          --give the OnUpdate function to the frame
-          frame[j][k].onUpdateFunc=eF.rep.frameOnUpdateFunction
-          if #frame[j][k].onUpdateList>0 then
-            frame[j][k]:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction)
-          end
-          
-        end --end for k=1,frame.families.count
-      end--end of if frame.families[j].smart else
-      
+      frame:createFamily(j)    
     end --end of for j=1,#frame.families
-    
-    
-    
-  end--end of for i=1,40
+ 
+  end--end of for i=1,45
   
 end --end of createFamilyFrames()
-eF.rep.createFamilyFrames=createFamilyFrames
+eF.rep.initCreateFamilyFrames=initCreateFamilyFrames
 
 local function iconAdoptAuraByName(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
-
   if self.filled then return  end
   if name==self.para.arg1 then
     self.name=name
@@ -392,7 +42,6 @@ local function iconAdoptAuraByName(self,name,icon,count,debuffType,duration,expi
     self:enable()
     return true
   end
-  
 end
 eF.rep.iconAdoptAuraByName=iconAdoptAuraByName
 
@@ -487,6 +136,7 @@ end
 eF.rep.smartFamilyUpdateTexts=smartFamilyUpdateTexts
 
 local function iconUpdateTextTypeT(self)
+  if not self.filled then return end
   local t=GetTime()
   local s
   local iDA=self.textIgnoreDurationAbove
@@ -576,6 +226,356 @@ local function checkLoad(self,role,enc,ins,class)
 end
 eF.rep.checkLoad=checkLoad
 
+local function createFamilyFrame(self,j)
+  local insert=table.insert
+  if self[j] then self[j]=nil end
+  self[j]=CreateFrame("Frame",nil,frame)
+  local f=self[j]
+  f.unitFrame=self
+  f.id=self.id
+  f:SetSize(1,1)
+  f.filled=false
+  f.para=self.families[j]
+
+  --------------------SMART FAMILIES
+  if f.para.smart then
+    f.disable=eF.rep.smartFamilyDisableAll
+    f.enable=eF.rep.smartFamilyEnableAll
+    f.smart=true       
+    f:SetFrameLevel(f.para.frameLevel+self:GetFrameLevel()-1)
+    f.active=0
+    f:SetPoint(f.para.anchor, self, f.para.anchorTo, f.para.xPos, f.para.yPos)
+        
+     ------LOAD STUFF
+    f.checkLoad=eF.rep.checkLoad
+    f.loaded=false
+    f.onAuraList={}
+    f.onBuffList={}
+    f.onDebuffList={}
+    f.onUpdateList={}
+    f.onPowerList={}
+    f.onPostAuraList={}
+        
+    if f.para.loadAlways then f.loadAlways=true 
+    else 
+      if f.para.loadRole then f.loadRole=true; f.loadRoleList=f.para.loadRoleList end
+      if f.para.loadInstance then f.loadInstance=true; f.loadInstanceList = f.para.loadInstanceList end
+      if f.para.loadEncounter then f.loadEncounter=true; f.loadEncounterList=f.para.loadEncounterList end 
+      if f.para.loadClass then f.loadClass=true; f.loadClassList=f.para.loadClassList end
+    end  
+               
+    if f.para.type=="b" then 
+      if f.para.trackType=="Buffs" then insert(f.onBuffList,{eF.rep.blacklistFamilyAdopt,f})  
+      elseif f.para.trackType=="Debuffs" then insert(f.onDebuffList,{eF.rep.blacklistFamilyAdopt,f}) end
+      insert(f.onAuraList,{eF.rep.smartFamilyDisableAll,f})
+    end
+        
+    if f.para.type=="w" then 
+      if f.para.trackType=="Buffs" then insert(f.onBuffList,{eF.rep.whitelistFamilyAdopt,f})  
+      elseif f.para.trackType=="Debuffs" then insert(f.onDebuffList,{eF.rep.whitelistFamilyAdopt,f}) end
+      insert(f.onAuraList,{eF.rep.smartFamilyDisableAll,f})
+    end
+        
+    if f.para.hasBorder and f.para.borderType=="debuffColor" then 
+      insert(f.onPostAuraList,{eF.rep.smartFamilyDebuffTypeBorderColor,f})
+    end
+        
+    if f.para.hasTexture and (not f.para.texture or f.para.smartIcon) then
+      insert(f.onPostAuraList,{eF.rep.smartFamilyApplySmartIcons,f})
+    end
+        
+    if f.para.cdWheel then
+      insert(f.onPostAuraList,{eF.rep.smartFamilyUpdateCDWheels,f})
+    end
+        
+        
+    for k=1,f.para.count do
+      local xOS=0
+      local yOS=0
+      if f.para.grow=="down" then yOS=(k-1)*(f.para.spacing+f.para.height)
+      elseif f.para.grow=="up" then yOS=(1-k)*(f.para.spacing+f.para.height)
+      elseif f.para.grow=="right" then xOS=(k-1)*(f.para.spacing+f.para.width)
+      elseif f.para.grow=="right" then xOS=(1-k)*(f.para.spacing+f.para.width) end
+        
+      if f[k] then f[k]=nil end
+      f[k]=CreateFrame("Frame",nil,f)
+      local c=f[k]
+      c.para=eF.para.families[j]
+      c:SetPoint(f.para.growAnchor,f,f.para.growAnchorTo,xOS,yOS)
+      c:SetSize(f.para.width,f.para.height)
+      c.adopt=eF.rep.iconUnconditionalAdopt        
+      c.disable=eF.rep.iconFrameDisable
+      c.enable=eF.rep.iconFrameEnable
+      c:disable()
+      c.onUpdateList={}
+
+      ----------------------VISUALS
+        
+      if f.para.hasTexture then
+        c.texture=c:CreateTexture()
+        c.texture:SetDrawLayer("BACKGROUND",-2)
+        c.texture:SetAllPoints()
+        if f.para.texture then c.texture:SetTexture(f.para.texture)  --if frame.families[j][k].texture
+        else c.smartIcon=true; c.updateTexture=eF.rep.iconApplySmartIcon end
+      end        
+          
+      if f.para.hasBorder then
+        c.border=c:CreateTexture(nil,'OVERLAY')
+        c.border:SetTexture([[Interface\Buttons\UI-Debuff-Overlays]])
+        c.border:SetAllPoints()                     
+        c.border:SetTexCoord(.296875, .5703125, 0, .515625)
+        if f.para.borderType=="debuffColor" then
+          c.updateBorder=eF.rep.updateBorderColorDebuffType
+          c.borderColor=eF.para.colors.debuff
+        end
+      end
+          
+
+      if f.para.cdWheel then
+        if c.cdFrame then c.cdFrame = nil end 
+        c.cdFrame=CreateFrame("Cooldown",nil,c,"CooldownFrameTemplate")
+        if f.para.cdReverse then c.cdFrame:SetReverse(true) end
+        c.cdFrame:SetAllPoints()
+        c.cdFrame:SetFrameLevel( c:GetFrameLevel())
+        c.updateCDWheel=eF.rep.iconUpdateCDWheel
+      end--end of if .cdwheel
+          
+      --text
+      if f.para.hasText then
+        c.text=c:CreateFontString()
+        local font=f.para.textFont or "Fonts\\FRIZQT__.ttf"
+        local size=f.para.textSize or 20
+        local xOS=f.para.textXOS or 0
+        local yOS=f.para.textYOS or 0
+        local r=f.para.textR
+        local g=f.para.textG
+        local b=f.para.textB
+        local a=f.para.textA
+        local extra=f.para.textExtra or "OUTLINE"
+        local iDA=c.para.textIgnoreDurationAbove
+        c.text:SetFont(font,size,extra)    
+        c.text:SetPoint(f.para.textAnchor,c,f.para.textAnchorTo,xOS,yOS)
+        c.text:SetTextColor(r,g,b,a)
+        if iDA then c.textIgnoreDurationAbove=iDA end
+        if c.para.textType=="t" then insert(c.onUpdateList,eF.rep.iconUpdateTextTypeT) end 
+      end--end of if frame.hasText
+    
+      --give the OnUpdate function to the frame
+      c.onUpdateFunc=eF.rep.frameOnUpdateFunction
+      c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction)
+    end --end for k=1,frame.families.count
+       
+              
+  else --else of if smart 
+      
+    f:SetPoint("CENTER")
+    f.createChild=eF.rep.createFamilyChild
+    for k=1,f.para.count do
+      f:createChild(k)
+    end --end for k=1,frame.families.count
+  end--end of if frame.families[j].smart else
+
+end
+eF.rep.createFamilyFrame=createFamilyFrame
+
+function createFamilyChild(self,k)
+  local insert=table.insert
+
+  if self.para[k].type=="icon" then
+    if self[k] then self[k]=nil end
+    self[k]=CreateFrame("Frame",nil,self)
+    local c=self[k]
+    c.para=self.para[k]
+    c:SetPoint(c.para.anchor,self.unitFrame,c.para.anchorTo,c.para.xPos,c.para.yPos)
+    c:SetSize(c.para.width,c.para.height)
+    c:SetFrameLevel(c.para.frameLevel+self:GetFrameLevel())
+
+         
+    c.disable=eF.rep.iconFrameDisable
+    c.enable=eF.rep.iconFrameEnable
+    c:disable()
+          
+          -----------LOADING STUFF
+    c.checkLoad=eF.rep.checkLoad
+    c.loaded=false
+    c.onAuraList={}
+    c.onPostAuraList={}
+    c.onBuffList={}
+    c.onDebuffList={}
+    c.onUpdateList={}
+    c.onPowerList={}
+
+    
+    if c.para.trackType=="Buffs" then
+      insert(c.onAuraList,{eF.rep.iconFrameDisable,c})
+      if c.para.trackBy=="Name" then 
+        insert(c.onBuffList,{eF.rep.iconAdoptAuraByName,c})
+      end
+    end
+
+    if c.para.trackType=="Debuffs" then
+      insert(c.onAuraList,{eF.rep.iconFrameDisable,c})
+      if c.para.trackBy=="Name" then 
+        insert(c.onDebuffList,{eF.rep.iconAdoptAuraByName,c})
+      end
+    end
+
+    if c.para.hasText and c.para.textType=="t" then
+      insert(c.onUpdateList,eF.rep.iconUpdateTextTypeT)
+    end
+        
+    if c.para.hasTexture and (not c.para.texture or c.para.smartIcon) and not c.para.hasColorTexture then
+      insert(c.onPostAuraList,{eF.rep.iconApplySmartIcon,c})
+    end
+
+    if c.para.hasBorder and c.para.borderType=="debuffColor" then 
+      insert(c.onPostAuraList,{eF.rep.updateBorderColorDebuffType,c})
+    end
+        
+    if c.para.cdWheel then
+      insert(c.onPostAuraList,{eF.rep.iconUpdateCDWheel,c})
+    end
+        
+          
+    -------------VISUAL STUFF
+    if c.para.hasTexture then 
+      c.texture=c:CreateTexture()
+      c.texture:SetDrawLayer("BACKGROUND",-2)
+      c.texture:SetAllPoints()
+          
+      if c.para.texture then c.texture:SetTexture(c.para.texture)  --if c.para.texture
+      elseif c.para.hasColorTexture then 
+        local r=c.para.textureR or 0
+        local g=c.para.textureG or 0
+        local b=c.para.textureB or 0
+        local a=c.para.textureA or 1
+        c.texture:SetColorTexture(r,g,b,a)               
+      else c.smartIcon=true;  
+      end                         
+    end
+               
+    if c.para.hasBorder then
+      c.border=c:CreateTexture(nil,'OVERLAY')
+      c.border:SetTexture([[Interface\Buttons\UI-Debuff-Overlays]])
+      c.border:SetAllPoints()                     
+      c.border:SetTexCoord(.296875, .5703125, 0, .515625)
+      if c.para.borderType=="debuffColor" then
+        c.updateBorder=eF.rep.updateBorderColorDebuffType
+        c.borderColor=eF.para.colors.debuff
+      end            
+    end
+        
+    if c.para.cdWheel then
+      c.cdFrame=CreateFrame("Cooldown",nil,c,"CooldownFrameTemplate")
+      if c.para.cdReverse then c.cdFrame:SetReverse(true) end
+      c.cdFrame:SetAllPoints()
+      c.cdFrame:SetFrameLevel( c:GetFrameLevel())
+    end--end of if .cdwheel
+    
+    --text
+    if c.para.hasText then
+      c.text=c:CreateFontString()
+      local font=c.para.textFont or "Fonts\\FRIZQT__.ttf"
+      local size=c.para.textSize or 20
+      local xOS=c.para.textXOS or 0
+      local yOS=c.para.textYOS or 0
+      local r=c.para.textR
+      local g=c.para.textG
+      local b=c.para.textB
+      local a=c.para.textA
+      local extra=c.para.textExtra or "OUTLINE"
+      c.text:SetFont(font,size,extra)    
+      c.text:SetPoint(c.para.textAnchor,c,c.para.textAnchorTo,xOS,yOS)
+      c.text:SetTextColor(r,g,b,a)
+    end--end of if frame.hasText
+  end --end of if type=="icon"
+            
+  if self.para[k].type=="bar" then
+    if self[k] then self[k]=nil end
+    self[k]=CreateFrame("StatusBar",nil,self.unitFrame,"TextStatusBar")
+    local c=self[k]
+    c.para=self.para[k]
+    c:SetFrameLevel(c.para.frameLevel+self:GetFrameLevel())
+
+    c.disable=eF.rep.iconFrameDisable
+    c.enable=eF.rep.iconFrameEnable
+    c:disable()
+    
+    -----------LOADING STUFF
+    c.checkLoad=eF.rep.checkLoad
+    c.loaded=false
+    c.onAuraList={}
+    c.onBuffList={}
+    c.onDebuffList={}
+    c.onUpdateList={}
+    c.onPowerList={}
+    c.onPostAuraList={}
+    
+    if c.para.loadAlways then c.loadAlways=true 
+    else 
+      if c.para.loadRole then c.loadRole=true; c.loadRoleList=c.para.loadRoleList end
+      if c.para.loadInstance then c.loadInstance=true; c.loadInstanceList = c.para.loadInstanceList end
+      if c.para.loadEncounter then c.loadEncounter=true; c.loadEncounter=c.para.loadEncounter end 
+      if c.para.loadClass then c.loadClass=true; c.loadClassList=c.para.loadClassList end
+    end
+               
+    if c.para.trackType=="power" then  
+      insert(c.onPowerList,{eF.rep.statusBarPowerUpdate,c})    
+      c.id=self.id
+      c.static=true
+    end 
+    
+    --VISUALS
+    
+   
+    if c.para.grow=="up" or not c.para.grow then 
+      c:SetPoint("BOTTOM",frame,c.para.anchorTo,c.para.xPos,c.para.yPos)
+      c:SetWidth(c.para.lFix)
+      c:SetHeight(c.para.lMax)
+      c:SetOrientation("VERTICAL")
+    elseif c.para.grow=="down" then 
+      c:SetPoint("TOP",frame,c.para.anchorTo,c.para.xPos,c.para.yPos)
+      c:SetWidth(c.para.lFix)
+      c:SetHeight(c.para.lMax)
+      c:SetOrientation("VERTICAL")
+    elseif c.para.grow=="right" then 
+      c:SetPoint("LEFT",frame,c.para.anchorTo,c.para.xPos,c.para.yPos)
+      c:SetWidth(c.para.lMax)
+      c:SetHeight(c.para.lFix)
+      c:SetOrientation("HORIZONTAL") 
+    else
+      c:SetPoint("RIGHT",frame,c.para.anchorTo,c.para.xPos,c.para.yPos)
+      c:SetWidth(c.para.lMax)
+      c:SetHeight(c.para.lFix)
+      c:SetOrientation("HORIZONTAL")
+    end
+    
+    c:SetStatusBarTexture(0.1,0.1,0.7,1)  
+    c:SetMinMaxValues(0,1)
+    
+  end--end of if bar
+  
+  local c=self[k]
+  do  --loading conditions
+  if c.para.loadAlways then c.loadAlways=true 
+  else 
+    if c.para.loadRole then c.loadRole=true; c.loadRoleList=c.para.loadRoleList end
+    if c.para.loadInstance then c.loadInstance=true; c.loadInstanceList = c.para.loadInstanceList end
+    if c.para.loadEncounter then c.loadEncounter=true; c.loadEncounter=c.para.loadEncounter end 
+    if c.para.loadClass then c.loadClass=true; c.loadClassList=c.para.loadClassList end
+  end
+  end --end of loading conditons
+
+  --give the OnUdpate function to the frame
+  c.onUpdateFunc=eF.rep.frameOnUpdateFunction
+  if #c.onUpdateList>0 then
+    c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction)
+  end
+
+  
+end
+eF.rep.createFamilyChild=createFamilyChild
+
 local function frameOnUpdateFunction(self)
   local lst=self.onUpdateList
   for i=1,#lst do
@@ -583,11 +583,6 @@ local function frameOnUpdateFunction(self)
   end
 end
 eF.rep.frameOnUpdateFunction=frameOnUpdateFunction
---createFamilyFrames()
-
-
-
-
 
 
 

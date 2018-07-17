@@ -25,7 +25,7 @@ function initialise(self)
   end--end of i
 
   --families.lua
-  eF.rep.createFamilyFrames()
+  eF.rep.initCreateFamilyFrames()
   eF.layout:update()
   
   self:UnregisterEvent("PLAYER_ENTERING_WORLD")

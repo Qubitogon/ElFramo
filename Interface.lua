@@ -111,6 +111,8 @@ end
 local function createCB(self,name,tab)
   self[name]=CreateFrame("CheckButton",nil,tab,"ChatConfigCheckButtonTemplate")
   local cb=self[name]
+  cb:SetSize(20,20)
+  cb:SetHitRectInsets(0,0,0,0)
 
   cb.text=cb:CreateFontString()
   local tx=cb.text
@@ -173,6 +175,30 @@ end
 local function showDumbFamilyPara()
   local dff=eF.interface.familiesFrame.dumbFamilyFrame
   dff:Show()
+end
+
+local function createIP(self,name,tab) --icon picker
+  self[name]=CreateFrame("EditBox",nil,tab,"InputBoxTemplate")
+  local eb=self[name]
+  eb:SetWidth(60)
+  eb:SetHeight(20)
+  eb:SetAutoFocus(false)
+
+  eb.text=eb:CreateFontString()
+  local tx=eb.text
+  tx:SetFont(font,12,fontExtra)
+  tx:SetTextColor(1,1,1)
+  --tx:SetPoint("RIGHT",eb,"LEFT",-12,0)
+  
+  eb:SetPoint("LEFT",tx,"RIGHT",12,0)
+
+  eb.preview=CreateFrame("Frame",nil,tab)
+  eb.preview:SetPoint("LEFT",eb,"RIGHT",10,0)
+  eb.preview:SetHeight(30)
+  eb.preview:SetWidth(30)
+  
+  eb.pTexture=eb.preview:CreateTexture(nil,"BACKGROUND")
+  eb.pTexture:SetAllPoints()
 end
 
 --http://wowwiki.wikia.com/wiki/UIOBJECT_ColorSelect
@@ -279,10 +305,13 @@ local function createFamily(self,n)
   
 end
 
+
 local function setSFFActiveValues(self)
   local para=eF.activePara
+
+  --general
+  do
   self.name:SetText(para.displayName)
-  
   local typ=para.type
   if typ=="b" then typ="Blacklist" elseif typ=="w" then typ="Whitelist" end
   UIDropDownMenu_SetSelectedName(self.type,typ)
@@ -290,7 +319,38 @@ local function setSFFActiveValues(self)
   
   UIDropDownMenu_SetSelectedName(self.trackType,para.trackType)
   UIDropDownMenu_SetText(self.trackType,para.trackType)
+  end
+
+  --layout
+  do 
+  self.count:SetText(para.count)
+  UIDropDownMenu_SetSelectedName(self.grow,para.grow)
+  UIDropDownMenu_SetText(self.grow,para.grow)
+  self.width:SetText(para.width)
+  self.height:SetText(para.height)
+  self.spacing:SetText(para.spacing)
+  end
+
+  --position
+  do
+  self.xPos:SetText(para.xPos)
+  self.yPos:SetText(para.yPos)
+  UIDropDownMenu_SetSelectedName(self.anchor,para.anchor)
+  UIDropDownMenu_SetText(self.anchor,para.anchor)
+  end
   
+  --icon
+  do
+  self.iconCB:SetChecked(para.hasTexture)
+  if not para.hasTexture then self.iconBlocker1:Show(); self.iconBlocker2:Show() else self.iconBlocker1:Hide(); self.iconBlocker2:Hide() end
+
+  self.smartIcons:SetChecked(para.smartIcons)
+  if para.hasTexture then if para.smartIcons then self.iconBlocker2:Show() else self.iconBlocker2:Hide() end end
+  
+  if para.texture then self.icon:SetText(para.texture);self.icon.pTexture:SetTexture(para.texture) end
+  
+  
+  end
 end
 
 --create main frame
@@ -837,13 +897,8 @@ sff:SetBackdrop(bd)
 
 sff.bg=sff:CreateTexture(nil,"BACKGROUND")
 sff.bg:SetAllPoints()
-sff.bg:SetColorTexture(0,0,0,0.3)
+sff.bg:SetColorTexture(0.07,0.07,0.07,1)
 
-sff.text=sff:CreateFontString(nil,"OVERLAY")
-sff.text:SetPoint("CENTER")
-sff.text:SetFont(titleFont,20,titleFontExtra)
-sff.text:SetTextColor(0.9,0.9,0.9)
-sff.text:SetText("smart Family stuff goes here")
 
 sff.setValues=setSFFActiveValues
 
@@ -856,8 +911,8 @@ t:SetTextColor(1,1,1)
 t:SetText("General")
 t:SetPoint("TOPLEFT",sff,"TOPLEFT",25,-25)
 
-sff.titleSpacer=sff:CreateTexture(nil,"BACKGROUND")
-local tS=sff.titleSpacer
+sff.title1Spacer=sff:CreateTexture(nil,"OVERLAY")
+local tS=sff.title1Spacer
 tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
 tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
@@ -919,12 +974,254 @@ sff.trackType.initialize=function(frame,level,menuList)
  end
 end
 UIDropDownMenu_SetWidth(sff.trackType,80)
+--NYI: update without reload
 end--end of general settings
+
+--create layout settings
+do
+sff.title2=sff:CreateFontString(nil,"OVERLAY")
+local t=sff.title2
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("Layout")
+t:SetPoint("TOPLEFT",sff.title1,"TOPLEFT",220,0)
+
+sff.title2Spacer=sff:CreateTexture(nil,"OVERLAY")
+local tS=sff.title2Spacer
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(110)
+
+createNumberEB(sff,"count",sff)
+sff.count.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+sff.count.text:SetText("Count:")
+sff.count:SetWidth(30)
+sff.count:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+count=self:GetNumber()
+if not count or count==0 then count=eF.activePara.count; self:SetText(count)
+else 
+  eF.activePara.count=count;
+end
+end)
+--NYI: update without reload
+
+createDD(sff,"grow",sff)
+sff.grow.text:SetPoint("RIGHT",sff.count.text,"RIGHT",0,-ySpacing)
+sff.grow.text:SetText("Grows:")
+sff.grow.initialize=function(frame,level,menuList)
+ local info = UIDropDownMenu_CreateInfo()
+ local lst=eF.orientations
+ for i=1,#lst do
+   local v=lst[i]
+   info.text, info.checked, info.arg1 = v,false,v
+   info.func=function(self,arg1,arg2,checked)
+     eF.activePara.grow=v
+     UIDropDownMenu_SetText(frame,v)
+     UIDropDownMenu_SetSelectedName(frame,v)
+     CloseDropDownMenus()
+   end
+   UIDropDownMenu_AddButton(info)
+ end
+end
+UIDropDownMenu_SetWidth(sff.grow,60)
+--NYI: update without reload
+
+createNumberEB(sff,"width",sff)
+sff.width.text:SetPoint("RIGHT",sff.grow.text,"RIGHT",0,-ySpacing)
+sff.width.text:SetText("Width:")
+sff.width:SetWidth(30)
+sff.width:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+w=self:GetNumber()
+if not w or w==0 then w=eF.activePara.width; self:SetText(w)
+else 
+  eF.activePara.width=w;
+end
+end)
+--NYI: update without reload
+
+createNumberEB(sff,"height",sff)
+sff.height.text:SetPoint("RIGHT",sff.width.text,"RIGHT",0,-ySpacing)
+sff.height.text:SetText("Height:")
+sff.height:SetWidth(30)
+sff.height:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+h=self:GetNumber()
+if not h or h==0 then h=eF.activePara.height; self:SetText(h)
+else 
+  eF.activePara.height=h;
+end
+end)
+--NYI: update without reload
+
+createNumberEB(sff,"spacing",sff)
+sff.spacing.text:SetPoint("RIGHT",sff.height.text,"RIGHT",0,-ySpacing)
+sff.spacing.text:SetText("Spacing:")
+sff.spacing:SetWidth(30)
+sff.spacing:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+s=self:GetNumber()
+if not s or s==0 then s=eF.activePara.spacing; self:SetText(s)
+else 
+  eF.activePara.spacing=s;
+end
+end)
+--NYI: update without reload
+
+end--end of layout settings
+
+--create position settings
+do
+sff.title3=sff:CreateFontString(nil,"OVERLAY")
+local t=sff.title3
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("Position")
+t:SetPoint("TOPLEFT",sff.title1,"TOPLEFT",25,-135)
+
+sff.title3Spacer=sff:CreateTexture(nil,"OVERLAY")
+local tS=sff.title3Spacer
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(110)
+
+createNumberEB(sff,"xPos",sff)
+sff.xPos.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+sff.xPos.text:SetText("X Offset:")
+sff.xPos:SetWidth(30)
+sff.count:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+x=self:GetNumber()
+if not x  then x=eF.activePara.xPos; self:SetText(x)
+else 
+  eF.activePara.xPos=x;
+end
+end)
+--NYI: update without reload
+
+createNumberEB(sff,"yPos",sff)
+sff.yPos.text:SetPoint("RIGHT",sff.xPos.text,"RIGHT",0,-ySpacing)
+sff.yPos.text:SetText("X Offset:")
+sff.yPos:SetWidth(30)
+sff.count:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+x=self:GetNumber()
+if not x  then x=eF.activePara.yPos; self:SetText(y)
+else 
+  eF.activePara.yPos=x;
+end
+end)
+--NYI: update without reload
+
+createDD(sff,"anchor",sff)
+sff.anchor.text:SetPoint("RIGHT",sff.yPos.text,"RIGHT",0,-ySpacing)
+sff.anchor.text:SetText("Position:")
+sff.anchor.initialize=function(frame,level,menuList)
+ local info = UIDropDownMenu_CreateInfo()
+ local lst=eF.positions
+ for i=1,#lst do
+   local v=lst[i]
+   info.text, info.checked, info.arg1 = v,false,v
+   info.func=function(self,arg1,arg2,checked)
+     eF.activePara.anchor=v
+     eF.activePara.anchorTo=v
+     UIDropDownMenu_SetText(frame,v)
+     UIDropDownMenu_SetSelectedName(frame,v)
+     CloseDropDownMenus() 
+   end
+   UIDropDownMenu_AddButton(info)
+ end
+end
+UIDropDownMenu_SetWidth(sff.grow,60)
+--NYI: update without reload
+
+end--end of position settings
+
+--create icon settings
+do
+sff.title4=sff:CreateFontString(nil,"OVERLAY")
+local t=sff.title4
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("Icon")
+t:SetPoint("TOPLEFT",sff.title3,"TOPLEFT",250,-15)
+
+sff.title3Spacer=sff:CreateTexture(nil,"OVERLAY")
+local tS=sff.title3Spacer
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(110)
+
+createCB(sff,"iconCB",sff)
+sff.iconCB.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+sff.iconCB.text:SetText("Has Icon:")
+sff.iconCB:SetScript("OnClick",function(self)
+  local ch=self:GetChecked()
+  self:SetChecked(ch)
+  eF.activePara.hasTexture=ch
+  if not ch then sff.iconBlocker1:Show();sff.iconBlocker2:Show() else sff.iconBlocker1:Hide();sff.iconBlocker2:Hide() end
+  eF.activePara.hasTexture=ch
+end)
 --NYI: update without reload
 
 
+createCB(sff,"smartIcons",sff)
+sff.smartIcons.text:SetPoint("RIGHT",sff.iconCB.text,"RIGHT",0,-ySpacing)
+sff.smartIcons.text:SetText("Smart Icon:")
+sff.smartIcons:SetScript("OnClick",function(self)
+  if sff.iconBlocked1 then self.SetChecked(not self:GetChecked());return end
+  local ch=self:GetChecked()
+  self:SetChecked(ch)
+  eF.activePara.smartIcons=ch
+  if ch then sff.iconBlocker2:Show() else sff.iconBlocker2:Hide() end
+end)
+--NYI: update without reload
 
+
+sff.iconBlocker1=CreateFrame("Button",nil,sff)
+local iB1=sff.iconBlocker1
+iB1:SetFrameLevel(sff:GetFrameLevel()+3)
+iB1:SetPoint("TOPRIGHT",sff.smartIcons,"TOPRIGHT",2,2)
+iB1:SetPoint("BOTTOMLEFT",sff.smartIcons.text,"BOTTOMLEFT",-2,-2)
+iB1.texture=iB1:CreateTexture(nil,"OVERLAY")
+iB1.texture:SetAllPoints()
+iB1.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+
+
+createIP(sff,"icon",sff)
+sff.icon.text:SetPoint("RIGHT",sff.smartIcons.text,"RIGHT",0,-ySpacing)
+sff.icon.text:SetText("Texture:")
+sff.icon:SetWidth(60)
+sff.icon:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+x=self:GetText()
+if not x  then x=eF.activePara.texture; self:SetText(x)
+else 
+  eF.activePara.texture=x;
+  self.pTexture:SetTexture(x)
 end
+end)
+--NYI: update without reload
+
+sff.iconBlocker2=CreateFrame("Button",nil,sff)
+local iB2=sff.iconBlocker2
+iB2:SetFrameLevel(sff:GetFrameLevel()+3)
+iB2:SetPoint("TOPLEFT",sff.icon.text,"TOPLEFT",-2,12)
+iB2:SetHeight(50)
+iB2:SetWidth(200)
+iB2.texture=iB2:CreateTexture(nil,"OVERLAY")
+iB2.texture:SetAllPoints()
+iB2.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+
+
+
+end --end of icon settings
+
+end --end of create smart FF
 
 
 --create dumb family frame
@@ -944,7 +1241,7 @@ dff.text:SetPoint("CENTER")
 dff.text:SetFont(titleFont,20,titleFontExtra)
 dff.text:SetTextColor(0.9,0.9,0.9)
 dff.text:SetText("dumb Family stuff goes here")
-end
+end --end of create dumb FF
 
 
 end--end of family frames
