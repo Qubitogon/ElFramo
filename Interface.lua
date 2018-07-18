@@ -94,6 +94,58 @@ local function createNumberEB(self,name,tab)
   eb:SetPoint("LEFT",tx,"RIGHT",12,0)
 end
 
+local function createListCB(self,name,tab)
+
+  self[name]=CreateFrame("ScrollFrame",nil,tab,"UIPanelScrollFrameTemplate")
+  local f=self[name]
+  f:SetClipsChildren(true)
+  f:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)
+  f:SetWidth(200) 
+  f:SetHeight(120)
+  f.border=CreateFrame("Frame",nil,tab)
+  f.border:SetPoint("TOPLEFT",f,"TOPLEFT",-4,4)
+  f.border:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",4,-4)
+  f.border:SetBackdrop(bd)
+  
+  
+  f.ScrollBar:ClearAllPoints()
+  f.ScrollBar:SetPoint("TOPRIGHT")
+  f.ScrollBar:SetPoint("BOTTOMRIGHT")
+  f.ScrollBar.bg=f.ScrollBar:CreateTexture(nil,"BACKGROUND")
+  f.ScrollBar.bg:SetAllPoints()
+  f.ScrollBar.bg:SetColorTexture(0,0,0,0.5)
+
+  f.scrollChild=CreateFrame("Button",nil,f)
+  local fsc=f.scrollChild
+  f:SetScrollChild(fsc)
+  fsc:SetWidth(200)
+  fsc:SetHeight(500)
+  
+  f.eb=CreateFrame("EditBox",nil,fsc)
+  f.eb:SetMultiLine(true)
+  f.eb:SetWidth(190)
+  f.eb:SetCursorPosition(0)
+  f.eb:SetAutoFocus(false)
+  f.eb:SetFont("Fonts\\FRIZQT__.TTF",12)
+  f.eb:SetJustifyH("LEFT")
+  f.eb:SetJustifyV("CENTER")
+  f.eb:SetPoint("TOPLEFT",fsc,"TOPLEFT",6,-5) 
+  f.scrollChild:SetScript("OnClick",function() f.eb:SetFocus() end )
+  
+  f.bg=f:CreateTexture(nil,"BACKGROUND")
+  f.bg:SetPoint("TOPLEFT")
+  f.bg:SetPoint("BOTTOMRIGHT")
+  f.bg:SetColorTexture(0,0,0,0.4)
+  
+  f.button=CreateFrame("Button",nil,f.border,"UIPanelButtonTemplate")
+  f.button:SetSize(80,25)
+  f.button:SetText("Okay")
+  f.button:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",0,-30)
+  f.button.eb=f.eb
+  f.eb:SetScript("OnTextChanged",function() f.button:Enable() end)
+
+end
+
 local function createDD(self,name,tab)
   self[name]=CreateFrame("Frame","eFDropDown"..name,tab,"UIDropDownMenuTemplate")
   local dd=self[name]
@@ -305,7 +357,6 @@ local function createFamily(self,n)
   
 end
 
-
 local function setSFFActiveValues(self)
   local para=eF.activePara
 
@@ -344,8 +395,8 @@ local function setSFFActiveValues(self)
   self.iconCB:SetChecked(para.hasTexture)
   if not para.hasTexture then self.iconBlocker1:Show(); self.iconBlocker2:Show() else self.iconBlocker1:Hide(); self.iconBlocker2:Hide() end
 
-  self.smartIcons:SetChecked(para.smartIcons)
-  if para.hasTexture then if para.smartIcons then self.iconBlocker2:Show() else self.iconBlocker2:Hide() end end
+  self.smartIcon:SetChecked(para.smartIcon)
+  if para.hasTexture then if para.smartIcon then self.iconBlocker2:Show() else self.iconBlocker2:Hide() end end
   
   if para.texture then self.icon:SetText(para.texture);self.icon.pTexture:SetTexture(para.texture) end
   
@@ -1149,8 +1200,8 @@ t:SetTextColor(1,1,1)
 t:SetText("Icon")
 t:SetPoint("TOPLEFT",sff.title3,"TOPLEFT",250,-15)
 
-sff.title3Spacer=sff:CreateTexture(nil,"OVERLAY")
-local tS=sff.title3Spacer
+sff.title4Spacer=sff:CreateTexture(nil,"OVERLAY")
+local tS=sff.title4Spacer
 tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
 tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
@@ -1164,19 +1215,20 @@ sff.iconCB:SetScript("OnClick",function(self)
   self:SetChecked(ch)
   eF.activePara.hasTexture=ch
   if not ch then sff.iconBlocker1:Show();sff.iconBlocker2:Show() else sff.iconBlocker1:Hide();sff.iconBlocker2:Hide() end
+  if eF.activePara.smartIcon then sff.iconBlocker2:Show() end
   eF.activePara.hasTexture=ch
 end)
 --NYI: update without reload
 
 
-createCB(sff,"smartIcons",sff)
-sff.smartIcons.text:SetPoint("RIGHT",sff.iconCB.text,"RIGHT",0,-ySpacing)
-sff.smartIcons.text:SetText("Smart Icon:")
-sff.smartIcons:SetScript("OnClick",function(self)
+createCB(sff,"smartIcon",sff)
+sff.smartIcon.text:SetPoint("RIGHT",sff.iconCB.text,"RIGHT",0,-ySpacing)
+sff.smartIcon.text:SetText("Smart Icon:")
+sff.smartIcon:SetScript("OnClick",function(self)
   if sff.iconBlocked1 then self.SetChecked(not self:GetChecked());return end
   local ch=self:GetChecked()
   self:SetChecked(ch)
-  eF.activePara.smartIcons=ch
+  eF.activePara.smartIcon=ch
   if ch then sff.iconBlocker2:Show() else sff.iconBlocker2:Hide() end
 end)
 --NYI: update without reload
@@ -1185,15 +1237,15 @@ end)
 sff.iconBlocker1=CreateFrame("Button",nil,sff)
 local iB1=sff.iconBlocker1
 iB1:SetFrameLevel(sff:GetFrameLevel()+3)
-iB1:SetPoint("TOPRIGHT",sff.smartIcons,"TOPRIGHT",2,2)
-iB1:SetPoint("BOTTOMLEFT",sff.smartIcons.text,"BOTTOMLEFT",-2,-2)
+iB1:SetPoint("TOPRIGHT",sff.smartIcon,"TOPRIGHT",2,2)
+iB1:SetPoint("BOTTOMLEFT",sff.smartIcon.text,"BOTTOMLEFT",-2,-2)
 iB1.texture=iB1:CreateTexture(nil,"OVERLAY")
 iB1.texture:SetAllPoints()
 iB1.texture:SetColorTexture(0.07,0.07,0.07,0.4)
 
 
 createIP(sff,"icon",sff)
-sff.icon.text:SetPoint("RIGHT",sff.smartIcons.text,"RIGHT",0,-ySpacing)
+sff.icon.text:SetPoint("RIGHT",sff.smartIcon.text,"RIGHT",0,-ySpacing)
 sff.icon.text:SetText("Texture:")
 sff.icon:SetWidth(60)
 sff.icon:SetScript("OnEnterPressed", function(self)
@@ -1221,8 +1273,54 @@ iB2.texture:SetColorTexture(0.07,0.07,0.07,0.4)
 
 end --end of icon settings
 
-end --end of create smart FF
+--create list EB
+do
+sff.title5=sff:CreateFontString(nil,"OVERLAY")
+local t=sff.title5
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("List")
+t:SetPoint("TOPLEFT",sff.title3,"TOPLEFT",15,-125)
 
+sff.title5Spacer=sff:CreateTexture(nil,"OVERLAY")
+local tS=sff.title5Spacer
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(110)
+
+createListCB(sff,"list",sff)
+sff.list:SetPoint("TOPLEFT",tS,"TOPLEFT",0,-initSpacing)
+sff.list.button:SetScript("OnClick", function(self)
+local sfind,ssub,insert=strfind,strsub,table.insert
+local x=self.eb:GetText()
+self:Disable()
+self.eb:ClearFocus()
+local old=0
+local new=0
+local antiCrash=0
+local rtbl={}
+while new do
+  new=sfind(x,"\n",old+1)
+  local ss=ssub(x,old,new)
+  insert(rtbl,ss:match("^%s*(.-)%s*$"))
+  old=new
+  antiCrash=antiCrash+1
+  if antiCrash>100 then break end
+end
+
+
+
+end) 
+--NYI: update without reload
+
+
+
+end --end of list EB
+
+
+
+end --end of create smart FF
 
 --create dumb family frame
 do

@@ -287,8 +287,7 @@ local function createFamilyFrame(self,j)
     if f.para.cdWheel then
       insert(f.onPostAuraList,{eF.rep.smartFamilyUpdateCDWheels,f})
     end
-        
-        
+               
     for k=1,f.para.count do
       local xOS=0
       local yOS=0
@@ -315,8 +314,8 @@ local function createFamilyFrame(self,j)
         c.texture=c:CreateTexture()
         c.texture:SetDrawLayer("BACKGROUND",-2)
         c.texture:SetAllPoints()
-        if f.para.texture then c.texture:SetTexture(f.para.texture)  --if frame.families[j][k].texture
-        else c.smartIcon=true; c.updateTexture=eF.rep.iconApplySmartIcon end
+        if f.para.hasTexture and (not f.para.texture or f.para.smartIcon) then c.smartIcon=true; c.updateTexture=eF.rep.iconApplySmartIcon
+        else c.texture:SetTexture(f.para.texture) end
       end        
           
       if f.para.hasBorder then
