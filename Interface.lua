@@ -1085,7 +1085,6 @@ do
     self:SetChecked(ch)
     eF.activePara.ignorePermanents=ch
   end)
-  --NYI: update without reload
 
   createNumberEB(sff,"ignoreDurationAbove",sff)
   sff.ignoreDurationAbove.text:SetPoint("RIGHT",sff.ignorePermanents.text,"RIGHT",0,-ySpacing)
@@ -1093,13 +1092,12 @@ do
   sff.ignoreDurationAbove:SetWidth(30)
   sff.ignoreDurationAbove:SetScript("OnEnterPressed", function(self)
   self:ClearFocus()
-  count=self:GetNumber()
-  if not count or count=="" then eF.activePara.ignoreDurationAbove=nil; self:SetText("nil")
+  count=self:GetText()
+  if not count or count=="nil" or count=="" then eF.activePara.ignoreDurationAbove=nil; self:SetText("nil")
   else 
     eF.activePara.ignoreDurationAbove=count;
   end
   end)
-  --NYI: update without reload
 
   createCB(sff,"ownOnly",sff)
   sff.ownOnly.text:SetPoint("RIGHT",sff.ignoreDurationAbove.text,"RIGHT",0,-ySpacing)
