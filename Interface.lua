@@ -387,7 +387,8 @@ local function setSFFActiveValues(self)
 
   self.ignorePermanents:SetChecked(para.ignorePermanents)
   if para.ignoreDurationAbove then self.ignoreDurationAbove:SetText(para.ignoreDurationAbove) else self.ignoreDurationAbove:SetText("nil") end
-
+  self.ownOnly:SetChecked(para.ownOnly)
+  
   end
 
   --layout
@@ -1078,7 +1079,7 @@ do
   
   createCB(sff,"ignorePermanents",sff)
   sff.ignorePermanents.text:SetPoint("RIGHT",sff.trackType.text,"RIGHT",0,-ySpacing)
-  sff.ignorePermanents.text:SetText("ignore permanents:")
+  sff.ignorePermanents.text:SetText("Ignore permanents:")
   sff.ignorePermanents:SetScript("OnClick",function(self)
     local ch=self:GetChecked()
     self:SetChecked(ch)
@@ -1100,6 +1101,15 @@ do
   end)
   --NYI: update without reload
 
+  createCB(sff,"ownOnly",sff)
+  sff.ownOnly.text:SetPoint("RIGHT",sff.ignoreDurationAbove.text,"RIGHT",0,-ySpacing)
+  sff.ownOnly.text:SetText("Own only:")
+  sff.ownOnly:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.ownOnly=ch
+  end)
+  
   end--end of general settings
 
   --create layout settings
@@ -1204,7 +1214,7 @@ do
   t:SetFont(titleFont,15,titleFontExtra)
   t:SetTextColor(1,1,1)
   t:SetText("Position")
-  t:SetPoint("TOPLEFT",sff.title1,"TOPLEFT",25,-150)
+  t:SetPoint("TOPLEFT",sff.title1,"TOPLEFT",25,-185)
 
   sff.title3Spacer=sff:CreateTexture(nil,"OVERLAY")
   local tS=sff.title3Spacer
@@ -1229,7 +1239,7 @@ do
 
   createNumberEB(sff,"yPos",sff)
   sff.yPos.text:SetPoint("RIGHT",sff.xPos.text,"RIGHT",0,-ySpacing)
-  sff.yPos.text:SetText("X Offset:")
+  sff.yPos.text:SetText("Y Offset:")
   sff.yPos:SetWidth(30)
   sff.count:SetScript("OnEnterPressed", function(self)
   self:ClearFocus()
@@ -1499,8 +1509,6 @@ do
   end --end of border settings
 
   
-  
-
 end --end of create smart FF
 
 --create dumb family frame

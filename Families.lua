@@ -71,8 +71,8 @@ local function blacklistFamilyAdopt(self,name,...)
   if self.full or eF.isInList(name,self.para.arg1) then return end
   local dur=select(4,...)
   if self.para.ignorePermanents and dur==0 then return end
-  local own=select(10,...)
-  if self.para.ownOnly and not oO then return end
+  local caster=select(6,...)
+  if self.para.ownOnly and not (caster=="player") then return end
   local iDA=self.para.ignoreDurationAbove
   if iDA then if dur>iDA then return end end 
   
@@ -89,8 +89,8 @@ local function whitelistFamilyAdopt(self,name,...)
   if self.full or not eF.isInList(name,self.para.arg1) then return end
   local dur=select(4,...)
   if self.para.ignorePermanents and dur==0 then return end
-  local own=select(10,...)
-  if self.para.ownOnly and not oO then return end
+  local caster=select(6,...)
+  if self.para.ownOnly and not (caster=="player") then return end
   local iDA=self.para.ignoreDurationAbove
   if iDA then if dur>iDA then return end end 
   
