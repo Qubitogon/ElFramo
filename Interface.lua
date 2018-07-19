@@ -142,7 +142,20 @@ local function createListCB(self,name,tab)
   f.button:SetText("Okay")
   f.button:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",0,-30)
   f.button.eb=f.eb
-  f.eb:SetScript("OnTextChanged",function() f.button:Enable() end)
+  f.eb:SetScript("OnTextChanged",function(self) 
+    f.button:Enable()
+    local _,nls=self:GetText():gsub('\n','\n')
+    f:adjustHeight(nls+1)
+  end)
+  
+  f.eb:HookScript("OnEnterPressed",function(self)
+    self:SetText(self:GetText()..'\n')
+    if f:GetVerticalScrollRange()>0 then f:SetVerticalScroll(f:GetVerticalScroll()+13) end
+  end)
+  
+  f.adjustHeight= function(self,ni)
+    self.scrollChild:SetHeight(ni*13) 
+  end
 
 end
 
@@ -402,7 +415,21 @@ local function setSFFActiveValues(self)
   
   
   end
-end
+
+  --list
+  do
+  if para.arg1 and #para.arg1>0 then
+    local temps=para.arg1[1]
+    for i=2,#para.arg1 do
+      temps=temps.."\n"..para.arg1[i]
+    end--end of for i=1,#para.arg1 
+    self.list.eb:SetText(temps)
+  end--end of if#para.arg1>0
+  self.list.button:Disable()
+  end--end of list
+
+  
+end --end of setSFFActiveValues func  
 
 --create main frame
 do
@@ -1306,11 +1333,9 @@ while new do
   insert(rtbl,ss:match("^%s*(.-)%s*$"))
   old=new
   antiCrash=antiCrash+1
-  if antiCrash>100 then break end
+  if antiCrash>500 then break end
 end
-
-
-
+eF.activePara.arg1=rtbl
 end) 
 --NYI: update without reload
 
