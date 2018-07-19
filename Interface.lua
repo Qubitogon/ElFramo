@@ -146,6 +146,7 @@ local function createListCB(self,name,tab)
     f.button:Enable()
     local _,nls=self:GetText():gsub('\n','\n')
     f:adjustHeight(nls+1)
+    
   end)
   
   f.eb:HookScript("OnEnterPressed",function(self)
@@ -385,7 +386,7 @@ local function setSFFActiveValues(self)
   UIDropDownMenu_SetText(self.trackType,para.trackType)
 
   self.ignorePermanents:SetChecked(para.ignorePermanents)
-  self.ignoreDurationAbove:SetText(para.ignoreDurationAbove)
+  if para.ignoreDurationAbove then self.ignoreDurationAbove:SetText(para.ignoreDurationAbove) else self.ignoreDurationAbove:SetText("nil") end
 
   end
 
@@ -429,7 +430,9 @@ local function setSFFActiveValues(self)
     end--end of for i=1,#para.arg1 
     self.list.eb:SetText(temps)
   end--end of if#para.arg1>0
-  self.list.button:Disable()
+  
+  C_Timer.After(0.05,function() self.list.button:Disable()end );
+
   end--end of list
 
   --cdWheel
@@ -442,7 +445,7 @@ local function setSFFActiveValues(self)
   --border
   do
   self.hasBorder:SetChecked(para.hasBorder)
-  if not para.hasBorder then self.iconBlocker4:Show() else self.iconBloker4:Hide() end
+  if not para.hasBorder then self.iconBlocker4:Show() else self.iconBlocker4:Hide() end
   UIDropDownMenu_SetSelectedName(self.borderType,para.borderType)
   UIDropDownMenu_SetText(self.borderType,para.borderType)
   end --end of border
@@ -1005,7 +1008,7 @@ do
   t:SetFont(titleFont,15,titleFontExtra)
   t:SetTextColor(1,1,1)
   t:SetText("General")
-  t:SetPoint("TOPLEFT",sff,"TOPLEFT",25,-25)
+  t:SetPoint("TOPLEFT",sff,"TOPLEFT",50,-25)
 
   sff.title1Spacer=sff:CreateTexture(nil,"OVERLAY")
   local tS=sff.title1Spacer
@@ -1090,7 +1093,7 @@ do
   sff.ignoreDurationAbove:SetScript("OnEnterPressed", function(self)
   self:ClearFocus()
   count=self:GetNumber()
-  if not count or count=="" then count=eF.activePara.ignoreDurationAbove; self:SetText(count)
+  if not count or count=="" then eF.activePara.ignoreDurationAbove=nil; self:SetText("nil")
   else 
     eF.activePara.ignoreDurationAbove=count;
   end
@@ -1201,7 +1204,7 @@ do
   t:SetFont(titleFont,15,titleFontExtra)
   t:SetTextColor(1,1,1)
   t:SetText("Position")
-  t:SetPoint("TOPLEFT",sff.title1,"TOPLEFT",25,-135)
+  t:SetPoint("TOPLEFT",sff.title1,"TOPLEFT",25,-150)
 
   sff.title3Spacer=sff:CreateTexture(nil,"OVERLAY")
   local tS=sff.title3Spacer
@@ -1351,7 +1354,7 @@ do
   t:SetFont(titleFont,15,titleFontExtra)
   t:SetTextColor(1,1,1)
   t:SetText("List")
-  t:SetPoint("TOPLEFT",sff.title3,"TOPLEFT",15,-125)
+  t:SetPoint("TOPLEFT",sff.title3,"TOPLEFT",-10,-125)
 
   sff.title5Spacer=sff:CreateTexture(nil,"OVERLAY")
   local tS=sff.title5Spacer
@@ -1392,8 +1395,8 @@ do
   local t=sff.title6
   t:SetFont(titleFont,15,titleFontExtra)
   t:SetTextColor(1,1,1)
-  t:SetText("Icon")
-  t:SetPoint("TOPLEFT",sff,"TOPLEFT",150,-170)
+  t:SetText("CD Wheel")
+  t:SetPoint("TOPLEFT",sff.title5,"TOPLEFT",225,0)
 
   sff.title6Spacer=sff:CreateTexture(nil,"OVERLAY")
   local tS=sff.title6Spacer
@@ -1427,13 +1430,13 @@ do
 
   sff.iconBlocker3=CreateFrame("Button",nil,sff)
   local iB3=sff.iconBlocker3
-  iB2:SetFrameLevel(sff:GetFrameLevel()+3)
-  iB2:SetPoint("TOPLEFT",sff.cdReverse.text,"TOPLEFT",-2,12)
-  iB2:SetHeight(50)
-  iB2:SetWidth(200)
-  iB2.texture=iB2:CreateTexture(nil,"OVERLAY")
-  iB2.texture:SetAllPoints()
-  iB2.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+  iB3:SetFrameLevel(sff:GetFrameLevel()+3)
+  iB3:SetPoint("TOPLEFT",sff.cdReverse.text,"TOPLEFT",-2,12)
+  iB3:SetHeight(50)
+  iB3:SetWidth(200)
+  iB3.texture=iB3:CreateTexture(nil,"OVERLAY")
+  iB3.texture:SetAllPoints()
+  iB3.texture:SetColorTexture(0.07,0.07,0.07,0.4)
   end --end of CDwheel settings
 
   --create border settings
@@ -1442,8 +1445,8 @@ do
   local t=sff.title7
   t:SetFont(titleFont,15,titleFontExtra)
   t:SetTextColor(1,1,1)
-  t:SetText("Icon")
-  t:SetPoint("TOPLEFT",sff,"TOPLEFT",150,-220)
+  t:SetText("Border")
+  t:SetPoint("TOPLEFT",sff.title6,"TOPLEFT",0,-80)
 
   sff.title7Spacer=sff:CreateTexture(nil,"OVERLAY")
   local tS=sff.title7Spacer
@@ -1486,13 +1489,13 @@ do
 
   sff.iconBlocker4=CreateFrame("Button",nil,sff)
   local iB4=sff.iconBlocker4
-  iB2:SetFrameLevel(sff:GetFrameLevel()+3)
-  iB2:SetPoint("TOPLEFT",sff.cdReverse.text,"TOPLEFT",-2,12)
-  iB2:SetHeight(50)
-  iB2:SetWidth(200)
-  iB2.texture=iB2:CreateTexture(nil,"OVERLAY")
-  iB2.texture:SetAllPoints()
-  iB2.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+  iB4:SetFrameLevel(sff:GetFrameLevel()+3)
+  iB4:SetPoint("TOPLEFT",sff.borderType.text,"TOPLEFT",-2,12)
+  iB4:SetHeight(50)
+  iB4:SetWidth(200)
+  iB4.texture=iB4:CreateTexture(nil,"OVERLAY")
+  iB4.texture:SetAllPoints()
+  iB4.texture:SetColorTexture(0.07,0.07,0.07,0.4)
   end --end of border settings
 
   
