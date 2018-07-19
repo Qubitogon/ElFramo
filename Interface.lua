@@ -383,6 +383,10 @@ local function setSFFActiveValues(self)
   
   UIDropDownMenu_SetSelectedName(self.trackType,para.trackType)
   UIDropDownMenu_SetText(self.trackType,para.trackType)
+
+  self.ignorePermanents:SetChecked(para.ignorePermanents)
+  self.ignoreDurationAbove:SetText(para.ignoreDurationAbove)
+
   end
 
   --layout
@@ -428,7 +432,21 @@ local function setSFFActiveValues(self)
   self.list.button:Disable()
   end--end of list
 
-  
+  --cdWheel
+  do
+  self.cdWheel:SetChecked(para.cdWheel)
+  if not para.cdWheel then self.iconBlocker3:Show() else self.iconBlocker3:Hide() end
+  self.cdReverse:SetChecked(para.cdReverse)
+  end --end of cdWheel
+
+  --border
+  do
+  self.hasBorder:SetChecked(para.hasBorder)
+  if not para.hasBorder then self.iconBlocker4:Show() else self.iconBloker4:Hide() end
+  UIDropDownMenu_SetSelectedName(self.borderType,para.borderType)
+  UIDropDownMenu_SetText(self.borderType,para.borderType)
+  end --end of border
+
 end --end of setSFFActiveValues func  
 
 --create main frame
@@ -967,383 +985,518 @@ end
 
 --create smart Family Frame
 do
-ff.smartFamilyFrame=CreateFrame("Frame","eFSFF",ff)
-local sff=ff.smartFamilyFrame
-sff:SetPoint("TOPLEFT",ff.famList.border,"TOPRIGHT",20,0)
-sff:SetPoint("BOTTOMRIGHT",ff.famList.border,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
-sff:SetBackdrop(bd)
+  ff.smartFamilyFrame=CreateFrame("Frame","eFSFF",ff)
+  local sff=ff.smartFamilyFrame
+  sff:SetPoint("TOPLEFT",ff.famList.border,"TOPRIGHT",20,0)
+  sff:SetPoint("BOTTOMRIGHT",ff.famList.border,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
+  sff:SetBackdrop(bd)
 
-sff.bg=sff:CreateTexture(nil,"BACKGROUND")
-sff.bg:SetAllPoints()
-sff.bg:SetColorTexture(0.07,0.07,0.07,1)
+  sff.bg=sff:CreateTexture(nil,"BACKGROUND")
+  sff.bg:SetAllPoints()
+  sff.bg:SetColorTexture(0.07,0.07,0.07,1)
 
 
-sff.setValues=setSFFActiveValues
+  sff.setValues=setSFFActiveValues
 
---create general settings stuff
-do
-sff.title1=sff:CreateFontString(nil,"OVERLAY")
-local t=sff.title1
-t:SetFont(titleFont,15,titleFontExtra)
-t:SetTextColor(1,1,1)
-t:SetText("General")
-t:SetPoint("TOPLEFT",sff,"TOPLEFT",25,-25)
+  --create general settings stuff
+  do
+  sff.title1=sff:CreateFontString(nil,"OVERLAY")
+  local t=sff.title1
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("General")
+  t:SetPoint("TOPLEFT",sff,"TOPLEFT",25,-25)
 
-sff.title1Spacer=sff:CreateTexture(nil,"OVERLAY")
-local tS=sff.title1Spacer
-tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
-tS:SetHeight(8)
-tS:SetTexture(titleSpacer)
-tS:SetWidth(110)
+  sff.title1Spacer=sff:CreateTexture(nil,"OVERLAY")
+  local tS=sff.title1Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
 
-createNumberEB(sff,"name",sff)
-sff.name.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
-sff.name.text:SetText("Name:")
-sff.name:SetWidth(80)
-sff.name:SetScript("OnEnterPressed", function(self)
-self:ClearFocus()
-name=self:GetText()
-if not name or name=="" then name=eF.activePara.displayName; self:SetText(name)
-else 
-  eF.activePara.displayName=name; 
-  eF.activeButton.text:SetText(name)
-end
-end)
+  createNumberEB(sff,"name",sff)
+  sff.name.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  sff.name.text:SetText("Name:")
+  sff.name:SetWidth(80)
+  sff.name:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  name=self:GetText()
+  if not name or name=="" then name=eF.activePara.displayName; self:SetText(name)
+  else 
+    eF.activePara.displayName=name; 
+    eF.activeButton.text:SetText(name)
+  end
+  end)
 
-createDD(sff,"type",sff)
-sff.type.text:SetPoint("RIGHT",sff.name.text,"RIGHT",0,-ySpacing)
-sff.type.text:SetText("Type:")
-sff.type.initialize=function(frame,level,menuList)
- local info = UIDropDownMenu_CreateInfo()
- local lst={"Blacklist","Whitelist"}
- for i=1,#lst do
-   local v=lst[i]
-   info.text, info.checked, info.arg1 = v,false,v
-   info.func=function(self,arg1,arg2,checked)
-     local rv
-     if arg1=="Blacklist" then rv="b" elseif arg1=="Whitelist" then rv="w" end
-     eF.activePara.type=rv
-     UIDropDownMenu_SetText(frame,v)
-     UIDropDownMenu_SetSelectedName(frame,v)
-     CloseDropDownMenus()
+  createDD(sff,"type",sff)
+  sff.type.text:SetPoint("RIGHT",sff.name.text,"RIGHT",0,-ySpacing)
+  sff.type.text:SetText("Type:")
+  sff.type.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst={"Blacklist","Whitelist"}
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       local rv
+       if arg1=="Blacklist" then rv="b" elseif arg1=="Whitelist" then rv="w" end
+       eF.activePara.type=rv
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+     end
+     UIDropDownMenu_AddButton(info)
    end
-   UIDropDownMenu_AddButton(info)
- end
-end
-UIDropDownMenu_SetWidth(sff.type,80)
---NYI: update without reload
+  end
+  UIDropDownMenu_SetWidth(sff.type,80)
+  --NYI: update without reload
 
-createDD(sff,"trackType",sff)
-sff.trackType.text:SetPoint("RIGHT",sff.type.text,"RIGHT",0,-ySpacing)
-sff.trackType.text:SetText("Tracks:")
-sff.trackType.initialize=function(frame,level,menuList)
- local info = UIDropDownMenu_CreateInfo()
- local lst={"Buffs","Debuffs"}
- for i=1,#lst do
-   local v=lst[i]
-   info.text, info.checked, info.arg1 = v,false,v
-   info.func=function(self,arg1,arg2,checked)
-     eF.activePara.trackType=rv
-     UIDropDownMenu_SetText(frame,v)
-     UIDropDownMenu_SetSelectedName(frame,v)
-     CloseDropDownMenus()
+  createDD(sff,"trackType",sff)
+  sff.trackType.text:SetPoint("RIGHT",sff.type.text,"RIGHT",0,-ySpacing)
+  sff.trackType.text:SetText("Tracks:")
+  sff.trackType.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst={"Buffs","Debuffs"}
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.trackType=rv
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+     end
+     UIDropDownMenu_AddButton(info)
    end
-   UIDropDownMenu_AddButton(info)
- end
-end
-UIDropDownMenu_SetWidth(sff.trackType,80)
---NYI: update without reload
-end--end of general settings
+  end
+  UIDropDownMenu_SetWidth(sff.trackType,80)
+  --NYI: update without reload
 
---create layout settings
-do
-sff.title2=sff:CreateFontString(nil,"OVERLAY")
-local t=sff.title2
-t:SetFont(titleFont,15,titleFontExtra)
-t:SetTextColor(1,1,1)
-t:SetText("Layout")
-t:SetPoint("TOPLEFT",sff.title1,"TOPLEFT",220,0)
+  
+  createCB(sff,"ignorePermanents",sff)
+  sff.ignorePermanents.text:SetPoint("RIGHT",sff.trackType.text,"RIGHT",0,-ySpacing)
+  sff.ignorePermanents.text:SetText("ignore permanents:")
+  sff.ignorePermanents:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.ignorePermanents=ch
+  end)
+  --NYI: update without reload
 
-sff.title2Spacer=sff:CreateTexture(nil,"OVERLAY")
-local tS=sff.title2Spacer
-tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
-tS:SetHeight(8)
-tS:SetTexture(titleSpacer)
-tS:SetWidth(110)
+  createNumberEB(sff,"ignoreDurationAbove",sff)
+  sff.ignoreDurationAbove.text:SetPoint("RIGHT",sff.ignorePermanents.text,"RIGHT",0,-ySpacing)
+  sff.ignoreDurationAbove.text:SetText("Max duration:")
+  sff.ignoreDurationAbove:SetWidth(30)
+  sff.ignoreDurationAbove:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  count=self:GetNumber()
+  if not count or count=="" then count=eF.activePara.ignoreDurationAbove; self:SetText(count)
+  else 
+    eF.activePara.ignoreDurationAbove=count;
+  end
+  end)
+  --NYI: update without reload
 
-createNumberEB(sff,"count",sff)
-sff.count.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
-sff.count.text:SetText("Count:")
-sff.count:SetWidth(30)
-sff.count:SetScript("OnEnterPressed", function(self)
-self:ClearFocus()
-count=self:GetNumber()
-if not count or count==0 then count=eF.activePara.count; self:SetText(count)
-else 
-  eF.activePara.count=count;
-end
-end)
---NYI: update without reload
+  end--end of general settings
 
-createDD(sff,"grow",sff)
-sff.grow.text:SetPoint("RIGHT",sff.count.text,"RIGHT",0,-ySpacing)
-sff.grow.text:SetText("Grows:")
-sff.grow.initialize=function(frame,level,menuList)
- local info = UIDropDownMenu_CreateInfo()
- local lst=eF.orientations
- for i=1,#lst do
-   local v=lst[i]
-   info.text, info.checked, info.arg1 = v,false,v
-   info.func=function(self,arg1,arg2,checked)
-     eF.activePara.grow=v
-     UIDropDownMenu_SetText(frame,v)
-     UIDropDownMenu_SetSelectedName(frame,v)
-     CloseDropDownMenus()
+  --create layout settings
+  do
+  sff.title2=sff:CreateFontString(nil,"OVERLAY")
+  local t=sff.title2
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Layout")
+  t:SetPoint("TOPLEFT",sff.title1,"TOPLEFT",220,0)
+
+  sff.title2Spacer=sff:CreateTexture(nil,"OVERLAY")
+  local tS=sff.title2Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createNumberEB(sff,"count",sff)
+  sff.count.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  sff.count.text:SetText("Count:")
+  sff.count:SetWidth(30)
+  sff.count:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  count=self:GetNumber()
+  if not count or count==0 then count=eF.activePara.count; self:SetText(count)
+  else 
+    eF.activePara.count=count;
+  end
+  end)
+  --NYI: update without reload
+
+  createDD(sff,"grow",sff)
+  sff.grow.text:SetPoint("RIGHT",sff.count.text,"RIGHT",0,-ySpacing)
+  sff.grow.text:SetText("Grows:")
+  sff.grow.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst=eF.orientations
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.grow=v
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+     end
+     UIDropDownMenu_AddButton(info)
    end
-   UIDropDownMenu_AddButton(info)
- end
-end
-UIDropDownMenu_SetWidth(sff.grow,60)
---NYI: update without reload
+  end
+  UIDropDownMenu_SetWidth(sff.grow,60)
+  --NYI: update without reload
 
-createNumberEB(sff,"width",sff)
-sff.width.text:SetPoint("RIGHT",sff.grow.text,"RIGHT",0,-ySpacing)
-sff.width.text:SetText("Width:")
-sff.width:SetWidth(30)
-sff.width:SetScript("OnEnterPressed", function(self)
-self:ClearFocus()
-w=self:GetNumber()
-if not w or w==0 then w=eF.activePara.width; self:SetText(w)
-else 
-  eF.activePara.width=w;
-end
-end)
---NYI: update without reload
+  createNumberEB(sff,"width",sff)
+  sff.width.text:SetPoint("RIGHT",sff.grow.text,"RIGHT",0,-ySpacing)
+  sff.width.text:SetText("Width:")
+  sff.width:SetWidth(30)
+  sff.width:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  w=self:GetNumber()
+  if not w or w==0 then w=eF.activePara.width; self:SetText(w)
+  else 
+    eF.activePara.width=w;
+  end
+  end)
+  --NYI: update without reload
 
-createNumberEB(sff,"height",sff)
-sff.height.text:SetPoint("RIGHT",sff.width.text,"RIGHT",0,-ySpacing)
-sff.height.text:SetText("Height:")
-sff.height:SetWidth(30)
-sff.height:SetScript("OnEnterPressed", function(self)
-self:ClearFocus()
-h=self:GetNumber()
-if not h or h==0 then h=eF.activePara.height; self:SetText(h)
-else 
-  eF.activePara.height=h;
-end
-end)
---NYI: update without reload
+  createNumberEB(sff,"height",sff)
+  sff.height.text:SetPoint("RIGHT",sff.width.text,"RIGHT",0,-ySpacing)
+  sff.height.text:SetText("Height:")
+  sff.height:SetWidth(30)
+  sff.height:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  h=self:GetNumber()
+  if not h or h==0 then h=eF.activePara.height; self:SetText(h)
+  else 
+    eF.activePara.height=h;
+  end
+  end)
+  --NYI: update without reload
 
-createNumberEB(sff,"spacing",sff)
-sff.spacing.text:SetPoint("RIGHT",sff.height.text,"RIGHT",0,-ySpacing)
-sff.spacing.text:SetText("Spacing:")
-sff.spacing:SetWidth(30)
-sff.spacing:SetScript("OnEnterPressed", function(self)
-self:ClearFocus()
-s=self:GetNumber()
-if not s or s==0 then s=eF.activePara.spacing; self:SetText(s)
-else 
-  eF.activePara.spacing=s;
-end
-end)
---NYI: update without reload
+  createNumberEB(sff,"spacing",sff)
+  sff.spacing.text:SetPoint("RIGHT",sff.height.text,"RIGHT",0,-ySpacing)
+  sff.spacing.text:SetText("Spacing:")
+  sff.spacing:SetWidth(30)
+  sff.spacing:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  s=self:GetNumber()
+  if not s or s==0 then s=eF.activePara.spacing; self:SetText(s)
+  else 
+    eF.activePara.spacing=s;
+  end
+  end)
+  --NYI: update without reload
 
-end--end of layout settings
+  end--end of layout settings
 
---create position settings
-do
-sff.title3=sff:CreateFontString(nil,"OVERLAY")
-local t=sff.title3
-t:SetFont(titleFont,15,titleFontExtra)
-t:SetTextColor(1,1,1)
-t:SetText("Position")
-t:SetPoint("TOPLEFT",sff.title1,"TOPLEFT",25,-135)
+  --create position settings
+  do
+  sff.title3=sff:CreateFontString(nil,"OVERLAY")
+  local t=sff.title3
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Position")
+  t:SetPoint("TOPLEFT",sff.title1,"TOPLEFT",25,-135)
 
-sff.title3Spacer=sff:CreateTexture(nil,"OVERLAY")
-local tS=sff.title3Spacer
-tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
-tS:SetHeight(8)
-tS:SetTexture(titleSpacer)
-tS:SetWidth(110)
+  sff.title3Spacer=sff:CreateTexture(nil,"OVERLAY")
+  local tS=sff.title3Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
 
-createNumberEB(sff,"xPos",sff)
-sff.xPos.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
-sff.xPos.text:SetText("X Offset:")
-sff.xPos:SetWidth(30)
-sff.count:SetScript("OnEnterPressed", function(self)
-self:ClearFocus()
-x=self:GetNumber()
-if not x  then x=eF.activePara.xPos; self:SetText(x)
-else 
-  eF.activePara.xPos=x;
-end
-end)
---NYI: update without reload
+  createNumberEB(sff,"xPos",sff)
+  sff.xPos.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  sff.xPos.text:SetText("X Offset:")
+  sff.xPos:SetWidth(30)
+  sff.count:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  x=self:GetNumber()
+  if not x  then x=eF.activePara.xPos; self:SetText(x)
+  else 
+    eF.activePara.xPos=x;
+  end
+  end)
+  --NYI: update without reload
 
-createNumberEB(sff,"yPos",sff)
-sff.yPos.text:SetPoint("RIGHT",sff.xPos.text,"RIGHT",0,-ySpacing)
-sff.yPos.text:SetText("X Offset:")
-sff.yPos:SetWidth(30)
-sff.count:SetScript("OnEnterPressed", function(self)
-self:ClearFocus()
-x=self:GetNumber()
-if not x  then x=eF.activePara.yPos; self:SetText(y)
-else 
-  eF.activePara.yPos=x;
-end
-end)
---NYI: update without reload
+  createNumberEB(sff,"yPos",sff)
+  sff.yPos.text:SetPoint("RIGHT",sff.xPos.text,"RIGHT",0,-ySpacing)
+  sff.yPos.text:SetText("X Offset:")
+  sff.yPos:SetWidth(30)
+  sff.count:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  x=self:GetNumber()
+  if not x  then x=eF.activePara.yPos; self:SetText(y)
+  else 
+    eF.activePara.yPos=x;
+  end
+  end)
+  --NYI: update without reload
 
-createDD(sff,"anchor",sff)
-sff.anchor.text:SetPoint("RIGHT",sff.yPos.text,"RIGHT",0,-ySpacing)
-sff.anchor.text:SetText("Position:")
-sff.anchor.initialize=function(frame,level,menuList)
- local info = UIDropDownMenu_CreateInfo()
- local lst=eF.positions
- for i=1,#lst do
-   local v=lst[i]
-   info.text, info.checked, info.arg1 = v,false,v
-   info.func=function(self,arg1,arg2,checked)
-     eF.activePara.anchor=v
-     eF.activePara.anchorTo=v
-     UIDropDownMenu_SetText(frame,v)
-     UIDropDownMenu_SetSelectedName(frame,v)
-     CloseDropDownMenus() 
+  createDD(sff,"anchor",sff)
+  sff.anchor.text:SetPoint("RIGHT",sff.yPos.text,"RIGHT",0,-ySpacing)
+  sff.anchor.text:SetText("Position:")
+  sff.anchor.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst=eF.positions
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.anchor=v
+       eF.activePara.anchorTo=v
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus() 
+     end
+     UIDropDownMenu_AddButton(info)
    end
-   UIDropDownMenu_AddButton(info)
- end
-end
-UIDropDownMenu_SetWidth(sff.grow,60)
---NYI: update without reload
+  end
+  UIDropDownMenu_SetWidth(sff.grow,60)
+  --NYI: update without reload
 
-end--end of position settings
+  end--end of position settings
 
---create icon settings
-do
-sff.title4=sff:CreateFontString(nil,"OVERLAY")
-local t=sff.title4
-t:SetFont(titleFont,15,titleFontExtra)
-t:SetTextColor(1,1,1)
-t:SetText("Icon")
-t:SetPoint("TOPLEFT",sff.title3,"TOPLEFT",250,-15)
+  --create icon settings
+  do
+  sff.title4=sff:CreateFontString(nil,"OVERLAY")
+  local t=sff.title4
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Icon")
+  t:SetPoint("TOPLEFT",sff.title3,"TOPLEFT",250,-15)
 
-sff.title4Spacer=sff:CreateTexture(nil,"OVERLAY")
-local tS=sff.title4Spacer
-tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
-tS:SetHeight(8)
-tS:SetTexture(titleSpacer)
-tS:SetWidth(110)
+  sff.title4Spacer=sff:CreateTexture(nil,"OVERLAY")
+  local tS=sff.title4Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
 
-createCB(sff,"iconCB",sff)
-sff.iconCB.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
-sff.iconCB.text:SetText("Has Icon:")
-sff.iconCB:SetScript("OnClick",function(self)
-  local ch=self:GetChecked()
-  self:SetChecked(ch)
-  eF.activePara.hasTexture=ch
-  if not ch then sff.iconBlocker1:Show();sff.iconBlocker2:Show() else sff.iconBlocker1:Hide();sff.iconBlocker2:Hide() end
-  if eF.activePara.smartIcon then sff.iconBlocker2:Show() end
-  eF.activePara.hasTexture=ch
-end)
---NYI: update without reload
+  createCB(sff,"iconCB",sff)
+  sff.iconCB.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  sff.iconCB.text:SetText("Has Icon:")
+  sff.iconCB:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.hasTexture=ch
+    if not ch then sff.iconBlocker1:Show();sff.iconBlocker2:Show() else sff.iconBlocker1:Hide();sff.iconBlocker2:Hide() end
+    if eF.activePara.smartIcon then sff.iconBlocker2:Show() end
+    eF.activePara.hasTexture=ch
+  end)
+  --NYI: update without reload
 
 
-createCB(sff,"smartIcon",sff)
-sff.smartIcon.text:SetPoint("RIGHT",sff.iconCB.text,"RIGHT",0,-ySpacing)
-sff.smartIcon.text:SetText("Smart Icon:")
-sff.smartIcon:SetScript("OnClick",function(self)
-  if sff.iconBlocked1 then self.SetChecked(not self:GetChecked());return end
-  local ch=self:GetChecked()
-  self:SetChecked(ch)
-  eF.activePara.smartIcon=ch
-  if ch then sff.iconBlocker2:Show() else sff.iconBlocker2:Hide() end
-end)
---NYI: update without reload
+  createCB(sff,"smartIcon",sff)
+  sff.smartIcon.text:SetPoint("RIGHT",sff.iconCB.text,"RIGHT",0,-ySpacing)
+  sff.smartIcon.text:SetText("Smart Icon:")
+  sff.smartIcon:SetScript("OnClick",function(self)
+    if sff.iconBlocked1 then self.SetChecked(not self:GetChecked());return end
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.smartIcon=ch
+    if ch then sff.iconBlocker2:Show() else sff.iconBlocker2:Hide() end
+  end)
+  --NYI: update without reload
 
 
-sff.iconBlocker1=CreateFrame("Button",nil,sff)
-local iB1=sff.iconBlocker1
-iB1:SetFrameLevel(sff:GetFrameLevel()+3)
-iB1:SetPoint("TOPRIGHT",sff.smartIcon,"TOPRIGHT",2,2)
-iB1:SetPoint("BOTTOMLEFT",sff.smartIcon.text,"BOTTOMLEFT",-2,-2)
-iB1.texture=iB1:CreateTexture(nil,"OVERLAY")
-iB1.texture:SetAllPoints()
-iB1.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+  sff.iconBlocker1=CreateFrame("Button",nil,sff)
+  local iB1=sff.iconBlocker1
+  iB1:SetFrameLevel(sff:GetFrameLevel()+3)
+  iB1:SetPoint("TOPRIGHT",sff.smartIcon,"TOPRIGHT",2,2)
+  iB1:SetPoint("BOTTOMLEFT",sff.smartIcon.text,"BOTTOMLEFT",-2,-2)
+  iB1.texture=iB1:CreateTexture(nil,"OVERLAY")
+  iB1.texture:SetAllPoints()
+  iB1.texture:SetColorTexture(0.07,0.07,0.07,0.4)
 
 
-createIP(sff,"icon",sff)
-sff.icon.text:SetPoint("RIGHT",sff.smartIcon.text,"RIGHT",0,-ySpacing)
-sff.icon.text:SetText("Texture:")
-sff.icon:SetWidth(60)
-sff.icon:SetScript("OnEnterPressed", function(self)
-self:ClearFocus()
-x=self:GetText()
-if not x  then x=eF.activePara.texture; self:SetText(x)
-else 
-  eF.activePara.texture=x;
-  self.pTexture:SetTexture(x)
-end
-end)
---NYI: update without reload
+  createIP(sff,"icon",sff)
+  sff.icon.text:SetPoint("RIGHT",sff.smartIcon.text,"RIGHT",0,-ySpacing)
+  sff.icon.text:SetText("Texture:")
+  sff.icon:SetWidth(60)
+  sff.icon:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  x=self:GetText()
+  if not x  then x=eF.activePara.texture; self:SetText(x)
+  else 
+    eF.activePara.texture=x;
+    self.pTexture:SetTexture(x)
+  end
+  end)
+  --NYI: update without reload
 
-sff.iconBlocker2=CreateFrame("Button",nil,sff)
-local iB2=sff.iconBlocker2
-iB2:SetFrameLevel(sff:GetFrameLevel()+3)
-iB2:SetPoint("TOPLEFT",sff.icon.text,"TOPLEFT",-2,12)
-iB2:SetHeight(50)
-iB2:SetWidth(200)
-iB2.texture=iB2:CreateTexture(nil,"OVERLAY")
-iB2.texture:SetAllPoints()
-iB2.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+  sff.iconBlocker2=CreateFrame("Button",nil,sff)
+  local iB2=sff.iconBlocker2
+  iB2:SetFrameLevel(sff:GetFrameLevel()+3)
+  iB2:SetPoint("TOPLEFT",sff.icon.text,"TOPLEFT",-2,12)
+  iB2:SetHeight(50)
+  iB2:SetWidth(200)
+  iB2.texture=iB2:CreateTexture(nil,"OVERLAY")
+  iB2.texture:SetAllPoints()
+  iB2.texture:SetColorTexture(0.07,0.07,0.07,0.4)
 
 
 
-end --end of icon settings
+  end --end of icon settings
 
---create list EB
-do
-sff.title5=sff:CreateFontString(nil,"OVERLAY")
-local t=sff.title5
-t:SetFont(titleFont,15,titleFontExtra)
-t:SetTextColor(1,1,1)
-t:SetText("List")
-t:SetPoint("TOPLEFT",sff.title3,"TOPLEFT",15,-125)
+  --create list EB
+  do
+  sff.title5=sff:CreateFontString(nil,"OVERLAY")
+  local t=sff.title5
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("List")
+  t:SetPoint("TOPLEFT",sff.title3,"TOPLEFT",15,-125)
 
-sff.title5Spacer=sff:CreateTexture(nil,"OVERLAY")
-local tS=sff.title5Spacer
-tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
-tS:SetHeight(8)
-tS:SetTexture(titleSpacer)
-tS:SetWidth(110)
+  sff.title5Spacer=sff:CreateTexture(nil,"OVERLAY")
+  local tS=sff.title5Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
 
-createListCB(sff,"list",sff)
-sff.list:SetPoint("TOPLEFT",tS,"TOPLEFT",0,-initSpacing)
-sff.list.button:SetScript("OnClick", function(self)
-local sfind,ssub,insert=strfind,strsub,table.insert
-local x=self.eb:GetText()
-self:Disable()
-self.eb:ClearFocus()
-local old=0
-local new=0
-local antiCrash=0
-local rtbl={}
-while new do
-  new=sfind(x,"\n",old+1)
-  local ss=ssub(x,old,new)
-  insert(rtbl,ss:match("^%s*(.-)%s*$"))
-  old=new
-  antiCrash=antiCrash+1
-  if antiCrash>500 then break end
-end
-eF.activePara.arg1=rtbl
-end) 
---NYI: update without reload
-
-
-
-end --end of list EB
+  createListCB(sff,"list",sff)
+  sff.list:SetPoint("TOPLEFT",tS,"TOPLEFT",0,-initSpacing)
+  sff.list.button:SetScript("OnClick", function(self)
+  local sfind,ssub,insert=strfind,strsub,table.insert
+  local x=self.eb:GetText()
+  self:Disable()
+  self.eb:ClearFocus()
+  local old=0
+  local new=0
+  local antiCrash=0
+  local rtbl={}
+  while new do
+    new=sfind(x,"\n",old+1)
+    local ss=ssub(x,old,new)
+    insert(rtbl,ss:match("^%s*(.-)%s*$"))
+    old=new
+    antiCrash=antiCrash+1
+    if antiCrash>500 then break end
+  end
+  eF.activePara.arg1=rtbl
+  end) 
+  --NYI: update without reload
 
 
+  end --end of list EB
+
+  --create CDwheel settings
+  do
+  sff.title6=sff:CreateFontString(nil,"OVERLAY")
+  local t=sff.title6
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Icon")
+  t:SetPoint("TOPLEFT",sff,"TOPLEFT",150,-170)
+
+  sff.title6Spacer=sff:CreateTexture(nil,"OVERLAY")
+  local tS=sff.title6Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createCB(sff,"cdWheel",sff)
+  sff.cdWheel.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  sff.cdWheel.text:SetText("Has CD wheel:")
+  sff.cdWheel:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.cdWheel=ch
+    if not ch then sff.iconBlocker3:Show() else sff.iconBlocker3:Hide() end
+  end)
+  --NYI: update without reload
+
+
+  createCB(sff,"cdReverse",sff)
+  sff.cdReverse.text:SetPoint("RIGHT",sff.cdWheel.text,"RIGHT",0,-ySpacing)
+  sff.cdReverse.text:SetText("Reverse spin:")
+  sff.cdReverse:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.cdReverse=ch
+  end)
+  --NYI: update without reload
+
+
+  sff.iconBlocker3=CreateFrame("Button",nil,sff)
+  local iB3=sff.iconBlocker3
+  iB2:SetFrameLevel(sff:GetFrameLevel()+3)
+  iB2:SetPoint("TOPLEFT",sff.cdReverse.text,"TOPLEFT",-2,12)
+  iB2:SetHeight(50)
+  iB2:SetWidth(200)
+  iB2.texture=iB2:CreateTexture(nil,"OVERLAY")
+  iB2.texture:SetAllPoints()
+  iB2.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+  end --end of CDwheel settings
+
+  --create border settings
+  do
+  sff.title7=sff:CreateFontString(nil,"OVERLAY")
+  local t=sff.title7
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Icon")
+  t:SetPoint("TOPLEFT",sff,"TOPLEFT",150,-220)
+
+  sff.title7Spacer=sff:CreateTexture(nil,"OVERLAY")
+  local tS=sff.title7Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createCB(sff,"hasBorder",sff)
+  sff.hasBorder.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  sff.hasBorder.text:SetText("Has Border:")
+  sff.hasBorder:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.hasBorder=ch
+    if not ch then sff.iconBlocker4:Show() else sff.iconBlocker4:Hide() end
+  end)
+  --NYI: update without reload
+
+  createDD(sff,"borderType",sff)
+  sff.borderType.text:SetPoint("RIGHT",sff.hasBorder.text,"RIGHT",0,-ySpacing)
+  sff.borderType.text:SetText("Border type:")
+  sff.borderType.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst={"debuffColor"}
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.borderType=v
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus() 
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+  UIDropDownMenu_SetWidth(sff.grow,60)
+
+
+  sff.iconBlocker4=CreateFrame("Button",nil,sff)
+  local iB4=sff.iconBlocker4
+  iB2:SetFrameLevel(sff:GetFrameLevel()+3)
+  iB2:SetPoint("TOPLEFT",sff.cdReverse.text,"TOPLEFT",-2,12)
+  iB2:SetHeight(50)
+  iB2:SetWidth(200)
+  iB2.texture=iB2:CreateTexture(nil,"OVERLAY")
+  iB2.texture:SetAllPoints()
+  iB2.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+  end --end of border settings
+
+  
+  
 
 end --end of create smart FF
 
