@@ -150,7 +150,7 @@ local function createListCB(self,name,tab)
   
   f.eb:HookScript("OnEnterPressed",function(self)
     self:SetText(self:GetText()..'\n')
-    if f:GetVerticalScrollRange()>0 then f:SetVerticalScroll(f:GetVerticalScroll()+13) end
+    if f:GetVerticalScrollRange()>0 then f:SetVerticalScroll(f:GetVerticalScroll() +13) end
   end)
   
   f.adjustHeight= function(self,ni)
