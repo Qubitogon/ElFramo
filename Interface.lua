@@ -1189,7 +1189,6 @@ do
    end
   end
   UIDropDownMenu_SetWidth(sff.grow,60)
-  --NYI: update without reload
 
   createNumberEB(sff,"width",sff)
   sff.width.text:SetPoint("RIGHT",sff.grow.text,"RIGHT",0,-ySpacing)
@@ -1204,7 +1203,6 @@ do
   end
   updateAllFramesFamilyLayout(eF.activeFamilyIndex)
   end)
-  --NYI: update without reload
 
   createNumberEB(sff,"height",sff)
   sff.height.text:SetPoint("RIGHT",sff.width.text,"RIGHT",0,-ySpacing)
@@ -1219,7 +1217,6 @@ do
   end
   updateAllFramesFamilyLayout(eF.activeFamilyIndex)
   end)
-  --NYI: update without reload
 
   createNumberEB(sff,"spacing",sff)
   sff.spacing.text:SetPoint("RIGHT",sff.height.text,"RIGHT",0,-ySpacing)
@@ -1234,7 +1231,6 @@ do
   end
   updateAllFramesFamilyLayout(eF.activeFamilyIndex)
   end)
-  --NYI: update without reload
 
   end--end of layout settings
 
@@ -1268,7 +1264,6 @@ do
   end
   updateAllFramesFamilyLayout(eF.activeFamilyIndex)
   end)
-  --NYI: update without reload
 
   createNumberEB(sff,"yPos",sff)
   sff.yPos.text:SetPoint("RIGHT",sff.xPos.text,"RIGHT",0,-ySpacing)
@@ -1284,7 +1279,6 @@ do
   end
   updateAllFramesFamilyLayout(eF.activeFamilyIndex)
   end)
-  --NYI: update without reload
 
   createDD(sff,"anchor",sff)
   sff.anchor.text:SetPoint("RIGHT",sff.yPos.text,"RIGHT",0,-ySpacing)
@@ -1307,7 +1301,6 @@ do
    end
   end
   UIDropDownMenu_SetWidth(sff.anchor,60)
-  --NYI: update without reload
 
   end--end of position settings
 
@@ -1510,7 +1503,8 @@ do
     if not ch then sff.iconBlocker4:Show() else sff.iconBlocker4:Hide() end
     updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end)
-
+  --NYI not hiding border
+  
   createDD(sff,"borderType",sff)
   sff.borderType.text:SetPoint("RIGHT",sff.hasBorder.text,"RIGHT",0,-ySpacing)
   sff.borderType.text:SetText("Border type:")
