@@ -14,9 +14,12 @@ local function initCreateFamilyFrames()
     frame.onUpdateList={}
     frame.onPowerList={}
     frame.createFamily=eF.rep.createFamilyFrame
+    frame.applyFamilyParas=eF.rep.applyFamilyParas
+    frame.updateFamilyLayout=eF.rep.updateFamilyLayout
     eF.units.familyCount=#frame.families
     for j=1,#frame.families do
-      frame:createFamily(j)    
+      frame:createFamily(j)
+      frame:applyFamilyParas(j)
     end --end of for j=1,#frame.families
  
   end--end of for i=1,45
@@ -85,7 +88,6 @@ end
 eF.rep.blacklistFamilyAdopt=blacklistFamilyAdopt
 
 local function whitelistFamilyAdopt(self,name,...)
-
   if self.full or not eF.isInList(name,self.para.arg1) then return end
   local dur=select(4,...)
   if self.para.ignorePermanents and dur==0 then return end
@@ -245,8 +247,8 @@ local function createFamilyFrame(self,j)
     f:SetFrameLevel(f.para.frameLevel+self:GetFrameLevel()-1)
     f.active=0
     f:SetPoint(f.para.anchor, self, f.para.anchorTo, f.para.xPos, f.para.yPos)
-        
-     ------LOAD STUFF
+
+    ------LOAD STUFF
     f.checkLoad=eF.rep.checkLoad
     f.loaded=false
     f.onAuraList={}
@@ -287,20 +289,21 @@ local function createFamilyFrame(self,j)
     if f.para.cdWheel then
       insert(f.onPostAuraList,{eF.rep.smartFamilyUpdateCDWheels,f})
     end
+    
                
     for k=1,f.para.count do
       local xOS=0
       local yOS=0
-      if f.para.grow=="down" then yOS=(k-1)*(f.para.spacing+f.para.height)
-      elseif f.para.grow=="up" then yOS=(1-k)*(f.para.spacing+f.para.height)
+      if f.para.grow=="down" then yOS=(1-k)*(f.para.spacing+f.para.height)
+      elseif f.para.grow=="up" then yOS=(k-1)*(f.para.spacing+f.para.height)
       elseif f.para.grow=="right" then xOS=(k-1)*(f.para.spacing+f.para.width)
-      elseif f.para.grow=="right" then xOS=(1-k)*(f.para.spacing+f.para.width) end
+      elseif f.para.grow=="left" then xOS=(1-k)*(f.para.spacing+f.para.width) end
         
       if f[k] then f[k]=nil end
       f[k]=CreateFrame("Frame",nil,f)
       local c=f[k]
       c.para=eF.para.families[j]
-      c:SetPoint(f.para.growAnchor,f,f.para.growAnchorTo,xOS,yOS)
+      c:SetPoint(f.para.growAnchor,f,"CENTER",xOS,yOS)
       c:SetSize(f.para.width,f.para.height)
       c.adopt=eF.rep.iconUnconditionalAdopt        
       c.disable=eF.rep.iconFrameDisable
@@ -310,35 +313,35 @@ local function createFamilyFrame(self,j)
 
       ----------------------VISUALS
         
-      if f.para.hasTexture then
-        c.texture=c:CreateTexture()
-        c.texture:SetDrawLayer("BACKGROUND",-2)
-        c.texture:SetAllPoints()
-        if f.para.hasTexture and (not f.para.texture or f.para.smartIcon) then c.smartIcon=true; c.updateTexture=eF.rep.iconApplySmartIcon
-        else c.texture:SetTexture(f.para.texture) end
-      end        
+      c.texture=c:CreateTexture()
+      c.texture:SetDrawLayer("BACKGROUND",-2)
+      c.texture:SetAllPoints()
+      if f.para.hasTexture and (not f.para.texture or f.para.smartIcon) then c.smartIcon=true; c.updateTexture=eF.rep.iconApplySmartIcon
+      else c.texture:SetTexture(f.para.texture) end
+      c.texture:Hide()
           
-      if f.para.hasBorder then
-        c.border=c:CreateTexture(nil,'OVERLAY')
-        c.border:SetTexture([[Interface\Buttons\UI-Debuff-Overlays]])
-        c.border:SetAllPoints()                     
-        c.border:SetTexCoord(.296875, .5703125, 0, .515625)
-        if f.para.borderType=="debuffColor" then
-          c.updateBorder=eF.rep.updateBorderColorDebuffType
-          c.borderColor=eF.para.colors.debuff
-        end
+      
+      c.border=c:CreateTexture(nil,'OVERLAY')
+      c.border:SetTexture([[Interface\Buttons\UI-Debuff-Overlays]])
+      c.border:SetAllPoints()                     
+      c.border:SetTexCoord(.296875, .5703125, 0, .515625)
+      if f.para.borderType=="debuffColor" then
+        c.updateBorder=eF.rep.updateBorderColorDebuffType
+        c.borderColor=eF.para.colors.debuff
       end
+      c.border:Hide()
+      
           
 
-      if f.para.cdWheel then
-        if c.cdFrame then c.cdFrame = nil end 
-        c.cdFrame=CreateFrame("Cooldown",nil,c,"CooldownFrameTemplate")
-        if f.para.cdReverse then c.cdFrame:SetReverse(true) end
-        c.cdFrame:SetAllPoints()
-        c.cdFrame:SetFrameLevel( c:GetFrameLevel())
-        c.updateCDWheel=eF.rep.iconUpdateCDWheel
-      end--end of if .cdwheel
-          
+
+      if c.cdFrame then c.cdFrame = nil end 
+      c.cdFrame=CreateFrame("Cooldown",nil,c,"CooldownFrameTemplate")
+      if f.para.cdReverse then c.cdFrame:SetReverse(true) end
+      c.cdFrame:SetAllPoints()
+      c.cdFrame:SetFrameLevel( c:GetFrameLevel())
+      c.updateCDWheel=eF.rep.iconUpdateCDWheel
+      c.cdFrame:Hide()
+      
       --text
       if f.para.hasText then
         c.text=c:CreateFontString()
@@ -376,6 +379,109 @@ local function createFamilyFrame(self,j)
 
 end
 eF.rep.createFamilyFrame=createFamilyFrame
+
+local function applyFamilyParas(self,j)
+  local insert=table.insert
+  local f=self[j]
+  f.para=self.families[j]
+  
+  --------------------SMART FAMILIES
+  if f.para.smart then
+    f.onAuraList={}
+    f.onBuffList={}
+    f.onDebuffList={}
+    f.onPowerList={}
+    f.onPostAuraList={}
+
+    if f.para.type=="b" then 
+      if f.para.trackType=="Buffs" then insert(f.onBuffList,{eF.rep.blacklistFamilyAdopt,f})  
+      elseif f.para.trackType=="Debuffs" then insert(f.onDebuffList,{eF.rep.blacklistFamilyAdopt,f}) end
+      insert(f.onAuraList,{eF.rep.smartFamilyDisableAll,f})
+    end
+            
+    if f.para.type=="w" then 
+      if f.para.trackType=="Buffs" then insert(f.onBuffList,{eF.rep.whitelistFamilyAdopt,f})  
+      elseif f.para.trackType=="Debuffs" then insert(f.onDebuffList,{eF.rep.whitelistFamilyAdopt,f}) end
+      insert(f.onAuraList,{eF.rep.smartFamilyDisableAll,f})
+    end
+
+
+    if f.para.hasBorder and f.para.borderType=="debuffColor" then 
+      insert(f.onPostAuraList,{eF.rep.smartFamilyDebuffTypeBorderColor,f})
+    end
+
+    if f.para.hasTexture and (not f.para.texture or f.para.smartIcon) then
+      insert(f.onPostAuraList,{eF.rep.smartFamilyApplySmartIcons,f})
+    end
+            
+    if f.para.cdWheel then
+      insert(f.onPostAuraList,{eF.rep.smartFamilyUpdateCDWheels,f})
+    end
+   
+
+    for k=1,f.para.count do
+      local c=f[k]
+      c.onUpdateList={}
+      if f.para.hasTexture then
+        c.texture:Show()
+        if f.para.hasTexture and (not f.para.texture or f.para.smartIcon) then c.smartIcon=true; c.updateTexture=eF.rep.iconApplySmartIcon
+        else c.texture:SetTexture(f.para.texture) end
+      end        
+              
+      if f.para.hasBorder then
+        if f.para.borderType=="debuffColor" then
+          c.updateBorder=eF.rep.updateBorderColorDebuffType
+          c.borderColor=eF.para.colors.debuff
+        end
+        c.border:Show()
+      end
+              
+
+      if f.para.cdWheel then
+        if f.para.cdReverse then c.cdFrame:SetReverse(true) end
+        c.cdFrame:Show()
+      end--end of if .cdwheel
+              
+      if f.para.hasText then
+        local iDA=c.para.textIgnoreDurationAbove
+        if iDA then c.textIgnoreDurationAbove=iDA end
+        if c.para.textType=="t" then insert(c.onUpdateList,eF.rep.iconUpdateTextTypeT) end 
+      end--end of if frame.hasText
+      
+    end --end for k=1,frame.families.count
+  
+  
+  else --ELSE OF IF SMART
+  end --END OF IF SMART ELSE 
+end
+eF.rep.applyFamilyParas=applyFamilyParas
+
+local function updateFamilyLayout(self,j)
+  local f=self[j]
+  f.para=self.families[j]
+  f:ClearAllPoints()
+  f:SetPoint(f.para.anchor, self, f.para.anchorTo, f.para.xPos, f.para.yPos)
+  
+  if f.para.smart then  
+    for k=1,f.para.count do
+      local xOS=0
+      local yOS=0
+      if f.para.grow=="down" then yOS=(1-k)*(f.para.spacing+f.para.height)
+      elseif f.para.grow=="up" then yOS=(k-1)*(f.para.spacing+f.para.height)
+      elseif f.para.grow=="right" then xOS=(k-1)*(f.para.spacing+f.para.width)
+      elseif f.para.grow=="left" then xOS=(1-k)*(f.para.spacing+f.para.width) end
+        
+      local c=f[k]
+      c:ClearAllPoints()
+      c:SetPoint(f.para.growAnchor,f,"CENTER",xOS,yOS)
+      c:SetSize(f.para.width,f.para.height)
+    end--end of for j=1,f.para.count
+    
+  else --else of if f.para.smart
+  end  --if else end of if f.para.smart
+  
+end
+eF.rep.updateFamilyLayout=updateFamilyLayout
 
 function createFamilyChild(self,k)
   local insert=table.insert

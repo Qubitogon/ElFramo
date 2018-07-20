@@ -174,6 +174,24 @@ local function createDD(self,name,tab)
   dd:SetPoint("LEFT",tx,"RIGHT",-10,0)
 end
 
+local function updateAllFramesFamilyParas(j)
+  for i=1,45 do
+    local frame
+    if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
+    frame:applyFamilyParas(j)
+    frame:checkLoad()
+  end--end of for i=1,45
+end
+
+local function updateAllFramesFamilyLayout(j)
+  for i=1,45 do
+    local frame
+    if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
+    frame:updateFamilyLayout(j)
+    frame:checkLoad()
+  end--end of for i=1,45
+end
+
 local function createCB(self,name,tab)
   self[name]=CreateFrame("CheckButton",nil,tab,"ChatConfigCheckButtonTemplate")
   local cb=self[name]
@@ -319,12 +337,14 @@ local function createFamily(self,n)
   f:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-(familyHeight+2)*(n-1))
   f:SetBackdrop(bd2)
   f.para=para
+  f.familyIndex=n
   
   f:SetScript("OnClick",function(self)
     releaseAllFamilies()
     hideAllFamilyParas()
     eF.activePara=para
     eF.activeButton=self
+    eF.activeFamilyIndex=self.familyIndex
     if self.para.smart then showSmartFamilyPara() else showDumbFamilyPara() end
     self:Disable()
     end)
@@ -953,7 +973,6 @@ fL=ff.famList
 fL:SetPoint("TOPLEFT",ff,"TOPLEFT",ff:GetWidth()*0.02,-60)
 fL:SetPoint("BOTTOMRIGHT",ff,"BOTTOMLEFT",ff:GetWidth()*0.22,20)
 fL:SetClipsChildren(true)
---fL:HookScript("OnMouseWheel",function()  print("scsr") end)
 fL:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)
 
 --create Border
@@ -1048,12 +1067,13 @@ do
        UIDropDownMenu_SetText(frame,v)
        UIDropDownMenu_SetSelectedName(frame,v)
        CloseDropDownMenus()
+       updateAllFramesFamilyParas(eF.activeFamilyIndex)
+       
      end
      UIDropDownMenu_AddButton(info)
    end
   end
   UIDropDownMenu_SetWidth(sff.type,80)
-  --NYI: update without reload
 
   createDD(sff,"trackType",sff)
   sff.trackType.text:SetPoint("RIGHT",sff.type.text,"RIGHT",0,-ySpacing)
@@ -1069,13 +1089,13 @@ do
        UIDropDownMenu_SetText(frame,v)
        UIDropDownMenu_SetSelectedName(frame,v)
        CloseDropDownMenus()
+       updateAllFramesFamilyParas(eF.activeFamilyIndex)
+
      end
      UIDropDownMenu_AddButton(info)
    end
   end
   UIDropDownMenu_SetWidth(sff.trackType,80)
-  --NYI: update without reload
-
   
   createCB(sff,"ignorePermanents",sff)
   sff.ignorePermanents.text:SetPoint("RIGHT",sff.trackType.text,"RIGHT",0,-ySpacing)
@@ -1095,7 +1115,7 @@ do
   count=self:GetText()
   if not count or count=="nil" or count=="" then eF.activePara.ignoreDurationAbove=nil; self:SetText("nil")
   else 
-    eF.activePara.ignoreDurationAbove=count;
+    eF.activePara.ignoreDurationAbove=tonumber(count);
   end
   end)
 
@@ -1137,6 +1157,8 @@ do
   else 
     eF.activePara.count=count;
   end
+  updateAllFramesFamilyLayout(eF.activeFamilyIndex)
+
   end)
   --NYI: update without reload
 
@@ -1151,9 +1173,17 @@ do
      info.text, info.checked, info.arg1 = v,false,v
      info.func=function(self,arg1,arg2,checked)
        eF.activePara.grow=v
+       
+       if v=="right" then eF.activePara.growAnchor="LEFT"
+       elseif v=="left" then eF.activePara.growAnchor="RIGHT"
+       elseif v=="up" then eF.activePara.growAnchor="BOTTOM"
+       elseif v=="down" then eF.activePara.growAnchor="TOP" end
+       
        UIDropDownMenu_SetText(frame,v)
        UIDropDownMenu_SetSelectedName(frame,v)
        CloseDropDownMenus()
+       updateAllFramesFamilyLayout(eF.activeFamilyIndex)
+
      end
      UIDropDownMenu_AddButton(info)
    end
@@ -1172,6 +1202,7 @@ do
   else 
     eF.activePara.width=w;
   end
+  updateAllFramesFamilyLayout(eF.activeFamilyIndex)
   end)
   --NYI: update without reload
 
@@ -1186,6 +1217,7 @@ do
   else 
     eF.activePara.height=h;
   end
+  updateAllFramesFamilyLayout(eF.activeFamilyIndex)
   end)
   --NYI: update without reload
 
@@ -1200,6 +1232,7 @@ do
   else 
     eF.activePara.spacing=s;
   end
+  updateAllFramesFamilyLayout(eF.activeFamilyIndex)
   end)
   --NYI: update without reload
 
@@ -1225,13 +1258,15 @@ do
   sff.xPos.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
   sff.xPos.text:SetText("X Offset:")
   sff.xPos:SetWidth(30)
-  sff.count:SetScript("OnEnterPressed", function(self)
+  sff.xPos:SetScript("OnEnterPressed", function(self)
   self:ClearFocus()
-  x=self:GetNumber()
-  if not x  then x=eF.activePara.xPos; self:SetText(x)
+  x=self:GetText()
+  x=tonumber(x)
+  if not x then x=eF.activePara.xPos; self:SetText(x); 
   else 
     eF.activePara.xPos=x;
   end
+  updateAllFramesFamilyLayout(eF.activeFamilyIndex)
   end)
   --NYI: update without reload
 
@@ -1239,13 +1274,15 @@ do
   sff.yPos.text:SetPoint("RIGHT",sff.xPos.text,"RIGHT",0,-ySpacing)
   sff.yPos.text:SetText("Y Offset:")
   sff.yPos:SetWidth(30)
-  sff.count:SetScript("OnEnterPressed", function(self)
+  sff.yPos:SetScript("OnEnterPressed", function(self)
   self:ClearFocus()
-  x=self:GetNumber()
-  if not x  then x=eF.activePara.yPos; self:SetText(y)
+  x=self:GetText()
+  x=tonumber(x)
+  if not x  then x=eF.activePara.yPos; self:SetText(x)
   else 
     eF.activePara.yPos=x;
   end
+  updateAllFramesFamilyLayout(eF.activeFamilyIndex)
   end)
   --NYI: update without reload
 
@@ -1264,11 +1301,12 @@ do
        UIDropDownMenu_SetText(frame,v)
        UIDropDownMenu_SetSelectedName(frame,v)
        CloseDropDownMenus() 
+       updateAllFramesFamilyLayout(eF.activeFamilyIndex)
      end
      UIDropDownMenu_AddButton(info)
    end
   end
-  UIDropDownMenu_SetWidth(sff.grow,60)
+  UIDropDownMenu_SetWidth(sff.anchor,60)
   --NYI: update without reload
 
   end--end of position settings
@@ -1299,8 +1337,8 @@ do
     if not ch then sff.iconBlocker1:Show();sff.iconBlocker2:Show() else sff.iconBlocker1:Hide();sff.iconBlocker2:Hide() end
     if eF.activePara.smartIcon then sff.iconBlocker2:Show() end
     eF.activePara.hasTexture=ch
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end)
-  --NYI: update without reload
 
 
   createCB(sff,"smartIcon",sff)
@@ -1312,8 +1350,8 @@ do
     self:SetChecked(ch)
     eF.activePara.smartIcon=ch
     if ch then sff.iconBlocker2:Show() else sff.iconBlocker2:Hide() end
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end)
-  --NYI: update without reload
 
 
   sff.iconBlocker1=CreateFrame("Button",nil,sff)
@@ -1392,7 +1430,6 @@ do
   end
   eF.activePara.arg1=rtbl
   end) 
-  --NYI: update without reload
 
 
   end --end of list EB
@@ -1421,8 +1458,8 @@ do
     self:SetChecked(ch)
     eF.activePara.cdWheel=ch
     if not ch then sff.iconBlocker3:Show() else sff.iconBlocker3:Hide() end
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end)
-  --NYI: update without reload
 
 
   createCB(sff,"cdReverse",sff)
@@ -1432,8 +1469,8 @@ do
     local ch=self:GetChecked()
     self:SetChecked(ch)
     eF.activePara.cdReverse=ch
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end)
-  --NYI: update without reload
 
 
   sff.iconBlocker3=CreateFrame("Button",nil,sff)
@@ -1471,8 +1508,8 @@ do
     self:SetChecked(ch)
     eF.activePara.hasBorder=ch
     if not ch then sff.iconBlocker4:Show() else sff.iconBlocker4:Hide() end
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end)
-  --NYI: update without reload
 
   createDD(sff,"borderType",sff)
   sff.borderType.text:SetPoint("RIGHT",sff.hasBorder.text,"RIGHT",0,-ySpacing)
@@ -1485,14 +1522,16 @@ do
      info.text, info.checked, info.arg1 = v,false,v
      info.func=function(self,arg1,arg2,checked)
        eF.activePara.borderType=v
+
        UIDropDownMenu_SetText(frame,v)
        UIDropDownMenu_SetSelectedName(frame,v)
        CloseDropDownMenus() 
+       updateAllFramesFamilyParas(eF.activeFamilyIndex)
      end
      UIDropDownMenu_AddButton(info)
    end
   end
-  UIDropDownMenu_SetWidth(sff.grow,60)
+  UIDropDownMenu_SetWidth(sff.borderType,60)
 
 
   sff.iconBlocker4=CreateFrame("Button",nil,sff)
@@ -1504,6 +1543,7 @@ do
   iB4.texture=iB4:CreateTexture(nil,"OVERLAY")
   iB4.texture:SetAllPoints()
   iB4.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+
   end --end of border settings
 
   
