@@ -18,6 +18,7 @@ local int,tb,hd1,hd1b1,hd1b2,hd1b3,gf,ff
 local ySpacing=25
 local initSpacing=15
 local familyHeight=30
+eF.familyButtonsList={}
 
 local function ScrollFrame_OnMouseWheel(self,delta)
   local v=self:GetVerticalScroll() - (delta*familyHeight/2)
@@ -31,10 +32,10 @@ local function ScrollFrame_OnMouseWheel(self,delta)
 end
 
 local function releaseAllFamilies()
-  local fam=eF.interface.familiesFrame.famList.scrollChild.families
+  local lst=eF.familyButtonsList
   
-  for i=1,#fam do
-    fam[i]:Enable()
+  for i=1,#lst do
+    lst[i]:Enable()
   end
   
 end
@@ -324,7 +325,7 @@ local function createCS(self,name,tab)
   cp:SetPoint("LEFT",tx,"RIGHT",8,1)
 end
 
-local function createFamily(self,n)
+local function createFamily(self,n,pos)
 
   local para=eF.para.families[n]
   if self.families[n] then self.families[n]=nil end
@@ -334,10 +335,13 @@ local function createFamily(self,n)
   local f=self.families[n]
   f:SetWidth(eF.interface.familiesFrame.famList:GetWidth()-25)
   f:SetHeight(familyHeight)
-  f:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-(familyHeight+2)*(n-1))
+  --f:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-(familyHeight+2)*(n-1))
+  f:SetPoint("TOPRIGHT",self,"TOPRIGHT")
   f:SetBackdrop(bd2)
   f.para=para
   f.familyIndex=n
+  
+  if not pos then table.insert(eF.familyButtonsList,f) else table.insert(eF.familyButtonsList,pos,f) end
   
   f:SetScript("OnClick",function(self)
     releaseAllFamilies()
@@ -349,6 +353,8 @@ local function createFamily(self,n)
     self:Disable()
     end)
   
+  
+  
   -- normal texture
   do
   f.bg=f:CreateTexture(nil,"BACKGROUND")
@@ -358,7 +364,6 @@ local function createFamily(self,n)
   f:SetNormalTexture(f.bg)
   end
    
-   
   --pushed texture
   do
   f.bg=f:CreateTexture(nil,"BACKGROUND")
@@ -367,7 +372,6 @@ local function createFamily(self,n)
   f.bg:SetColorTexture(0.9,0.9,0.6,0.3)
   f:SetPushedTexture(f.bg)
   end
-  
    
   --Highlight creation
   do
@@ -378,6 +382,7 @@ local function createFamily(self,n)
   f.hl:SetTexture("Interface\\BUTTONS\\UI-SILVER-BUTTON-HIGHLIGHT")
   f:SetHighlightTexture(f.hl)
   end
+  
   --text creation
   do
   f.text=f:CreateFontString()
@@ -386,9 +391,87 @@ local function createFamily(self,n)
   f.text:SetTextColor(0.9,0.9,0.9)
   f.text:SetText(para.displayName)
   end
+      
+end
+
+
+local function createChild(self,j,k,pos)
+
+  local para=eF.para.families[j][k]
+  if self.families[j][k] then self.families[j][k]=nil end
+  
+  --button creation
+  self.families[j][k]=CreateFrame("Button",nil,self)
+  local f=self.families[j][k]
+  f:SetWidth(eF.interface.familiesFrame.famList:GetWidth()-25)
+  f:SetHeight(familyHeight)
+  --f:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-(familyHeight+2)*(n-1))
+  f:SetPoint("TOPRIGHT",self,"TOPRIGHT")
+  f:SetBackdrop(bd2)
+  f.para=para
+  f.familyIndex=n
+  
+  if not pos then table.insert(eF.familyButtonsList,f) else table.insert(eF.familyButtonsList,pos,f) end
+  
+  f:SetScript("OnClick",function(self)
+    releaseAllFamilies()
+    hideAllFamilyParas()
+    eF.activePara=para
+    eF.activeButton=self
+    eF.activeFamilyIndex=self.familyIndex
+    if self.para.smart then showSmartFamilyPara() else showDumbFamilyPara() end
+    self:Disable()
+    end)
   
   
   
+  -- normal texture
+  do
+  f.bg=f:CreateTexture(nil,"BACKGROUND")
+  f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
+  f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
+  f.bg:SetColorTexture(1,1,1,0.1)
+  f:SetNormalTexture(f.bg)
+  end
+   
+  --pushed texture
+  do
+  f.bg=f:CreateTexture(nil,"BACKGROUND")
+  f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
+  f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
+  f.bg:SetColorTexture(0.9,0.9,0.6,0.3)
+  f:SetPushedTexture(f.bg)
+  end
+   
+  --Highlight creation
+  do
+  f.hl=f:CreateTexture(nil,"BACKGROUND")
+  f.hl:SetPoint("BOTTOM",f,"BOTTOM",0,-1)
+  f.hl:SetHeight(f:GetHeight()*0.3)
+  f.hl:SetWidth(f:GetWidth()*0.8)
+  f.hl:SetTexture("Interface\\BUTTONS\\UI-SILVER-BUTTON-HIGHLIGHT")
+  f:SetHighlightTexture(f.hl)
+  end
+  
+  --text creation
+  do
+  f.text=f:CreateFontString()
+  f.text:SetPoint("CENTER")
+  f.text:SetFont("Fonts\\ARIALN.ttf",17,fontExtra)
+  f.text:SetTextColor(0.9,0.9,0.9)
+  f.text:SetText(para.displayName)
+  end
+      
+end
+
+
+local function setFamilyPositions(self)
+  --f:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-(familyHeight+2)*(n-1))
+  local lst=eF.familyButtonsList
+  for i=1,#lst do
+    lst[i]:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-(familyHeight+2)*(i-1))
+  end
+
 end
 
 local function setSFFActiveValues(self)
@@ -1000,6 +1083,7 @@ fL.scrollChild=CreateFrame("Frame","eFFamScrollChild",fL)
 sc=fL.scrollChild
 fL:SetScrollChild(sc)
 sc.createFamily=createFamily
+sc.setFamilyPositions=setFamilyPositions
 sc:SetWidth(fL:GetWidth())
 sc:SetHeight(600)
 sc:SetPoint("TOP",fL,"TOP")
@@ -1616,9 +1700,11 @@ local function intSetInitValues()
   --family frame
   do 
   
-  for i=1,#paraFam do
+  for i=2,#paraFam do
     sc:createFamily(i)
   end
+  sc:setFamilyPositions()
+  
   hideAllFamilyParas()
   
   end
