@@ -372,7 +372,7 @@ local function createFamily(self,n,pos)
   f.bg=f:CreateTexture(nil,"BACKGROUND")
   f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
   f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
-  f.bg:SetColorTexture(0.3,0.3,0.3,1)
+  f.bg:SetColorTexture(0.2,0.25,0.2,1)
   f.bg:SetGradient("vertical",0.5,0.5,0.5,0.8,0.8,0.8)
   f:SetNormalTexture(f.bg)
   end
@@ -382,7 +382,7 @@ local function createFamily(self,n,pos)
   f.bg=f:CreateTexture(nil,"BACKGROUND")
   f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
   f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
-  f.bg:SetColorTexture(238/255,232/255,170/255)
+  f.bg:SetColorTexture(0.6,0.8,0.4)
   f.bg:SetGradient("vertical",0.4,0.4,0.4,0.7,0.7,0.7)
   f:SetPushedTexture(f.bg)
   end
@@ -441,7 +441,7 @@ local function createChild(self,j,k,pos)
   f.bg=f:CreateTexture(nil,"BACKGROUND")
   f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
   f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
-  f.bg:SetColorTexture(0.3,0.3,0.3,1)
+  f.bg:SetColorTexture(0.28,0.2,0.2,1)
   f.bg:SetGradient("vertical",0.5,0.5,0.5,0.8,0.8,0.8)
   f:SetNormalTexture(f.bg)
   end
@@ -451,7 +451,7 @@ local function createChild(self,j,k,pos)
   f.bg=f:CreateTexture(nil,"BACKGROUND")
   f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
   f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
-  f.bg:SetColorTexture(238/255,232/255,170/255)
+  f.bg:SetColorTexture(0.8,0.4,0.4)
   f.bg:SetGradient("vertical",0.4,0.4,0.4,0.7,0.7,0.7)
   f:SetPushedTexture(f.bg)
   end
@@ -1664,23 +1664,399 @@ end --end of create dumb FF
 
 --create child icon frame
 do
-ff.childIconFrame=CreateFrame("Frame","eFDFF",ff)
-local cif=ff.childIconFrame
-cif:SetPoint("TOPLEFT",ff.famList.border,"TOPRIGHT",20,0)
-cif:SetPoint("BOTTOMRIGHT",ff.famList.border,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
-cif:SetBackdrop(bd)
 
-cif.bg=cif:CreateTexture(nil,"BACKGROUND")
-cif.bg:SetAllPoints()
-cif.bg:SetColorTexture(0,0,0,0.3)
+  ff.childIconFrame=CreateFrame("Frame","eFcif",ff)
+  local cif=ff.childIconFrame
+  cif:SetPoint("TOPLEFT",ff.famList.border,"TOPRIGHT",20,0)
+  cif:SetPoint("BOTTOMRIGHT",ff.famList.border,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
+  cif:SetBackdrop(bd)
+  
+  cif.bg=cif:CreateTexture(nil,"BACKGROUND")
+  cif.bg:SetAllPoints()
+  cif.bg:SetColorTexture(0.07,0.07,0.07,1)
 
-cif.text=cif:CreateFontString(nil,"OVERLAY")
-cif.text:SetPoint("CENTER")
-cif.text:SetFont(titleFont,20,titleFontExtra)
-cif.text:SetTextColor(0.9,0.9,0.9)
-cif.text:SetText("child icon frame here")
+  cif.setValues=setCIFActiveValues
+
+  --create general settings stuff
+  do
+  cif.title1=cif:CreateFontString(nil,"OVERLAY")
+  local t=cif.title1
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("General")
+  t:SetPoint("TOPLEFT",cif,"TOPLEFT",50,-25)
+
+  cif.title1Spacer=cif:CreateTexture(nil,"OVERLAY")
+  local tS=cif.title1Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createNumberEB(cif,"name",cif)
+  cif.name.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  cif.name.text:SetText("Name:")
+  cif.name:SetWidth(80)
+  cif.name:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  name=self:GetText()
+  if not name or name=="" then name=eF.activePara.displayName; self:SetText(name)
+  else 
+    eF.activePara.displayName=name; 
+    eF.activeButton.text:SetText(name)
+  end
+  end)
+
+  createDD(cif,"trackType",cif)
+  cif.trackType.text:SetPoint("RIGHT",cif.name.text,"RIGHT",0,-ySpacing)
+  cif.trackType.text:SetText("Tracks:")
+  cif.trackType.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst={"Buffs","Debuffs"}
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.trackType=rv
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+       updateAllFramesFamilyParas(eF.activeFamilyIndex)
+
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+  UIDropDownMenu_SetWidth(cif.trackType,80)
+  
+  createDD(cif,"trackBy",cif)
+  cif.trackBy.text:SetPoint("RIGHT",cif.trackType.text,"RIGHT",0,-ySpacing)
+  cif.trackBy.text:SetText("Track by:")
+  cif.trackBy.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst={"Name"}
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.trackBy=rv
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+       updateAllFramesFamilyParas(eF.activeFamilyIndex)
+
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+  UIDropDownMenu_SetWidth(cif.trackType,80)
+
+  createCB(cif,"ownOnly",cif)
+  cif.ownOnly.text:SetPoint("RIGHT",cif.trackBy.text,"RIGHT",0,-ySpacing)
+  cif.ownOnly.text:SetText("Own only:")
+  cif.ownOnly:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.ownOnly=ch
+  end)
+  
+  end--end of general settings
+
+  --create layout settings
+  do
+  cif.title2=cif:CreateFontString(nil,"OVERLAY")
+  local t=cif.title2
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Layout")
+  t:SetPoint("TOPLEFT",cif.title1,"TOPLEFT",220,0)
+
+  cif.title2Spacer=cif:CreateTexture(nil,"OVERLAY")
+  local tS=cif.title2Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createNumberEB(cif,"width",cif)
+  cif.width.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  cif.width.text:SetText("Width:")
+  cif.width:SetWidth(30)
+  cif.width:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  w=self:GetNumber()
+  if not w or w==0 then w=eF.activePara.width; self:SetText(w)
+  else 
+    eF.activePara.width=w;
+  end
+  updateAllFramesFamilyLayout(eF.activeFamilyIndex)
+  end)
+
+  createNumberEB(cif,"height",cif)
+  cif.height.text:SetPoint("RIGHT",cif.width.text,"RIGHT",0,-ySpacing)
+  cif.height.text:SetText("Height:")
+  cif.height:SetWidth(30)
+  cif.height:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  h=self:GetNumber()
+  if not h or h==0 then h=eF.activePara.height; self:SetText(h)
+  else 
+    eF.activePara.height=h;
+  end
+  updateAllFramesFamilyLayout(eF.activeFamilyIndex)
+  end)
+  
+  createNumberEB(cif,"xPos",cif)
+  cif.xPos.text:SetPoint("RIGHT",cif.height.text,"RIGHT",0,-ySpacing)
+  cif.xPos.text:SetText("X Offset:")
+  cif.xPos:SetWidth(30)
+  cif.xPos:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  x=self:GetText()
+  x=tonumber(x)
+  if not x then x=eF.activePara.xPos; self:SetText(x); 
+  else 
+    eF.activePara.xPos=x;
+  end
+  updateAllFramesFamilyLayout(eF.activeFamilyIndex)
+  end)
+
+  createNumberEB(cif,"yPos",cif)
+  cif.yPos.text:SetPoint("RIGHT",cif.xPos.text,"RIGHT",0,-ySpacing)
+  cif.yPos.text:SetText("Y Offset:")
+  cif.yPos:SetWidth(30)
+  cif.yPos:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  x=self:GetText()
+  x=tonumber(x)
+  if not x  then x=eF.activePara.yPos; self:SetText(x)
+  else 
+    eF.activePara.yPos=x;
+  end
+  updateAllFramesFamilyLayout(eF.activeFamilyIndex)
+  end)
+
+  createDD(cif,"anchor",cif)
+  cif.anchor.text:SetPoint("RIGHT",cif.yPos.text,"RIGHT",0,-ySpacing)
+  cif.anchor.text:SetText("Position:")
+  cif.anchor.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst=eF.positions
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.anchor=v
+       eF.activePara.anchorTo=v
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus() 
+       updateAllFramesFamilyLayout(eF.activeFamilyIndex)
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+  UIDropDownMenu_SetWidth(cif.anchor,60)
+
+  end--end of layout settings
+
+  --create icon settings
+  do
+  cif.title3=cif:CreateFontString(nil,"OVERLAY")
+  local t=cif.title3
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Icon")
+  t:SetPoint("TOPLEFT",cif.title1,"TOPLEFT",0,-170)
+
+  cif.title3Spacer=cif:CreateTexture(nil,"OVERLAY")
+  local tS=cif.title3Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createCB(cif,"iconCB",cif)
+  cif.iconCB.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  cif.iconCB.text:SetText("Has Icon:")
+  cif.iconCB:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.hasTexture=ch
+    if not ch then cif.iconBlocker1:Show();cif.iconBlocker2:Show() else cif.iconBlocker1:Hide();cif.iconBlocker2:Hide() end
+    if eF.activePara.smartIcon then cif.iconBlocker2:Show() end
+    eF.activePara.hasTexture=ch
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end)
+
+
+  createCB(cif,"smartIcon",cif)
+  cif.smartIcon.text:SetPoint("RIGHT",cif.iconCB.text,"RIGHT",0,-ySpacing)
+  cif.smartIcon.text:SetText("Smart Icon:")
+  cif.smartIcon:SetScript("OnClick",function(self)
+    if cif.iconBlocked1 then self.SetChecked(not self:GetChecked());return end
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.smartIcon=ch
+    if ch then cif.iconBlocker2:Show() else cif.iconBlocker2:Hide() end
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end)
+
+
+  cif.iconBlocker1=CreateFrame("Button",nil,cif)
+  local iB1=cif.iconBlocker1
+  iB1:SetFrameLevel(cif:GetFrameLevel()+3)
+  iB1:SetPoint("TOPRIGHT",cif.smartIcon,"TOPRIGHT",2,2)
+  iB1:SetPoint("BOTTOMLEFT",cif.smartIcon.text,"BOTTOMLEFT",-2,-2)
+  iB1.texture=iB1:CreateTexture(nil,"OVERLAY")
+  iB1.texture:SetAllPoints()
+  iB1.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+
+
+  createIP(cif,"icon",cif)
+  cif.icon.text:SetPoint("RIGHT",cif.smartIcon.text,"RIGHT",0,-ySpacing)
+  cif.icon.text:SetText("Texture:")
+  cif.icon:SetWidth(60)
+  cif.icon:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  x=self:GetText()
+  if not x  then x=eF.activePara.texture; self:SetText(x)
+  else 
+    eF.activePara.texture=x;
+    self.pTexture:SetTexture(x)
+  end
+  end)
+  --NYI: update without reload
+
+  cif.iconBlocker2=CreateFrame("Button",nil,cif)
+  local iB2=cif.iconBlocker2
+  iB2:SetFrameLevel(cif:GetFrameLevel()+3)
+  iB2:SetPoint("TOPLEFT",cif.icon.text,"TOPLEFT",-2,12)
+  iB2:SetHeight(50)
+  iB2:SetWidth(160)
+  iB2.texture=iB2:CreateTexture(nil,"OVERLAY")
+  iB2.texture:SetAllPoints()
+  iB2.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+
+
+
+  end --end of icon settings
+
+  --create CDwheel settings
+  do
+  cif.title4=cif:CreateFontString(nil,"OVERLAY")
+  local t=cif.title4
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("CD Wheel")
+  t:SetPoint("TOPLEFT",cif.title3,"TOPLEFT",225,0)
+
+  cif.title4Spacer=cif:CreateTexture(nil,"OVERLAY")
+  local tS=cif.title4Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createCB(cif,"cdWheel",cif)
+  cif.cdWheel.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  cif.cdWheel.text:SetText("Has CD wheel:")
+  cif.cdWheel:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.cdWheel=ch
+    if not ch then cif.iconBlocker3:Show() else cif.iconBlocker3:Hide() end
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end)
+
+
+  createCB(cif,"cdReverse",cif)
+  cif.cdReverse.text:SetPoint("RIGHT",cif.cdWheel.text,"RIGHT",0,-ySpacing)
+  cif.cdReverse.text:SetText("Reverse spin:")
+  cif.cdReverse:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.cdReverse=ch
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end)
+
+
+  cif.iconBlocker3=CreateFrame("Button",nil,cif)
+  local iB3=cif.iconBlocker3
+  iB3:SetFrameLevel(cif:GetFrameLevel()+3)
+  iB3:SetPoint("TOPLEFT",cif.cdReverse.text,"TOPLEFT",-2,12)
+  iB3:SetHeight(50)
+  iB3:SetWidth(200)
+  iB3.texture=iB3:CreateTexture(nil,"OVERLAY")
+  iB3.texture:SetAllPoints()
+  iB3.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+  end --end of CDwheel settings
+
+  --create border settings
+  do
+  cif.title5=cif:CreateFontString(nil,"OVERLAY")
+  local t=cif.title5
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Border")
+  t:SetPoint("TOPLEFT",cif.title4,"TOPLEFT",0,-80)
+
+  cif.title5Spacer=cif:CreateTexture(nil,"OVERLAY")
+  local tS=cif.title5Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createCB(cif,"hasBorder",cif)
+  cif.hasBorder.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  cif.hasBorder.text:SetText("Has Border:")
+  cif.hasBorder:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.hasBorder=ch
+    if not ch then cif.iconBlocker4:Show() else cif.iconBlocker4:Hide() end
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end)
+  --NYI not hiding border
+  
+  createDD(cif,"borderType",cif)
+  cif.borderType.text:SetPoint("RIGHT",cif.hasBorder.text,"RIGHT",0,-ySpacing)
+  cif.borderType.text:SetText("Border type:")
+  cif.borderType.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst={"debuffColor"}
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.borderType=v
+
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus() 
+       updateAllFramesFamilyParas(eF.activeFamilyIndex)
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+  UIDropDownMenu_SetWidth(cif.borderType,60)
+
+
+  cif.iconBlocker4=CreateFrame("Button",nil,cif)
+  local iB4=cif.iconBlocker4
+  iB4:SetFrameLevel(cif:GetFrameLevel()+3)
+  iB4:SetPoint("TOPLEFT",cif.borderType.text,"TOPLEFT",-2,12)
+  iB4:SetHeight(50)
+  iB4:SetWidth(200)
+  iB4.texture=iB4:CreateTexture(nil,"OVERLAY")
+  iB4.texture:SetAllPoints()
+  iB4.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+
+  end --end of border settings
+
+
 end --end of create child icon frame
-
 
 --create child bar frame
 do
@@ -1698,7 +2074,7 @@ cbf.text=cbf:CreateFontString(nil,"OVERLAY")
 cbf.text:SetPoint("CENTER")
 cbf.text:SetFont(titleFont,20,titleFontExtra)
 cbf.text:SetTextColor(0.9,0.9,0.9)
-cbf.text:SetText("child icon frame here")
+cbf.text:SetText("child bar frame here")
 end --end of create child bar frame
 
 
