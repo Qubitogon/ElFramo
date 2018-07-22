@@ -249,6 +249,8 @@ local function hideAllFamilyParas()
   local ff=eF.interface.familiesFrame
   ff.dumbFamilyFrame:Hide()
   ff.smartFamilyFrame:Hide()
+  ff.childIconFrame:Hide()
+  ff.childBarFrame:Hide()
 end
 
 local function showSmartFamilyPara()
@@ -260,6 +262,16 @@ end
 local function showDumbFamilyPara()
   local dff=eF.interface.familiesFrame.dumbFamilyFrame
   dff:Show()
+end
+
+local function showChildIconPara()
+  local cIF=eF.interface.familiesFrame.childIconFrame
+  cIF:Show()
+end
+
+local function showChildBarPara()
+  local cBF=eF.interface.familiesFrame.childBarFrame
+  cBF:Show()
 end
 
 local function createIP(self,name,tab) --icon picker
@@ -360,7 +372,8 @@ local function createFamily(self,n,pos)
   f.bg=f:CreateTexture(nil,"BACKGROUND")
   f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
   f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
-  f.bg:SetColorTexture(1,1,1,0.1)
+  f.bg:SetColorTexture(0.3,0.3,0.3,1)
+  f.bg:SetGradient("vertical",0.5,0.5,0.5,0.8,0.8,0.8)
   f:SetNormalTexture(f.bg)
   end
    
@@ -369,7 +382,8 @@ local function createFamily(self,n,pos)
   f.bg=f:CreateTexture(nil,"BACKGROUND")
   f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
   f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
-  f.bg:SetColorTexture(0.9,0.9,0.6,0.3)
+  f.bg:SetColorTexture(238/255,232/255,170/255)
+  f.bg:SetGradient("vertical",0.4,0.4,0.4,0.7,0.7,0.7)
   f:SetPushedTexture(f.bg)
   end
    
@@ -394,16 +408,15 @@ local function createFamily(self,n,pos)
       
 end
 
-
 local function createChild(self,j,k,pos)
 
   local para=eF.para.families[j][k]
-  if self.families[j][k] then self.families[j][k]=nil end
+  if self.families[j] then if self.families[j][k] then self.families[j][k]=nil end else self.families[j]={} end
   
   --button creation
   self.families[j][k]=CreateFrame("Button",nil,self)
   local f=self.families[j][k]
-  f:SetWidth(eF.interface.familiesFrame.famList:GetWidth()-25)
+  f:SetWidth((eF.interface.familiesFrame.famList:GetWidth()-25)*0.85)
   f:SetHeight(familyHeight)
   --f:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-(familyHeight+2)*(n-1))
   f:SetPoint("TOPRIGHT",self,"TOPRIGHT")
@@ -419,18 +432,17 @@ local function createChild(self,j,k,pos)
     eF.activePara=para
     eF.activeButton=self
     eF.activeFamilyIndex=self.familyIndex
-    if self.para.smart then showSmartFamilyPara() else showDumbFamilyPara() end
+    if self.para.type=="icon" then showChildIconPara() elseif self.para.type=="bar" then showChildBarPara() end
     self:Disable()
     end)
-  
-  
-  
+
   -- normal texture
   do
   f.bg=f:CreateTexture(nil,"BACKGROUND")
   f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
   f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
-  f.bg:SetColorTexture(1,1,1,0.1)
+  f.bg:SetColorTexture(0.3,0.3,0.3,1)
+  f.bg:SetGradient("vertical",0.5,0.5,0.5,0.8,0.8,0.8)
   f:SetNormalTexture(f.bg)
   end
    
@@ -439,7 +451,8 @@ local function createChild(self,j,k,pos)
   f.bg=f:CreateTexture(nil,"BACKGROUND")
   f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
   f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
-  f.bg:SetColorTexture(0.9,0.9,0.6,0.3)
+  f.bg:SetColorTexture(238/255,232/255,170/255)
+  f.bg:SetGradient("vertical",0.4,0.4,0.4,0.7,0.7,0.7)
   f:SetPushedTexture(f.bg)
   end
    
@@ -464,13 +477,15 @@ local function createChild(self,j,k,pos)
       
 end
 
-
 local function setFamilyPositions(self)
   --f:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-(familyHeight+2)*(n-1))
+  local h=0
   local lst=eF.familyButtonsList
   for i=1,#lst do
-    lst[i]:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-(familyHeight+2)*(i-1))
+    lst[i]:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-h)
+    h=h+lst[i]:GetHeight()+2
   end
+  self:SetHeight(h)
 
 end
 
@@ -1083,6 +1098,7 @@ fL.scrollChild=CreateFrame("Frame","eFFamScrollChild",fL)
 sc=fL.scrollChild
 fL:SetScrollChild(sc)
 sc.createFamily=createFamily
+sc.createChild=createChild
 sc.setFamilyPositions=setFamilyPositions
 sc:SetWidth(fL:GetWidth())
 sc:SetHeight(600)
@@ -1646,6 +1662,45 @@ dff.text:SetTextColor(0.9,0.9,0.9)
 dff.text:SetText("dumb Family stuff goes here")
 end --end of create dumb FF
 
+--create child icon frame
+do
+ff.childIconFrame=CreateFrame("Frame","eFDFF",ff)
+local cif=ff.childIconFrame
+cif:SetPoint("TOPLEFT",ff.famList.border,"TOPRIGHT",20,0)
+cif:SetPoint("BOTTOMRIGHT",ff.famList.border,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
+cif:SetBackdrop(bd)
+
+cif.bg=cif:CreateTexture(nil,"BACKGROUND")
+cif.bg:SetAllPoints()
+cif.bg:SetColorTexture(0,0,0,0.3)
+
+cif.text=cif:CreateFontString(nil,"OVERLAY")
+cif.text:SetPoint("CENTER")
+cif.text:SetFont(titleFont,20,titleFontExtra)
+cif.text:SetTextColor(0.9,0.9,0.9)
+cif.text:SetText("child icon frame here")
+end --end of create child icon frame
+
+
+--create child bar frame
+do
+ff.childBarFrame=CreateFrame("Frame","eFDFF",ff)
+local cbf=ff.childBarFrame
+cbf:SetPoint("TOPLEFT",ff.famList.border,"TOPRIGHT",20,0)
+cbf:SetPoint("BOTTOMRIGHT",ff.famList.border,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
+cbf:SetBackdrop(bd)
+
+cbf.bg=cbf:CreateTexture(nil,"BACKGROUND")
+cbf.bg:SetAllPoints()
+cbf.bg:SetColorTexture(0,0,0,0.3)
+
+cbf.text=cbf:CreateFontString(nil,"OVERLAY")
+cbf.text:SetPoint("CENTER")
+cbf.text:SetFont(titleFont,20,titleFontExtra)
+cbf.text:SetTextColor(0.9,0.9,0.9)
+cbf.text:SetText("child icon frame here")
+end --end of create child bar frame
+
 
 end--end of family frames
 
@@ -1703,6 +1758,14 @@ local function intSetInitValues()
   for i=2,#paraFam do
     sc:createFamily(i)
   end
+
+
+  for i=1,paraFam[1].count do
+    sc:createChild(1,i)
+  end
+
+
+
   sc:setFamilyPositions()
   
   hideAllFamilyParas()
