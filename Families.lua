@@ -15,11 +15,15 @@ local function initCreateFamilyFrames()
     frame.onPowerList={}
     frame.createFamily=eF.rep.createFamilyFrame
     frame.applyFamilyParas=eF.rep.applyFamilyParas
+    frame.applyChildParas=eF.rep.applyChildParas
     frame.updateFamilyLayout=eF.rep.updateFamilyLayout
     eF.units.familyCount=#frame.families
     for j=1,#frame.families do
       frame:createFamily(j)
-      frame:applyFamilyParas(j)
+      if eF.para.families[j].smart then frame:applyFamilyParas(j)
+      else
+        for k=1,eF.para.families[j].count do frame:applyChildParas(j,k) end
+      end
     end --end of for j=1,#frame.families
  
   end--end of for i=1,45
@@ -138,7 +142,6 @@ end
 eF.rep.smartFamilyUpdateTexts=smartFamilyUpdateTexts
 
 local function iconUpdateTextTypeT(self)
-  if not self.filled then return end
   local t=GetTime()
   local s
   local iDA=self.textIgnoreDurationAbove
@@ -364,7 +367,8 @@ local function createFamilyFrame(self,j)
     
       --give the OnUpdate function to the frame
       c.onUpdateFunc=eF.rep.frameOnUpdateFunction
-      c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction)
+      if #c.onUpdateList>0 then c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction) end
+      
     end --end for k=1,frame.families.count
        
               
@@ -405,7 +409,6 @@ local function applyFamilyParas(self,j)
       insert(f.onAuraList,{eF.rep.smartFamilyDisableAll,f})
     end
 
-
     if f.para.hasBorder and f.para.borderType=="debuffColor" then 
       insert(f.onPostAuraList,{eF.rep.smartFamilyDebuffTypeBorderColor,f})
     end
@@ -418,14 +421,27 @@ local function applyFamilyParas(self,j)
       insert(f.onPostAuraList,{eF.rep.smartFamilyUpdateCDWheels,f})
     end
    
-
     for k=1,f.para.count do
+      local xOS=0
+      local yOS=0
+      if f.para.grow=="down" then yOS=(1-k)*(f.para.spacing+f.para.height)
+      elseif f.para.grow=="up" then yOS=(k-1)*(f.para.spacing+f.para.height)
+      elseif f.para.grow=="right" then xOS=(k-1)*(f.para.spacing+f.para.width)
+      elseif f.para.grow=="left" then xOS=(1-k)*(f.para.spacing+f.para.width) end
       local c=f[k]
+      
+      c:SetWidth(f.para.width)
+      c:SetHeight(f.para.height)
+      c:ClearAllPoints()
+      c:SetPoint(f.para.anchor,self,f.para.anchorTo,xOS,yOS)
+      
       c.onUpdateList={}
       if f.para.hasTexture then
         c.texture:Show()
-        if f.para.hasTexture and (not f.para.texture or f.para.smartIcon) then c.smartIcon=true; c.updateTexture=eF.rep.iconApplySmartIcon
+        if (not f.para.texture or f.para.smartIcon) then c.smartIcon=true; c.updateTexture=eF.rep.iconApplySmartIcon
         else c.texture:SetTexture(f.para.texture) end
+      else
+        c.texture:Hide()
       end        
               
       if f.para.hasBorder then
@@ -434,27 +450,157 @@ local function applyFamilyParas(self,j)
           c.borderColor=eF.para.colors.debuff
         end
         c.border:Show()
+      else
+        c.border:Hide()
       end
               
 
       if f.para.cdWheel then
         if f.para.cdReverse then c.cdFrame:SetReverse(true) end
         c.cdFrame:Show()
+      else
+        c.cdFrame:Hide()
       end--end of if .cdwheel
               
       if f.para.hasText then
         local iDA=c.para.textIgnoreDurationAbove
         if iDA then c.textIgnoreDurationAbove=iDA end
-        if c.para.textType=="t" then insert(c.onUpdateList,eF.rep.iconUpdateTextTypeT) end 
+        local font=c.para.textFont or "Fonts\\FRIZQT__.ttf"
+        local size=c.para.textSize or 20
+        local xOS=c.para.textXOS or 0
+        local yOS=c.para.textYOS or 0
+        local r=c.para.textR
+        local g=c.para.textG
+        local b=c.para.textB
+        local a=c.para.textA
+        local extra=c.para.textExtra or "OUTLINE"
+        c.text:SetFont(font,size,extra)  
+        c.text:ClearAllPoints()
+        c.text:SetPoint(c.para.textAnchor,c,c.para.textAnchorTo,xOS,yOS)
+        c.text:SetTextColor(r,g,b,a)
+        if c.para.textType=="Time left" then insert(c.onUpdateList,eF.rep.iconUpdateTextTypeT) end
+        c.text:Show()
+      else
+        c.text:Hide()
       end--end of if frame.hasText
+      
+      if #c.onUpdateList>0 then c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction) end
       
     end --end for k=1,frame.families.count
   
   
   else --ELSE OF IF SMART
+    return 
   end --END OF IF SMART ELSE 
+
 end
 eF.rep.applyFamilyParas=applyFamilyParas
+
+local function applyChildParas(self,j,k)
+  local insert=table.insert
+  local c=self[j][k]
+  c.para=self.families[j][k]
+  
+
+  c.onAuraList={}
+  c.onPostAuraList={}
+  c.onBuffList={}
+  c.onDebuffList={}
+  c.onPowerList={}
+  c.onUpdateList={}
+
+  if c.para.type=="icon" then
+    
+    c:SetWidth(c.para.width)
+    c:SetHeight(c.para.height)
+    c:ClearAllPoints()
+    c:SetPoint(c.para.anchor,self,c.para.anchorTo,c.para.xPos,c.para.yPos)
+    
+    if c.para.trackType=="Buffs" then
+      insert(c.onAuraList,{eF.rep.iconFrameDisable,c})
+      if c.para.trackBy=="Name" then 
+        insert(c.onBuffList,{eF.rep.iconAdoptAuraByName,c})
+      end
+    end
+
+    if c.para.trackType=="Debuffs" then
+      insert(c.onAuraList,{eF.rep.iconFrameDisable,c})
+      if c.para.trackBy=="Name" then 
+        insert(c.onDebuffList,{eF.rep.iconAdoptAuraByName,c})
+      end
+    end
+        
+    if c.para.hasTexture then
+      c.texture:Show()
+      if c.para.texture then c.texture:SetTexture(c.para.texture)  
+      elseif c.para.hasColorTexture then 
+        local r=c.para.textureR or 0
+        local g=c.para.textureG or 0
+        local b=c.para.textureB or 0
+        local a=c.para.textureA or 1
+        c.texture:SetColorTexture(r,g,b,a)               
+      else c.smartIcon=true;  
+      end     
+      if (not c.para.texture or c.para.smartIcon) then
+        insert(c.onPostAuraList,{eF.rep.iconApplySmartIcon,c})
+      end
+    else
+      c.texture:Hide()
+    end
+
+    if c.para.hasBorder then
+      c.border:Show()
+      if c.para.borderType=="debuffColor" then 
+        insert(c.onPostAuraList,{eF.rep.updateBorderColorDebuffType,c})
+        c.borderColor=eF.para.colors.debuff
+        c.updateBorder=eF.rep.updateBorderColorDebuffType
+      end
+    else
+      c.border:Hide()
+    end
+    
+    if c.para.cdWheel then
+      c.cdFrame:Show()
+      if c.para.cdReverse then c.cdFrame:SetReverse(true) else c.cdFrame:SetReverse(false) end
+      insert(c.onPostAuraList,{eF.rep.iconUpdateCDWheel,c})
+    else
+      c.cdFrame:Hide()
+    end
+    
+    if c.para.hasText then
+      c.text:Show()
+      local font=c.para.textFont or "Fonts\\FRIZQT__.ttf"
+      local size=c.para.textSize or 20
+      local xOS=c.para.textXOS or 0
+      local yOS=c.para.textYOS or 0
+      local r=c.para.textR
+      local g=c.para.textG
+      local b=c.para.textB
+      local a=c.para.textA
+      local extra=c.para.textExtra or "OUTLINE"
+      c.text:SetFont(font,size,extra)  
+      c.text:ClearAllPoints()
+      c.text:SetPoint(c.para.textAnchor,c,c.para.textAnchorTo,xOS,yOS)
+      c.text:SetTextColor(r,g,b,a)
+      if c.para.textType=="Time left" then
+        insert(c.onUpdateList,eF.rep.iconUpdateTextTypeT)
+      end
+    else
+      c.text:Hide()
+    end--end of if frame.hasText
+    
+    --give the OnUdpate function to the frame
+    c.onUpdateFunc=eF.rep.frameOnUpdateFunction
+    if #c.onUpdateList>0 then
+      c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction)
+    end
+
+  elseif c.para.type=="bar" then
+ 
+  end
+
+end
+eF.rep.applyChildParas=applyChildParas
 
 local function updateFamilyLayout(self,j)
   local f=self[j]
@@ -485,7 +631,8 @@ eF.rep.updateFamilyLayout=updateFamilyLayout
 
 function createFamilyChild(self,k)
   local insert=table.insert
-
+  
+  
   if self.para[k].type=="icon" then
     if self[k] then self[k]=nil end
     self[k]=CreateFrame("Frame",nil,self)
@@ -495,12 +642,11 @@ function createFamilyChild(self,k)
     c:SetSize(c.para.width,c.para.height)
     c:SetFrameLevel(c.para.frameLevel+self:GetFrameLevel())
 
-         
     c.disable=eF.rep.iconFrameDisable
     c.enable=eF.rep.iconFrameEnable
     c:disable()
           
-          -----------LOADING STUFF
+    -----------LOADING STUFF
     c.checkLoad=eF.rep.checkLoad
     c.loaded=false
     c.onAuraList={}
@@ -525,10 +671,6 @@ function createFamilyChild(self,k)
       end
     end
 
-    if c.para.hasText and c.para.textType=="t" then
-      insert(c.onUpdateList,eF.rep.iconUpdateTextTypeT)
-    end
-        
     if c.para.hasTexture and (not c.para.texture or c.para.smartIcon) and not c.para.hasColorTexture then
       insert(c.onPostAuraList,{eF.rep.iconApplySmartIcon,c})
     end
@@ -543,56 +685,50 @@ function createFamilyChild(self,k)
         
           
     -------------VISUAL STUFF
-    if c.para.hasTexture then 
-      c.texture=c:CreateTexture()
-      c.texture:SetDrawLayer("BACKGROUND",-2)
-      c.texture:SetAllPoints()
-          
-      if c.para.texture then c.texture:SetTexture(c.para.texture)  --if c.para.texture
-      elseif c.para.hasColorTexture then 
-        local r=c.para.textureR or 0
-        local g=c.para.textureG or 0
-        local b=c.para.textureB or 0
-        local a=c.para.textureA or 1
-        c.texture:SetColorTexture(r,g,b,a)               
-      else c.smartIcon=true;  
-      end                         
-    end
+    c.texture=c:CreateTexture()
+    c.texture:SetDrawLayer("BACKGROUND",-2)
+    c.texture:SetAllPoints()
+        
+    if c.para.texture then c.texture:SetTexture(c.para.texture)  --if c.para.texture
+    elseif c.para.hasColorTexture then 
+      local r=c.para.textureR or 0
+      local g=c.para.textureG or 0
+      local b=c.para.textureB or 0
+      local a=c.para.textureA or 1
+      c.texture:SetColorTexture(r,g,b,a)               
+    else c.smartIcon=true;  
+    end     
+    c.texture:Hide()                    
                
-    if c.para.hasBorder then
-      c.border=c:CreateTexture(nil,'OVERLAY')
-      c.border:SetTexture([[Interface\Buttons\UI-Debuff-Overlays]])
-      c.border:SetAllPoints()                     
-      c.border:SetTexCoord(.296875, .5703125, 0, .515625)
-      if c.para.borderType=="debuffColor" then
+    c.border=c:CreateTexture(nil,'OVERLAY')
+    c.border:SetTexture([[Interface\Buttons\UI-Debuff-Overlays]])
+    c.border:SetAllPoints()                     
+    c.border:SetTexCoord(.296875, .5703125, 0, .515625)
+    if c.para.borderType=="debuffColor" then
         c.updateBorder=eF.rep.updateBorderColorDebuffType
         c.borderColor=eF.para.colors.debuff
       end            
-    end
         
-    if c.para.cdWheel then
-      c.cdFrame=CreateFrame("Cooldown",nil,c,"CooldownFrameTemplate")
-      if c.para.cdReverse then c.cdFrame:SetReverse(true) end
-      c.cdFrame:SetAllPoints()
-      c.cdFrame:SetFrameLevel( c:GetFrameLevel())
-    end--end of if .cdwheel
+    c.cdFrame=CreateFrame("Cooldown",nil,c,"CooldownFrameTemplate")
+    if c.para.cdReverse then c.cdFrame:SetReverse(true) end
+    c.cdFrame:SetAllPoints()
+    c.cdFrame:SetFrameLevel( c:GetFrameLevel())
     
     --text
-    if c.para.hasText then
-      c.text=c:CreateFontString()
-      local font=c.para.textFont or "Fonts\\FRIZQT__.ttf"
-      local size=c.para.textSize or 20
-      local xOS=c.para.textXOS or 0
-      local yOS=c.para.textYOS or 0
-      local r=c.para.textR
-      local g=c.para.textG
-      local b=c.para.textB
-      local a=c.para.textA
-      local extra=c.para.textExtra or "OUTLINE"
-      c.text:SetFont(font,size,extra)    
-      c.text:SetPoint(c.para.textAnchor,c,c.para.textAnchorTo,xOS,yOS)
-      c.text:SetTextColor(r,g,b,a)
-    end--end of if frame.hasText
+    c.text=c:CreateFontString()
+    local font=c.para.textFont or "Fonts\\FRIZQT__.ttf"
+    local size=c.para.textSize or 20
+    local xOS=c.para.textXOS or 0
+    local yOS=c.para.textYOS or 0
+    local r=c.para.textR
+    local g=c.para.textG
+    local b=c.para.textB
+    local a=c.para.textA
+    local extra=c.para.textExtra or "OUTLINE"
+    c.text:SetFont(font,size,extra)    
+    c.text:SetPoint(c.para.textAnchor or "CENTER",c,c.para.textAnchorTo or "CENTER",xOS,yOS)
+    c.text:SetTextColor(r,g,b,a)
+      
   end --end of if type=="icon"
             
   if self.para[k].type=="bar" then
@@ -600,6 +736,7 @@ function createFamilyChild(self,k)
     self[k]=CreateFrame("StatusBar",nil,self.unitFrame,"TextStatusBar")
     local c=self[k]
     c.para=self.para[k]
+
     c:SetFrameLevel(c.para.frameLevel+self:GetFrameLevel())
 
     c.disable=eF.rep.iconFrameDisable
@@ -610,11 +747,12 @@ function createFamilyChild(self,k)
     c.checkLoad=eF.rep.checkLoad
     c.loaded=false
     c.onAuraList={}
+    c.onPostAuraList={}
     c.onBuffList={}
     c.onDebuffList={}
     c.onUpdateList={}
     c.onPowerList={}
-    c.onPostAuraList={}
+
     
     if c.para.loadAlways then c.loadAlways=true 
     else 
@@ -661,6 +799,7 @@ function createFamilyChild(self,k)
   end--end of if bar
   
   local c=self[k]
+  
   do  --loading conditions
   if c.para.loadAlways then c.loadAlways=true 
   else 
@@ -688,6 +827,25 @@ local function frameOnUpdateFunction(self)
   end
 end
 eF.rep.frameOnUpdateFunction=frameOnUpdateFunction
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

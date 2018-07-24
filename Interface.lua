@@ -18,6 +18,8 @@ local int,tb,hd1,hd1b1,hd1b2,hd1b3,gf,ff
 local ySpacing=25
 local initSpacing=15
 local familyHeight=30
+local ssub=string.sub
+
 eF.familyButtonsList={}
 
 local function ScrollFrame_OnMouseWheel(self,delta)
@@ -151,7 +153,7 @@ local function createListCB(self,name,tab)
   end)
   
   f.eb:HookScript("OnEnterPressed",function(self)
-    self:SetText(self:GetText()..'\n')
+    self:Insert('\n')
     if f:GetVerticalScrollRange()>0 then f:SetVerticalScroll(f:GetVerticalScroll() +13) end
   end)
   
@@ -181,6 +183,18 @@ local function updateAllFramesFamilyParas(j)
     if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
     frame:applyFamilyParas(j)
     frame:checkLoad()
+    frame:eventHandler("UNIT_AURA")
+  end--end of for i=1,45
+end
+
+local function updateAllFramesChildParas(j,k)
+  for i=1,45 do
+    local frame
+    if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
+    frame:applyChildParas(j,k)
+    frame:checkLoad()
+    frame:eventHandler("UNIT_AURA")
+
   end--end of for i=1,45
 end
 
@@ -248,15 +262,15 @@ end
 local function hideAllFamilyParas()
   local ff=eF.interface.familiesFrame
   ff.dumbFamilyFrame:Hide()
-  ff.smartFamilyFrame:Hide()
-  ff.childIconFrame:Hide()
+  ff.smartFamilyScrollFrame:Hide()
+  ff.childIconScrollFrame:Hide()
   ff.childBarFrame:Hide()
 end
 
 local function showSmartFamilyPara()
-  local sff=eF.interface.familiesFrame.smartFamilyFrame
-  sff:Show()
-  sff:setValues()
+  local ff=eF.interface.familiesFrame
+  ff.smartFamilyFrame:setValues()
+  ff.smartFamilyScrollFrame:Show()
 end
 
 local function showDumbFamilyPara()
@@ -265,8 +279,9 @@ local function showDumbFamilyPara()
 end
 
 local function showChildIconPara()
-  local cIF=eF.interface.familiesFrame.childIconFrame
-  cIF:Show()
+  local ff=eF.interface.familiesFrame
+  ff.childIconScrollFrame:Show()
+  ff.childIconFrame:setValues()
 end
 
 local function showChildBarPara()
@@ -336,6 +351,75 @@ local function createCS(self,name,tab)
   
   cp:SetPoint("LEFT",tx,"RIGHT",8,1)
 end
+
+local function intSetInitValues()
+  local int=eF.interface
+  local gF=int.generalFrame
+  local fD=gF.frameDim
+  local para=eF.para
+  local units=para.units
+  local layout=para.layout
+  local ff=int.familiesFrame
+  local fL=ff.famList
+  local sc=ff.famList.scrollChild
+  local paraFam=eF.para.families
+  --eF.interface.familiesFrame.famList.scrollChild.families
+  
+  --general frame
+  do
+  fD.ebHeight:SetText(units.height)
+  fD.ebWidth:SetText(units.width)
+  UIDropDownMenu_SetSelectedName(fD.hDir,units.healthGrow)
+  UIDropDownMenu_SetText(fD.hDir,units.healthGrow)
+  fD.gradStart:SetText( eF.toDecimal(units.hpGrad1R,2) or "nd")
+  fD.gradFinal:SetText( eF.toDecimal(units.hpGrad2R,2) or "nd")
+  fD.nMax:SetText(units.textLim)
+  fD.nSize:SetText(units.textSize)
+  
+  fD.hClassColor:SetChecked(layout.byClassColor)
+  fD.hColor.blocked=layout.byClassColor
+  if layout.byClassColor then fD.hColor.blocker:Show() else fD.hColor.blocker:Hide() end
+  fD.hColor.thumb:SetVertexColor(units.hpR,units.hpG,units.hpB)
+  
+  fD.nClassColor:SetChecked(units.textColorByClass)
+  fD.nColor.blocked=units.textColorByClass
+  if units.textColorByClass then fD.nColor.blocker:Show() else fD.nColor.blocker:Hide() end
+  fD.nColor.thumb:SetVertexColor(units.textR,units.textG,units.textB)
+  
+  local font=ssub(units.textFont,7,-5)
+  UIDropDownMenu_SetSelectedName(fD.nFont,font)
+  UIDropDownMenu_SetText(fD.nFont,font)
+  
+  fD.nAlpha:SetText(eF.toDecimal(units.textA,2) or "nd")
+  UIDropDownMenu_SetSelectedName(fD.nPos,units.textPos)
+  UIDropDownMenu_SetText(fD.nPos,units.textPos)
+
+  fD.bColor.thumb:SetVertexColor(units.borderR,units.borderG,units.borderB)
+  fD.bWid:SetText(units.borderSize)
+  end
+  
+  --family frame
+  do 
+  
+  for i=2,#paraFam do
+    sc:createFamily(i)
+  end
+
+
+  for i=1,paraFam[1].count do
+    sc:createChild(1,i)
+  end
+
+
+
+  sc:setFamilyPositions()
+  
+  hideAllFamilyParas()
+  
+  end
+  
+end
+eF.rep.intSetInitValues=intSetInitValues
 
 local function createFamily(self,n,pos)
 
@@ -416,13 +500,14 @@ local function createChild(self,j,k,pos)
   --button creation
   self.families[j][k]=CreateFrame("Button",nil,self)
   local f=self.families[j][k]
-  f:SetWidth((eF.interface.familiesFrame.famList:GetWidth()-25)*0.85)
+  if j==1 then f:SetWidth((eF.interface.familiesFrame.famList:GetWidth()-25)) else f:SetWidth((eF.interface.familiesFrame.famList:GetWidth()-25)*0.85) end
   f:SetHeight(familyHeight)
   --f:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-(familyHeight+2)*(n-1))
   f:SetPoint("TOPRIGHT",self,"TOPRIGHT")
   f:SetBackdrop(bd2)
   f.para=para
-  f.familyIndex=n
+  f.familyIndex=j
+  f.childIndex=k
   
   if not pos then table.insert(eF.familyButtonsList,f) else table.insert(eF.familyButtonsList,pos,f) end
   
@@ -432,6 +517,7 @@ local function createChild(self,j,k,pos)
     eF.activePara=para
     eF.activeButton=self
     eF.activeFamilyIndex=self.familyIndex
+    eF.activeChildIndex=self.childIndex
     if self.para.type=="icon" then showChildIconPara() elseif self.para.type=="bar" then showChildBarPara() end
     self:Disable()
     end)
@@ -569,7 +655,122 @@ local function setSFFActiveValues(self)
   UIDropDownMenu_SetText(self.borderType,para.borderType)
   end --end of border
 
+  --text1
+  do
+  self.hasText1:SetChecked(para.hasText)
+  if not para.hasText then self.iconBlocker5:Show() else self.iconBlocker5:Hide() end
+  UIDropDownMenu_SetSelectedName(self.textType1,para.textType)
+  UIDropDownMenu_SetText(self.textType1,para.textType)
+  
+  self.textColor1.thumb:SetVertexColor(para.textR,para.textG,para.textB)
+  self.textDecimals1:SetText(para.textDecimals or 0)
+
+  self.fontSize1:SetText(para.textSize or 12)
+  self.textA1:SetText(para.textA or 1)
+  
+  local font=ssub(para.textFont or "Fonts\\FRIZQT__.ttf",7,-5)
+  UIDropDownMenu_SetSelectedName(self.textFont1,font)
+  UIDropDownMenu_SetText(self.textFont1,font)
+  
+  UIDropDownMenu_SetSelectedName(self.textAnchor1,para.textAnchor)
+  UIDropDownMenu_SetText(self.textAnchor1,para.textAnchor)
+  
+  self.textXOS1:SetText(para.textXOS or 0)
+  self.textYOS1:SetText(para.textYOS or 0)
+  
+  
+  end --end of text1
+  
 end --end of setSFFActiveValues func  
+
+local function setCIFActiveValues(self)
+  local para=eF.activePara
+
+  --general
+  do
+  self.name:SetText(para.displayName)
+  
+  UIDropDownMenu_SetSelectedName(self.trackType,para.trackType)
+  UIDropDownMenu_SetText(self.trackType,para.trackType)
+
+  if para.trackType=="Static" then self.iconBlocker6:Show() else self.iconBlocker6:Hide() end
+
+  
+  UIDropDownMenu_SetSelectedName(self.trackBy,para.trackBy)
+  UIDropDownMenu_SetText(self.trackBy,para.trackBy)
+  
+  if para.arg1 then self.spell:SetText(para.arg1) else self.spell:SetText("") end
+  
+  self.ownOnly:SetChecked(para.ownOnly)
+  
+  end
+
+  --layout
+  do 
+  self.width:SetText(para.width)
+  self.height:SetText(para.height)
+  self.xPos:SetText(para.xPos)
+  self.yPos:SetText(para.yPos)
+  UIDropDownMenu_SetSelectedName(self.anchor,para.anchor)
+  UIDropDownMenu_SetText(self.anchor,para.anchor)
+  
+  end
+  
+  --icon
+  do
+  self.iconCB:SetChecked(para.hasTexture)
+  if not para.hasTexture then self.iconBlocker1:Show(); self.iconBlocker2:Show() else self.iconBlocker1:Hide(); self.iconBlocker2:Hide() end
+
+  self.smartIcon:SetChecked(para.smartIcon)
+  if para.hasTexture then if para.smartIcon then self.iconBlocker2:Show() else self.iconBlocker2:Hide() end end
+  
+  if para.texture then self.icon:SetText(para.texture);self.icon.pTexture:SetTexture(para.texture) end
+  
+  
+  end
+
+  --cdWheel
+  do
+  self.cdWheel:SetChecked(para.cdWheel)
+  if not para.cdWheel then self.iconBlocker3:Show() else self.iconBlocker3:Hide() end
+  self.cdReverse:SetChecked(para.cdReverse)
+  end --end of cdWheel
+
+  --border
+  do
+  self.hasBorder:SetChecked(para.hasBorder)
+  if not para.hasBorder then self.iconBlocker4:Show() else self.iconBlocker4:Hide() end
+  UIDropDownMenu_SetSelectedName(self.borderType,para.borderType)
+  UIDropDownMenu_SetText(self.borderType,para.borderType)
+  end --end of border
+
+  --text1
+  do
+  self.hasText1:SetChecked(para.hasText)
+  if not para.hasText1 then self.iconBlocker5:Show() else self.iconBlocker5:Hide() end
+  UIDropDownMenu_SetSelectedName(self.textType1,para.textType)
+  UIDropDownMenu_SetText(self.textType1,para.textType)
+  
+  self.textColor1.thumb:SetVertexColor(para.textR,para.textG,para.textB)
+  self.textDecimals1:SetText(para.textDecimals or 0)
+
+  self.fontSize1:SetText(para.textSize or 12)
+  self.textA1:SetText(para.textA or 1)
+  
+  local font=ssub(para.textFont or "Fonts\\FRIZQT__.ttf",7,-5)
+  UIDropDownMenu_SetSelectedName(self.textFont1,font)
+  UIDropDownMenu_SetText(self.textFont1,font)
+  
+  UIDropDownMenu_SetSelectedName(self.textAnchor1,para.textAnchor)
+  UIDropDownMenu_SetText(self.textAnchor1,para.textAnchor)
+  
+  self.textXOS1:SetText(para.textXOS or 0)
+  self.textYOS1:SetText(para.textYOS or 0)
+  
+  
+  end --end of text1
+  
+end --end of setCIFActiveValues func 
 
 --create main frame
 do
@@ -914,8 +1115,6 @@ nCB.texture=nCB:CreateTexture(nil,"OVERLAY")
 nCB.texture:SetAllPoints()
 nCB.texture:SetColorTexture(0.1,0.1,0.1,0.5)
 
-
-
 createNumberEB(fD,"nMax",fD)
 fD.nMax.text:SetPoint("RIGHT",fD.nColor.text,"RIGHT",0,-ySpacing)
 fD.nMax.text:SetText("Characters:")
@@ -1108,18 +1307,44 @@ end
 
 --create smart Family Frame
 do
-  ff.smartFamilyFrame=CreateFrame("Frame","eFSFF",ff)
-  local sff=ff.smartFamilyFrame
-  sff:SetPoint("TOPLEFT",ff.famList.border,"TOPRIGHT",20,0)
-  sff:SetPoint("BOTTOMRIGHT",ff.famList.border,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
-  sff:SetBackdrop(bd)
-
-  sff.bg=sff:CreateTexture(nil,"BACKGROUND")
-  sff.bg:SetAllPoints()
-  sff.bg:SetColorTexture(0.07,0.07,0.07,1)
-
+  
+  local sff,sfsf
+  --create scroll frame + box etc
+  do
+  ff.smartFamilyScrollFrame=CreateFrame("ScrollFrame","eFSmartFamilyScrollFrame",ff,"UIPanelScrollFrameTemplate")
+  sfsf=ff.smartFamilyScrollFrame
+  sfsf:SetPoint("TOPLEFT",ff.famList,"TOPRIGHT",20,0)
+  sfsf:SetPoint("BOTTOMRIGHT",ff.famList,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
+  sfsf:SetClipsChildren(true)
+  sfsf:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)
+  
+  sfsf.border=CreateFrame("Frame",nil,ff)
+  sfsf.border:SetPoint("TOPLEFT",sfsf,"TOPLEFT",-5,5)
+  sfsf.border:SetPoint("BOTTOMRIGHT",sfsf,"BOTTOMRIGHT",5,-5)
+  sfsf.border:SetBackdrop(bd)
+  
+  ff.smartFamilyFrame=CreateFrame("Frame","eFsff",ff)
+  sff=ff.smartFamilyFrame
+  sff:SetPoint("TOP",sfsf,"TOP",0,-20)
+  sff:SetWidth(sfsf:GetWidth()*0.8)
+  sff:SetHeight(sfsf:GetHeight()*1.2)
+ 
+  sfsf.ScrollBar:ClearAllPoints()
+  sfsf.ScrollBar:SetPoint("TOPRIGHT",sfsf,"TOPRIGHT",-6,-18)
+  sfsf.ScrollBar:SetPoint("BOTTOMLEFT",sfsf,"BOTTOMRIGHT",-16,18)
+  sfsf.ScrollBar.bg=sfsf.ScrollBar:CreateTexture(nil,"BACKGROUND")
+  sfsf.ScrollBar.bg:SetAllPoints()
+  sfsf.ScrollBar.bg:SetColorTexture(0,0,0,0.5)
+  
+  sfsf:SetScrollChild(sff)
+  
+  sfsf.bg=sfsf:CreateTexture(nil,"BACKGROUND")
+  sfsf.bg:SetAllPoints()
+  sfsf.bg:SetColorTexture(0.07,0.07,0.07,1)
 
   sff.setValues=setSFFActiveValues
+  end --end of scroll frame + box etc
+
 
   --create general settings stuff
   do
@@ -1185,7 +1410,7 @@ do
      local v=lst[i]
      info.text, info.checked, info.arg1 = v,false,v
      info.func=function(self,arg1,arg2,checked)
-       eF.activePara.trackType=rv
+       eF.activePara.trackType=v
        UIDropDownMenu_SetText(frame,v)
        UIDropDownMenu_SetSelectedName(frame,v)
        CloseDropDownMenus()
@@ -1204,6 +1429,7 @@ do
     local ch=self:GetChecked()
     self:SetChecked(ch)
     eF.activePara.ignorePermanents=ch
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end)
 
   createNumberEB(sff,"ignoreDurationAbove",sff)
@@ -1216,6 +1442,7 @@ do
   if not count or count=="nil" or count=="" then eF.activePara.ignoreDurationAbove=nil; self:SetText("nil")
   else 
     eF.activePara.ignoreDurationAbove=tonumber(count);
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end
   end)
 
@@ -1226,6 +1453,7 @@ do
     local ch=self:GetChecked()
     self:SetChecked(ch)
     eF.activePara.ownOnly=ch
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end)
   
   end--end of general settings
@@ -1522,6 +1750,7 @@ do
     if antiCrash>500 then break end
   end
   eF.activePara.arg1=rtbl
+  updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end) 
 
 
@@ -1640,6 +1869,192 @@ do
 
   end --end of border settings
 
+  --create text1 settings
+  do
+  sff.title8=sff:CreateFontString(nil,"OVERLAY")
+  local t=sff.title8
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Text 1")
+  t:SetPoint("TOPLEFT",sff.title5,"TOPLEFT",0,-200)
+
+  sff.title8Spacer=sff:CreateTexture(nil,"OVERLAY")
+  local tS=sff.title8Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createCB(sff,"hasText1",sff)
+  sff.hasText1.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  sff.hasText1.text:SetText("Text 1:")
+  sff.hasText1:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.hasText=ch
+    if not ch then sff.iconBlocker5:Show() else sff.iconBlocker5:Hide() end
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end)
+  --NYI not hiding border
+  
+  createDD(sff,"textType1",sff)
+  sff.textType1.text:SetPoint("RIGHT",sff.hasText1.text,"RIGHT",0,-ySpacing)
+  sff.textType1.text:SetText("Text type:")
+  sff.textType1.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst={"Time left"}
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.textType=v
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus() 
+       updateAllFramesFamilyParas(eF.activeFamilyIndex)
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+  UIDropDownMenu_SetWidth(sff.textType1,60)
+
+  
+  createCS(sff,"textColor1",sff)
+  sff.textColor1.text:SetPoint("RIGHT",sff.textType1.text,"RIGHT",0,-ySpacing)
+  sff.textColor1.text:SetText("Color:")
+  sff.textColor1.getOldRGBA=function(self)
+    local r=eF.activePara.textR
+    local g=eF.activePara.textG
+    local b=eF.activePara.textB
+    return r,g,b
+  end
+
+  sff.textColor1.opacityFunc=function()
+    local r,g,b=ColorPickerFrame:GetColorRGB()
+    local a=OpacitySliderFrame:GetValue()
+    sff.textColor1.thumb:SetVertexColor(r,g,b)
+    eF.activePara.textR=r
+    eF.activePara.textG=g
+    eF.activePara.textB=b
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end
+
+
+  createNumberEB(sff,"textDecimals1",sff)
+  sff.textDecimals1.text:SetPoint("RIGHT",sff.textColor1.text,"RIGHT",0,-ySpacing)
+  sff.textDecimals1.text:SetText("Decimals:")
+  sff.textDecimals1:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  n=self:GetNumber()
+  if not n then n=eF.activePara.textDecimals; self:SetText(n)
+  else eF.activePara.textDecimals=n end
+  end)
+
+  createNumberEB(sff,"fontSize1",sff)
+  sff.fontSize1.text:SetPoint("RIGHT",sff.textDecimals1.text,"RIGHT",0,-ySpacing)
+  sff.fontSize1.text:SetText("Font size:")
+  sff.fontSize1:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  n=self:GetNumber()
+  if n==0 then n=eF.activePara.textSize; self:SetText(n)
+  else eF.activePara.textSize=n; updateAllFramesFamilyParas(eF.activeFamilyIndex) end
+  end)
+
+
+  createNumberEB(sff,"textA1",sff)
+  sff.textA1.text:SetPoint("RIGHT",sff.fontSize1.text,"RIGHT",0,-ySpacing)
+  sff.textA1.text:SetText("Alpha:")
+  sff.textA1:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  a=self:GetNumber()
+  eF.activePara.textA=a
+  updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end)
+
+
+  createDD(sff,"textFont1",sff)
+  sff.textFont1.text:SetPoint("RIGHT",sff.textA1.text,"RIGHT",0,-ySpacing)
+  sff.textFont1.text:SetText("Font:")
+  sff.textFont1.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   for i=1,#eF.fonts do
+     local v=eF.fonts[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.textFont="Fonts\\"..arg1..".ttf"
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+       updateAllFramesFamilyParas(eF.activeFamilyIndex)
+     end
+     
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+
+  createDD(sff,"textAnchor1",sff)
+  sff.textAnchor1.text:SetPoint("RIGHT",sff.textFont1.text,"RIGHT",0,-ySpacing)
+  sff.textAnchor1.text:SetText("Position:")
+  sff.textAnchor1.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   for i=1,#eF.positions do
+     local v=eF.positions[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.textAnchor=arg1
+       eF.activePara.textAnchorTo=arg1
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+       updateAllFramesFamilyParas(eF.activeFamilyIndex)
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+
+  
+  createNumberEB(sff,"textXOS1",sff)
+  sff.textXOS1.text:SetPoint("RIGHT",sff.textAnchor1.text,"RIGHT",0,-ySpacing)
+  sff.textXOS1.text:SetText("X Offset:")
+  sff.textXOS1:SetWidth(30)
+  sff.textXOS1:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  x=self:GetText()
+  x=tonumber(x)
+  if not x then x=eF.activePara.textXOS; self:SetText(x); 
+  else 
+    eF.activePara.textXOS=x;
+  end
+  updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end)
+
+  createNumberEB(sff,"textYOS1",sff)
+  sff.textYOS1.text:SetPoint("RIGHT",sff.textXOS1.text,"RIGHT",0,-ySpacing)
+  sff.textYOS1.text:SetText("Y Offset:")
+  sff.textYOS1:SetWidth(30)
+  sff.textYOS1:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  x=self:GetText()
+  x=tonumber(x)
+  if not x  then x=eF.activePara.textYOS; self:SetText(x)
+  else 
+    eF.activePara.textYOS=x;
+  end
+  updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end)
+
+  
+  sff.iconBlocker5=CreateFrame("Button",nil,sff)
+  local iB5=sff.iconBlocker5
+  iB5:SetFrameLevel(sff:GetFrameLevel()+3)
+  iB5:SetPoint("TOPLEFT",sff.textType1.text,"TOPLEFT",-2,12)
+  iB5:SetPoint("BOTTOMRIGHT",sff.textYOS1,"BOTTOMRIGHT",58,-3)
+  iB5:SetWidth(200)
+  iB5.texture=iB5:CreateTexture(nil,"OVERLAY")
+  iB5.texture:SetAllPoints()
+  iB5.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+
+  end --end of text settings
   
 end --end of create smart FF
 
@@ -1664,19 +2079,44 @@ end --end of create dumb FF
 
 --create child icon frame
 do
-
-  ff.childIconFrame=CreateFrame("Frame","eFcif",ff)
-  local cif=ff.childIconFrame
-  cif:SetPoint("TOPLEFT",ff.famList.border,"TOPRIGHT",20,0)
-  cif:SetPoint("BOTTOMRIGHT",ff.famList.border,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
-  cif:SetBackdrop(bd)
   
-  cif.bg=cif:CreateTexture(nil,"BACKGROUND")
-  cif.bg:SetAllPoints()
-  cif.bg:SetColorTexture(0.07,0.07,0.07,1)
+  local cisf,cif
+  --create scroll frame + box etc
+  do
+  ff.childIconScrollFrame=CreateFrame("ScrollFrame","eFChildIconScrollFrame",ff,"UIPanelScrollFrameTemplate")
+  cisf=ff.childIconScrollFrame
+  cisf:SetPoint("TOPLEFT",ff.famList,"TOPRIGHT",20,0)
+  cisf:SetPoint("BOTTOMRIGHT",ff.famList,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
+  cisf:SetClipsChildren(true)
+  cisf:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)
+  
+  cisf.border=CreateFrame("Frame",nil,ff)
+  cisf.border:SetPoint("TOPLEFT",cisf,"TOPLEFT",-5,5)
+  cisf.border:SetPoint("BOTTOMRIGHT",cisf,"BOTTOMRIGHT",5,-5)
+  cisf.border:SetBackdrop(bd)
+  
+  ff.childIconFrame=CreateFrame("Frame","eFcif",ff)
+  cif=ff.childIconFrame
+  cif:SetPoint("TOP",cisf,"TOP",0,-20)
+  cif:SetWidth(cisf:GetWidth()*0.8)
+  cif:SetHeight(cisf:GetHeight()*1.2)
+ 
+  cisf.ScrollBar:ClearAllPoints()
+  cisf.ScrollBar:SetPoint("TOPRIGHT",cisf,"TOPRIGHT",-6,-18)
+  cisf.ScrollBar:SetPoint("BOTTOMLEFT",cisf,"BOTTOMRIGHT",-16,18)
+  cisf.ScrollBar.bg=cisf.ScrollBar:CreateTexture(nil,"BACKGROUND")
+  cisf.ScrollBar.bg:SetAllPoints()
+  cisf.ScrollBar.bg:SetColorTexture(0,0,0,0.5)
+  
+  cisf:SetScrollChild(cif)
+  
+  cisf.bg=cisf:CreateTexture(nil,"BACKGROUND")
+  cisf.bg:SetAllPoints()
+  cisf.bg:SetColorTexture(0.07,0.07,0.07,1)
 
   cif.setValues=setCIFActiveValues
-
+  end --end of scroll frame + box etc
+  
   --create general settings stuff
   do
   cif.title1=cif:CreateFontString(nil,"OVERLAY")
@@ -1712,17 +2152,17 @@ do
   cif.trackType.text:SetText("Tracks:")
   cif.trackType.initialize=function(frame,level,menuList)
    local info = UIDropDownMenu_CreateInfo()
-   local lst={"Buffs","Debuffs"}
+   local lst={"Buffs","Debuffs","Static"}
    for i=1,#lst do
      local v=lst[i]
      info.text, info.checked, info.arg1 = v,false,v
      info.func=function(self,arg1,arg2,checked)
-       eF.activePara.trackType=rv
+       eF.activePara.trackType=v
        UIDropDownMenu_SetText(frame,v)
        UIDropDownMenu_SetSelectedName(frame,v)
        CloseDropDownMenus()
-       updateAllFramesFamilyParas(eF.activeFamilyIndex)
-
+       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+       if v=="Static" then cif.iconBlocker6:Show() else cif.iconBlocker6:Hide() end
      end
      UIDropDownMenu_AddButton(info)
    end
@@ -1739,11 +2179,11 @@ do
      local v=lst[i]
      info.text, info.checked, info.arg1 = v,false,v
      info.func=function(self,arg1,arg2,checked)
-       eF.activePara.trackBy=rv
+       eF.activePara.trackBy=v
        UIDropDownMenu_SetText(frame,v)
        UIDropDownMenu_SetSelectedName(frame,v)
        CloseDropDownMenus()
-       updateAllFramesFamilyParas(eF.activeFamilyIndex)
+       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
 
      end
      UIDropDownMenu_AddButton(info)
@@ -1751,14 +2191,40 @@ do
   end
   UIDropDownMenu_SetWidth(cif.trackType,80)
 
+
+  
+  createNumberEB(cif,"spell",cif)
+  cif.spell.text:SetPoint("RIGHT",cif.trackBy.text,"RIGHT",0,-ySpacing)
+  cif.spell.text:SetText("Spell:")
+  cif.spell:SetWidth(80)
+  cif.spell:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  spell=self:GetText()
+  if not spell or spell=="" then spell=eF.activePara.arg1; self:SetText(spell)
+  else 
+    eF.activePara.arg1=spell;
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end
+  end)
+
+  
   createCB(cif,"ownOnly",cif)
-  cif.ownOnly.text:SetPoint("RIGHT",cif.trackBy.text,"RIGHT",0,-ySpacing)
+  cif.ownOnly.text:SetPoint("RIGHT",cif.spell.text,"RIGHT",0,-ySpacing)
   cif.ownOnly.text:SetText("Own only:")
   cif.ownOnly:SetScript("OnClick",function(self)
     local ch=self:GetChecked()
     self:SetChecked(ch)
     eF.activePara.ownOnly=ch
   end)
+  
+  cif.iconBlocker6=CreateFrame("Button",nil,cif)
+  local iB1=cif.iconBlocker6
+  iB1:SetFrameLevel(cif:GetFrameLevel()+3)
+  iB1:SetPoint("TOPRIGHT",cif.trackBy,"TOPRIGHT",2,2)
+  iB1:SetPoint("BOTTOMLEFT",cif.ownOnly.text,"BOTTOMLEFT",-2,-2)
+  iB1.texture=iB1:CreateTexture(nil,"OVERLAY")
+  iB1.texture:SetAllPoints()
+  iB1.texture:SetColorTexture(0.07,0.07,0.07,0.4)
   
   end--end of general settings
 
@@ -1789,7 +2255,7 @@ do
   else 
     eF.activePara.width=w;
   end
-  updateAllFramesFamilyLayout(eF.activeFamilyIndex)
+  updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
 
   createNumberEB(cif,"height",cif)
@@ -1803,7 +2269,7 @@ do
   else 
     eF.activePara.height=h;
   end
-  updateAllFramesFamilyLayout(eF.activeFamilyIndex)
+  updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
   
   createNumberEB(cif,"xPos",cif)
@@ -1818,7 +2284,7 @@ do
   else 
     eF.activePara.xPos=x;
   end
-  updateAllFramesFamilyLayout(eF.activeFamilyIndex)
+  updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
 
   createNumberEB(cif,"yPos",cif)
@@ -1833,7 +2299,7 @@ do
   else 
     eF.activePara.yPos=x;
   end
-  updateAllFramesFamilyLayout(eF.activeFamilyIndex)
+  updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
 
   createDD(cif,"anchor",cif)
@@ -1851,7 +2317,7 @@ do
        UIDropDownMenu_SetText(frame,v)
        UIDropDownMenu_SetSelectedName(frame,v)
        CloseDropDownMenus() 
-       updateAllFramesFamilyLayout(eF.activeFamilyIndex)
+       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
      end
      UIDropDownMenu_AddButton(info)
    end
@@ -1886,7 +2352,7 @@ do
     if not ch then cif.iconBlocker1:Show();cif.iconBlocker2:Show() else cif.iconBlocker1:Hide();cif.iconBlocker2:Hide() end
     if eF.activePara.smartIcon then cif.iconBlocker2:Show() end
     eF.activePara.hasTexture=ch
-    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
 
 
@@ -1899,7 +2365,7 @@ do
     self:SetChecked(ch)
     eF.activePara.smartIcon=ch
     if ch then cif.iconBlocker2:Show() else cif.iconBlocker2:Hide() end
-    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
 
 
@@ -1925,6 +2391,7 @@ do
     eF.activePara.texture=x;
     self.pTexture:SetTexture(x)
   end
+  updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
   --NYI: update without reload
 
@@ -1933,7 +2400,7 @@ do
   iB2:SetFrameLevel(cif:GetFrameLevel()+3)
   iB2:SetPoint("TOPLEFT",cif.icon.text,"TOPLEFT",-2,12)
   iB2:SetHeight(50)
-  iB2:SetWidth(160)
+  iB2:SetWidth(175)
   iB2.texture=iB2:CreateTexture(nil,"OVERLAY")
   iB2.texture:SetAllPoints()
   iB2.texture:SetColorTexture(0.07,0.07,0.07,0.4)
@@ -1966,7 +2433,7 @@ do
     self:SetChecked(ch)
     eF.activePara.cdWheel=ch
     if not ch then cif.iconBlocker3:Show() else cif.iconBlocker3:Hide() end
-    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
 
 
@@ -1977,7 +2444,7 @@ do
     local ch=self:GetChecked()
     self:SetChecked(ch)
     eF.activePara.cdReverse=ch
-    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
 
 
@@ -2016,7 +2483,7 @@ do
     self:SetChecked(ch)
     eF.activePara.hasBorder=ch
     if not ch then cif.iconBlocker4:Show() else cif.iconBlocker4:Hide() end
-    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
   --NYI not hiding border
   
@@ -2035,7 +2502,7 @@ do
        UIDropDownMenu_SetText(frame,v)
        UIDropDownMenu_SetSelectedName(frame,v)
        CloseDropDownMenus() 
-       updateAllFramesFamilyParas(eF.activeFamilyIndex)
+       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
      end
      UIDropDownMenu_AddButton(info)
    end
@@ -2055,7 +2522,194 @@ do
 
   end --end of border settings
 
+  --create text1 settings
+  do
+  cif.title5=cif:CreateFontString(nil,"OVERLAY")
+  local t=cif.title5
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Text 1")
+  t:SetPoint("TOPLEFT",cif.title3,"TOPLEFT",0,-115)
 
+  cif.title5Spacer=cif:CreateTexture(nil,"OVERLAY")
+  local tS=cif.title5Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createCB(cif,"hasText1",cif)
+  cif.hasText1.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  cif.hasText1.text:SetText("Text 1:")
+  cif.hasText1:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.hasText=ch
+    if not ch then cif.iconBlocker5:Show() else cif.iconBlocker5:Hide() end
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end)
+  --NYI not hiding border
+  
+  createDD(cif,"textType1",cif)
+  cif.textType1.text:SetPoint("RIGHT",cif.hasText1.text,"RIGHT",0,-ySpacing)
+  cif.textType1.text:SetText("Text type:")
+  cif.textType1.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst={"Time left"}
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.textType=v
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus() 
+       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+  UIDropDownMenu_SetWidth(cif.textType1,60)
+
+  
+  createCS(cif,"textColor1",cif)
+  cif.textColor1.text:SetPoint("RIGHT",cif.textType1.text,"RIGHT",0,-ySpacing)
+  cif.textColor1.text:SetText("Color:")
+  cif.textColor1.getOldRGBA=function(self)
+    local r=eF.activePara.textR
+    local g=eF.activePara.textG
+    local b=eF.activePara.textB
+    return r,g,b
+  end
+
+  cif.textColor1.opacityFunc=function()
+    local r,g,b=ColorPickerFrame:GetColorRGB()
+    local a=OpacitySliderFrame:GetValue()
+    cif.textColor1.thumb:SetVertexColor(r,g,b)
+    eF.activePara.textR=r
+    eF.activePara.textG=g
+    eF.activePara.textB=b
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end
+
+
+  createNumberEB(cif,"textDecimals1",cif)
+  cif.textDecimals1.text:SetPoint("RIGHT",cif.textColor1.text,"RIGHT",0,-ySpacing)
+  cif.textDecimals1.text:SetText("Decimals:")
+  cif.textDecimals1:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  n=self:GetNumber()
+  if not n then n=eF.activePara.textDecimals; self:SetText(n)
+  else eF.activePara.textDecimals=n end
+  end)
+
+  createNumberEB(cif,"fontSize1",cif)
+  cif.fontSize1.text:SetPoint("RIGHT",cif.textDecimals1.text,"RIGHT",0,-ySpacing)
+  cif.fontSize1.text:SetText("Font size:")
+  cif.fontSize1:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  n=self:GetNumber()
+  if n==0 then n=eF.activePara.textSize; self:SetText(n)
+  else eF.activePara.textSize=n; updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex) end
+  end)
+
+
+  createNumberEB(cif,"textA1",cif)
+  cif.textA1.text:SetPoint("RIGHT",cif.fontSize1.text,"RIGHT",0,-ySpacing)
+  cif.textA1.text:SetText("Alpha:")
+  cif.textA1:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  a=self:GetNumber()
+  eF.activePara.textA=a
+  updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end)
+
+
+  createDD(cif,"textFont1",cif)
+  cif.textFont1.text:SetPoint("RIGHT",cif.textA1.text,"RIGHT",0,-ySpacing)
+  cif.textFont1.text:SetText("Font:")
+  cif.textFont1.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   for i=1,#eF.fonts do
+     local v=eF.fonts[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.textFont="Fonts\\"..arg1..".ttf"
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+     end
+     
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+
+  createDD(cif,"textAnchor1",cif)
+  cif.textAnchor1.text:SetPoint("RIGHT",cif.textFont1.text,"RIGHT",0,-ySpacing)
+  cif.textAnchor1.text:SetText("Position:")
+  cif.textAnchor1.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   for i=1,#eF.positions do
+     local v=eF.positions[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.textAnchor=arg1
+       eF.activePara.textAnchorTo=arg1
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+
+  
+  createNumberEB(cif,"textXOS1",cif)
+  cif.textXOS1.text:SetPoint("RIGHT",cif.textAnchor1.text,"RIGHT",0,-ySpacing)
+  cif.textXOS1.text:SetText("X Offset:")
+  cif.textXOS1:SetWidth(30)
+  cif.textXOS1:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  x=self:GetText()
+  x=tonumber(x)
+  if not x then x=eF.activePara.textXOS; self:SetText(x); 
+  else 
+    eF.activePara.textXOS=x;
+  end
+  updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end)
+
+  createNumberEB(cif,"textYOS1",cif)
+  cif.textYOS1.text:SetPoint("RIGHT",cif.textXOS1.text,"RIGHT",0,-ySpacing)
+  cif.textYOS1.text:SetText("Y Offset:")
+  cif.textYOS1:SetWidth(30)
+  cif.textYOS1:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  x=self:GetText()
+  x=tonumber(x)
+  if not x  then x=eF.activePara.textYOS; self:SetText(x)
+  else 
+    eF.activePara.textYOS=x;
+  end
+  updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end)
+
+  
+  cif.iconBlocker5=CreateFrame("Button",nil,cif)
+  local iB5=cif.iconBlocker5
+  iB5:SetFrameLevel(cif:GetFrameLevel()+3)
+  iB5:SetPoint("TOPLEFT",cif.textType1.text,"TOPLEFT",-2,12)
+  iB5:SetPoint("BOTTOMRIGHT",cif.textYOS1,"BOTTOMRIGHT",58,-3)
+  iB5:SetWidth(200)
+  iB5.texture=iB5:CreateTexture(nil,"OVERLAY")
+  iB5.texture:SetAllPoints()
+  iB5.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+
+  end --end of text settings
+
+  
 end --end of create child icon frame
 
 --create child bar frame
@@ -2079,77 +2733,6 @@ end --end of create child bar frame
 
 
 end--end of family frames
-
-
-local function intSetInitValues()
-  local int=eF.interface
-  local gF=int.generalFrame
-  local fD=gF.frameDim
-  local para=eF.para
-  local units=para.units
-  local layout=para.layout
-  local ssub=string.sub
-  local ff=int.familiesFrame
-  local fL=ff.famList
-  local sc=ff.famList.scrollChild
-  local paraFam=eF.para.families
-  --eF.interface.familiesFrame.famList.scrollChild.families
-  
-  --general frame
-  do
-  fD.ebHeight:SetText(units.height)
-  fD.ebWidth:SetText(units.width)
-  UIDropDownMenu_SetSelectedName(fD.hDir,units.healthGrow)
-  UIDropDownMenu_SetText(fD.hDir,units.healthGrow)
-  fD.gradStart:SetText( eF.toDecimal(units.hpGrad1R,2) or "nd")
-  fD.gradFinal:SetText( eF.toDecimal(units.hpGrad2R,2) or "nd")
-  fD.nMax:SetText(units.textLim)
-  fD.nSize:SetText(units.textSize)
-  
-  fD.hClassColor:SetChecked(layout.byClassColor)
-  fD.hColor.blocked=layout.byClassColor
-  if layout.byClassColor then fD.hColor.blocker:Show() else fD.hColor.blocker:Hide() end
-  fD.hColor.thumb:SetVertexColor(units.hpR,units.hpG,units.hpB)
-  
-  fD.nClassColor:SetChecked(units.textColorByClass)
-  fD.nColor.blocked=units.textColorByClass
-  if units.textColorByClass then fD.nColor.blocker:Show() else fD.nColor.blocker:Hide() end
-  fD.nColor.thumb:SetVertexColor(units.textR,units.textG,units.textB)
-  
-  local font=ssub(units.textFont,7,-5)
-  UIDropDownMenu_SetSelectedName(fD.nFont,font)
-  UIDropDownMenu_SetText(fD.nFont,font)
-  
-  fD.nAlpha:SetText(eF.toDecimal(units.textA,2) or "nd")
-  UIDropDownMenu_SetSelectedName(fD.nPos,units.textPos)
-  UIDropDownMenu_SetText(fD.nPos,units.textPos)
-
-  fD.bColor.thumb:SetVertexColor(units.borderR,units.borderG,units.borderB)
-  fD.bWid:SetText(units.borderSize)
-  end
-  
-  --family frame
-  do 
-  
-  for i=2,#paraFam do
-    sc:createFamily(i)
-  end
-
-
-  for i=1,paraFam[1].count do
-    sc:createChild(1,i)
-  end
-
-
-
-  sc:setFamilyPositions()
-  
-  hideAllFamilyParas()
-  
-  end
-  
-end
-eF.rep.intSetInitValues=intSetInitValues
 
 
 

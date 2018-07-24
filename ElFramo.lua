@@ -235,6 +235,7 @@ local function createUnitFrame(self,unit)
     self[unit].hp:SetPoint("TOPRIGHT"); self[unit].hp:SetPoint("BOTTOMRIGHT"); self[unit].hp:SetWidth(self.width); self[unit].hp:SetOrientation("HORIZONTAL"); self[unit].hp:SetReverseFill(true)
   end
   
+  
   if not eF.para.layout.byClassColor then
     local r,g,b,alpha=eF.para.units.hpR,eF.para.units.hpG,eF.para.units.hpB,eF.para.units.hpA
     self[unit].hp:SetStatusBarTexture(r,g,b,alpha)
@@ -450,12 +451,7 @@ local function unitLoad(self,ins,enc)
         for l=1,#onPower do
           insert(self.onPowerList,onPower[l])
         end
-        
-        --[[ onupdate revamt
-        for l=1,#onUpdate do
-          insert(self.onUpdateList,onUpdate[l])
-        end]]
-        
+
         for l=1,#onPostAura do
           insert(self.onPostAuraList,onPostAura[l])
         end
@@ -474,7 +470,7 @@ local function unitLoad(self,ins,enc)
             local onUpdate=self[j][k].onUpdateList
             local onPostAura=self[j][k].onPostAuraList
             
-            if self.static then self:enable() end
+            if self.Static then self:enable() end
             
             for l=1,#onAura do
               insert(self.onAuraList,onAura[l])
@@ -490,10 +486,6 @@ local function unitLoad(self,ins,enc)
             
             for l=1,#onPower do
               insert(self.onPowerList,onPower[l])
-            end
-            
-            for l=1,#onUpdate do
-              insert(self.onUpdateList,onUpdate[l])
             end
             
             for l=1,#onPostAura do
