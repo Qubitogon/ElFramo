@@ -19,6 +19,7 @@ local ySpacing=25
 local initSpacing=15
 local familyHeight=30
 local ssub=string.sub
+local plusTexture="Interface\\GuildBankFrame\\UI-GuildBankFrame-NewTab"
 
 eF.familyButtonsList={}
 
@@ -265,6 +266,7 @@ local function hideAllFamilyParas()
   ff.smartFamilyScrollFrame:Hide()
   ff.childIconScrollFrame:Hide()
   ff.childBarFrame:Hide()
+  ff.elementCreationScrollFrame:Hide()
 end
 
 local function showSmartFamilyPara()
@@ -431,7 +433,6 @@ local function createFamily(self,n,pos)
   local f=self.families[n]
   f:SetWidth(eF.interface.familiesFrame.famList:GetWidth()-25)
   f:SetHeight(familyHeight)
-  --f:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-(familyHeight+2)*(n-1))
   f:SetPoint("TOPRIGHT",self,"TOPRIGHT")
   f:SetBackdrop(bd2)
   f.para=para
@@ -2731,6 +2732,260 @@ cbf.text:SetTextColor(0.9,0.9,0.9)
 cbf.text:SetText("child bar frame here")
 end --end of create child bar frame
 
+--family + child creation
+do
+
+local ecf
+--Plus button and select screen
+do
+ff.elementCreationButton=CreateFrame("Button",nil,ff)
+local ecb=ff.elementCreationButton
+ecb:SetPoint("BOTTOMLEFT",sc,"TOPLEFT",0,5)
+ecb:SetSize(40,40)
+ecb:SetBackdrop(bd2)
+
+ecb.plus=ecb:CreateTexture(nil,"BACKGROUND")
+ecb.plus:SetAllPoints(true)
+ecb.plus:SetTexture(plusTexture)
+ecb:SetNormalTexture(ecb.plus)
+
+ecb.hl=ecb:CreateTexture(nil,"BACKGROUND")
+ecb.hl:SetPoint("TOPRIGHT",ecb,"TOPRIGHT",3,3)
+ecb.hl:SetPoint("BOTTOMLEFT",ecb,"BOTTOMLEFT",-3,-4)
+ecb.hl:SetTexture("Interface\\BUTTONS\\ButtonHilight-SquareQuickslot")
+ecb:SetHighlightTexture(ecb.hl)
+
+ecb.plus=ecb:CreateTexture(nil,"BACKGROUND")
+ecb.plus:SetAllPoints(true)
+ecb.plus:SetTexture(plusTexture)
+ecb.plus:SetVertexColor(0.5,0.5,0.5)
+ecb:SetPushedTexture(ecb.plus)
+
+
+ff.elementCreationScrollFrame=CreateFrame("ScrollFrame","eFelementCreationScrollFrame",ff,"UIPanelScrollFrameTemplate")
+local ecsf=ff.elementCreationScrollFrame
+ecsf:SetPoint("TOPLEFT",ff.famList,"TOPRIGHT",20,0)
+ecsf:SetPoint("BOTTOMRIGHT",ff.famList,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
+ecsf:SetClipsChildren(true)
+ecsf:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)
+
+ecsf.border=CreateFrame("Frame",nil,ff)
+ecsf.border:SetPoint("TOPLEFT",ecsf,"TOPLEFT",-5,5)
+ecsf.border:SetPoint("BOTTOMRIGHT",ecsf,"BOTTOMRIGHT",5,-5)
+ecsf.border:SetBackdrop(bd)
+
+ff.elementCreationFrame=CreateFrame("Frame","eFecf",ff)
+ecf=ff.elementCreationFrame
+
+ecf:SetPoint("TOP",ecsf,"TOP",0,-20)
+ecf:SetWidth(ecsf:GetWidth()*0.8)
+ecf:SetHeight(ecsf:GetHeight()*0.6)
+
+
+ecsf.ScrollBar:ClearAllPoints()
+ecsf.ScrollBar:SetPoint("TOPRIGHT",ecsf,"TOPRIGHT",-6,-18)
+ecsf.ScrollBar:SetPoint("BOTTOMLEFT",ecsf,"BOTTOMRIGHT",-16,18)
+ecsf.ScrollBar.bg=ecsf.ScrollBar:CreateTexture(nil,"BACKGROUND")
+ecsf.ScrollBar.bg:SetAllPoints()
+ecsf.ScrollBar.bg:SetColorTexture(0,0,0,0.5)
+
+ecsf:SetScrollChild(ecf)
+
+
+ecsf.bg=ecsf:CreateTexture(nil,"BACKGROUND")
+ecsf.bg:SetAllPoints()
+ecsf.bg:SetColorTexture(0.07,0.07,0.07,1)
+
+ecb:SetScript("OnClick",function() 
+  releaseAllFamilies()
+  hideAllFamilyParas()
+  ecsf:Show()
+end)
+
+
+end --end of plus button + select
+
+--Populate select screen (ecb)
+do
+local cwlb,cblb,cib,cbb
+
+--create whitelist button (cwlb)
+do
+ecf.createWhitelistButton=CreateFrame("Button",nil,ecf)
+cwlb=ecf.createWhitelistButton
+cwlb:SetPoint("TOPLEFT",ecf,"TOPLEFT",80,-40)
+cwlb:SetSize(150,80)
+
+cwlb.border=CreateFrame("Frame",nil,cwlb)
+cwlb.border:SetPoint("TOPRIGHT",cwlb,"TOPRIGHT",3,3)
+cwlb.border:SetPoint("BOTTOMLEFT",cwlb,"BOTTOMLEFT",-3,-3)
+cwlb.border:SetBackdrop(bd2)
+
+cwlb.nT=cwlb:CreateTexture(nil,"BACKGROUND")
+cwlb.nT:SetAllPoints(true)
+cwlb.nT:SetColorTexture(0.2,0.25,0.2,1)
+cwlb.nT:SetGradient("vertical",0.5,0.5,0.5,0.8,0.8,0.8)
+cwlb:SetNormalTexture(cwlb.nT)
+
+cwlb.hl=cwlb:CreateTexture(nil,"BACKGROUND")
+cwlb.hl:SetAllPoints(true)
+cwlb.hl:SetColorTexture(0.6,0.8,0.4)
+cwlb.hl:SetGradient("vertical",0.1,0.1,0.1,0.4,0.4,0.4)
+cwlb.hl:SetAlpha(0.4)
+cwlb:SetHighlightTexture(cwlb.hl)
+
+cwlb.pT=cwlb:CreateTexture(nil,"BACKGROUND")
+cwlb.pT:SetAllPoints(true)
+cwlb.pT:SetColorTexture(0.6,0.8,0.4)
+cwlb.pT:SetGradient("vertical",0.1,0.1,0.1,0.4,0.4,0.4)
+cwlb:SetPushedTexture(cwlb.pT)
+
+cwlb.text=cwlb:CreateFontString(nil,"OVERLAY")
+cwlb.text:SetFont("Fonts\\FRIZQT__.TTF",19,"OUTLINE")
+cwlb.text:SetText("Create Whitelist")
+cwlb.text:SetTextColor(1,1,1) 
+cwlb.text:SetPoint("CENTER")
+
+cwlb.descripton=cwlb:CreateFontString(nil,"OVERLAY")
+cwlb.descripton:SetFont("Fonts\\FRIZQT__.TTF",12,"OUTLINE")
+cwlb.descripton:SetText("")
+cwlb.descripton:SetPoint("TOP",cwlb,"BOTTOM",0,-8)
+end --end of create whitelist button
+
+--create blacklist button (cblb)
+do
+ecf.createBlacklistButton=CreateFrame("Button",nil,ecf)
+cblb=ecf.createBlacklistButton
+cblb:SetPoint("TOP",cwlb,"BOTTOM",0,-40)
+cblb:SetSize(150,80)
+
+cblb.border=CreateFrame("Frame",nil,cblb)
+cblb.border:SetPoint("TOPRIGHT",cblb,"TOPRIGHT",3,3)
+cblb.border:SetPoint("BOTTOMLEFT",cblb,"BOTTOMLEFT",-3,-3)
+cblb.border:SetBackdrop(bd2)
+
+cblb.nT=cblb:CreateTexture(nil,"BACKGROUND")
+cblb.nT:SetAllPoints(true)
+cblb.nT:SetColorTexture(0.2,0.25,0.2,1)
+cblb.nT:SetGradient("vertical",0.5,0.5,0.5,0.8,0.8,0.8)
+cblb:SetNormalTexture(cblb.nT)
+
+cblb.hl=cblb:CreateTexture(nil,"BACKGROUND")
+cblb.hl:SetAllPoints(true)
+cblb.hl:SetColorTexture(0.6,0.8,0.4)
+cblb.hl:SetGradient("vertical",0.1,0.1,0.1,0.4,0.4,0.4)
+cblb.hl:SetAlpha(0.4)
+cblb:SetHighlightTexture(cblb.hl)
+
+cblb.pT=cblb:CreateTexture(nil,"BACKGROUND")
+cblb.pT:SetAllPoints(true)
+cblb.pT:SetColorTexture(0.6,0.8,0.4)
+cblb.pT:SetGradient("vertical",0.1,0.1,0.1,0.4,0.4,0.4)
+cblb:SetPushedTexture(cblb.pT)
+
+cblb.text=cblb:CreateFontString(nil,"OVERLAY")
+cblb.text:SetFont("Fonts\\FRIZQT__.TTF",19,"OUTLINE")
+cblb.text:SetText("Create Blacklist")
+cblb.text:SetTextColor(1,1,1) 
+cblb.text:SetPoint("CENTER")
+
+cblb.descripton=cblb:CreateFontString(nil,"OVERLAY")
+cblb.descripton:SetFont("Fonts\\FRIZQT__.TTF",12,"OUTLINE")
+cblb.descripton:SetText("")
+cblb.descripton:SetPoint("TOP",cblb,"BOTTOM",0,-8)
+end --end of create blacklist button
+
+--create icon button (cib)
+do
+ecf.createIconButton=CreateFrame("Button",nil,ecf)
+cib=ecf.createIconButton
+cib:SetPoint("TOPRIGHT",ecf,"TOPRIGHT",0,-40)
+cib:SetSize(150,80)
+
+cib.border=CreateFrame("Frame",nil,cib)
+cib.border:SetPoint("TOPRIGHT",cib,"TOPRIGHT",3,3)
+cib.border:SetPoint("BOTTOMLEFT",cib,"BOTTOMLEFT",-3,-3)
+cib.border:SetBackdrop(bd2)
+
+cib.nT=cib:CreateTexture(nil,"BACKGROUND")
+cib.nT:SetAllPoints(true)
+cib.nT:SetColorTexture(0.28,0.2,0.2,1)
+cib.nT:SetGradient("vertical",0.5,0.5,0.5,0.8,0.8,0.8)
+cib:SetNormalTexture(cib.nT)
+
+cib.hl=cib:CreateTexture(nil,"BACKGROUND")
+cib.hl:SetAllPoints(true)
+cib.hl:SetColorTexture(0.8,0.4,0.4)
+cib.hl:SetGradient("vertical",0.1,0.1,0.1,0.4,0.4,0.4)
+cib.hl:SetAlpha(0.4)
+cib:SetHighlightTexture(cib.hl)
+
+cib.pT=cib:CreateTexture(nil,"BACKGROUND")
+cib.pT:SetAllPoints(true)
+cib.pT:SetColorTexture(0.8,0.4,0.4)
+cib.pT:SetGradient("vertical",0.1,0.1,0.1,0.4,0.4,0.4)
+cib:SetPushedTexture(cib.pT)
+
+cib.text=cib:CreateFontString(nil,"OVERLAY")
+cib.text:SetFont("Fonts\\FRIZQT__.TTF",19,"OUTLINE")
+cib.text:SetText("Create Icon")
+cib.text:SetTextColor(1,1,1) 
+cib.text:SetPoint("CENTER")
+
+cib.descripton=cib:CreateFontString(nil,"OVERLAY")
+cib.descripton:SetFont("Fonts\\FRIZQT__.TTF",12,"OUTLINE")
+cib.descripton:SetText("")
+cib.descripton:SetPoint("TOP",cib,"BOTTOM",0,-8)
+end --end of icon creation button 
+
+--create bar button (cbb)
+do
+ecf.createBarButton=CreateFrame("Button",nil,ecf)
+cbb=ecf.createBarButton
+cbb:SetPoint("TOP",cib,"BOTTOM",0,-40)
+cbb:SetSize(150,80)
+
+cbb.border=CreateFrame("Frame",nil,cbb)
+cbb.border:SetPoint("TOPRIGHT",cbb,"TOPRIGHT",3,3)
+cbb.border:SetPoint("BOTTOMLEFT",cbb,"BOTTOMLEFT",-3,-3)
+cbb.border:SetBackdrop(bd2)
+
+cbb.nT=cbb:CreateTexture(nil,"BACKGROUND")
+cbb.nT:SetAllPoints(true)
+cbb.nT:SetColorTexture(0.28,0.2,0.2,1)
+cbb.nT:SetGradient("vertical",0.5,0.5,0.5,0.8,0.8,0.8)
+cbb:SetNormalTexture(cbb.nT)
+
+cbb.hl=cbb:CreateTexture(nil,"BACKGROUND")
+cbb.hl:SetAllPoints(true)
+cbb.hl:SetColorTexture(0.8,0.4,0.4)
+cbb.hl:SetGradient("vertical",0.1,0.1,0.1,0.4,0.4,0.4)
+cbb.hl:SetAlpha(0.4)
+cbb:SetHighlightTexture(cbb.hl)
+
+cbb.pT=cbb:CreateTexture(nil,"BACKGROUND")
+cbb.pT:SetAllPoints(true)
+cbb.pT:SetColorTexture(0.8,0.4,0.4)
+cbb.pT:SetGradient("vertical",0.1,0.1,0.1,0.4,0.4,0.4)
+cbb:SetPushedTexture(cbb.pT)
+
+cbb.text=cbb:CreateFontString(nil,"OVERLAY")
+cbb.text:SetFont("Fonts\\FRIZQT__.TTF",19,"OUTLINE")
+cbb.text:SetText("Create Bar")
+cbb.text:SetTextColor(1,1,1) 
+cbb.text:SetPoint("CENTER")
+
+cbb.descripton=cbb:CreateFontString(nil,"OVERLAY")
+cbb.descripton:SetFont("Fonts\\FRIZQT__.TTF",12,"OUTLINE")
+cbb.descripton:SetText("")
+cbb.descripton:SetPoint("TOP",cbb,"BOTTOM",0,-8)
+end --end of create bar button
+
+
+
+end 
+
+end --end of creation
 
 end--end of family frames
 

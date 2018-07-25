@@ -340,13 +340,6 @@ local function unitsFrameOnUpdate(self,elapsed)
     local frame=self[tbl[i]]
     if frame.updateRange and self.num>1 then frame:updateRange() end   --if youre alone in the group it's fucked  
     
-    --[[
-    local c=frame.onUpdateList
-    for j=1,#c do
-      local v=c[j]
-      v[1](v[2])
-    end ]]
-    
   end--end of for i=1,self.num
 end
 eF.rep.unitsFrameOnUpdate=unitsFrameOnUpdate
