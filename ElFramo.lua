@@ -455,37 +455,37 @@ local function unitLoad(self,ins,enc)
     else --else of if selfj.smart
       local nk=self[j].para.count
       for k=1,nk do       
-          if self[j][k]:checkLoad(role,ins,enc,class) then
-            local onAura=self[j][k].onAuraList
-            local onBuff=self[j][k].onBuffList
-            local onDebuff=self[j][k].onDebuffList
-            local onPower=self[j][k].onPowerList
-            local onUpdate=self[j][k].onUpdateList
-            local onPostAura=self[j][k].onPostAuraList
-            
-            if self.Static then self:enable() end
-            
-            for l=1,#onAura do
-              insert(self.onAuraList,onAura[l])
-            end
-            
-            for l=1,#onBuff do
-              insert(self.onBuffList,onBuff[l])
-            end
-            
-            for l=1,#onDebuff do
-              insert(self.onDebuffList,onDebuff[l])
-            end
-            
-            for l=1,#onPower do
-              insert(self.onPowerList,onPower[l])
-            end
-            
-            for l=1,#onPostAura do
-              insert(self.onPostAuraList,onPostAura[l])
-            end
-                
-          end --end of if selfjk.checkLoad
+        if self[j][k]:checkLoad(role,ins,enc,class) then
+          local onAura=self[j][k].onAuraList
+          local onBuff=self[j][k].onBuffList
+          local onDebuff=self[j][k].onDebuffList
+          local onPower=self[j][k].onPowerList
+          local onUpdate=self[j][k].onUpdateList
+          local onPostAura=self[j][k].onPostAuraList
+          
+          if self.Static then self:enable() end
+          
+          for l=1,#onAura do
+            insert(self.onAuraList,onAura[l])
+          end
+          
+          for l=1,#onBuff do
+            insert(self.onBuffList,onBuff[l])
+          end
+          
+          for l=1,#onDebuff do
+            insert(self.onDebuffList,onDebuff[l])
+          end
+          
+          for l=1,#onPower do
+            insert(self.onPowerList,onPower[l])
+          end
+          
+          for l=1,#onPostAura do
+            insert(self.onPostAuraList,onPostAura[l])
+          end
+              
+        end --end of if selfjk.checkLoad
         
       end --end of for k=1,nk
       

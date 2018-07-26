@@ -19,12 +19,13 @@ local int,tb,hd1,hd1b1,hd1b2,hd1b3,gf,ff
 local ySpacing=25
 local initSpacing=15
 local familyHeight=30
-local ssub=string.sub
-local trem=table.remove
+local ssub,trem=string.sub,table.remove
 local plusTexture="Interface\\GuildBankFrame\\UI-GuildBankFrame-NewTab"
+local destroyTexture="Interface\\PaperDollInfoFrame\\UI-GearManager-LeaveItem-Opaque"
 
 eF.familyButtonsList={}
 eF.para.familyButtonsIndexList={}
+--  local sc=eF.interface.familiesFrame.famList.scrollChild
 
 local function ScrollFrame_OnMouseWheel(self,delta)
   local v=self:GetVerticalScroll() - (delta*familyHeight/2)
@@ -201,6 +202,190 @@ local function updateAllFramesChildParas(j,k)
     frame:eventHandler("UNIT_AURA")
 
   end--end of for i=1,45
+end
+
+local function exterminateOrphan(j,k)
+
+  local count=eF.para.families[j].count
+  eF.para.families[j].count=count-1
+
+  for i=1,45 do
+    local frame
+    if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
+    local c=frame[j][k]
+    c.onAuraList={}
+    c.onPostAuraList={}
+    c.onBuffList={}
+    c.onDebuffList={}
+    c.onPowerList={}
+    c.onUpdateList={}
+    c:Hide()
+    c=nil
+    
+    for i=k,count-1 do
+      frame[j][i]=nil
+      frame[j][i]=frame[j][i+1]      
+    end
+    frame[j][count]=nil
+    
+    frame:checkLoad()
+    frame:eventHandler("UNIT_AURA")
+  end--end of for i=1,45
+  
+  for i=k,count-1 do
+    eF.para.families[j][i]=nil
+    eF.para.families[j][i]=eF.para.families[j][i+1]
+  end
+
+  
+  local n=eF.posInFamilyButtonsList(j,k)
+  local bl=eF.familyButtonsList
+  local mmax=#bl
+  bl[n]:Hide()
+  
+  for m=n,mmax-1 do
+    bl[m]=nil
+    bl[m]=bl[m+1]
+  end
+  bl[mmax]=nil
+  
+  for m=1,#bl do
+    if bl[m].familyIndex==j and bl[m].childIndex>k then bl[m].childIndex=bl[m].childIndex-1 end
+  end
+  
+  local sc=eF.interface.familiesFrame.famList.scrollChild
+  sc:setFamilyPositions()
+  sc:updateFamilyButtonsIndexList()
+end
+
+local function exterminateSmartFamily(j)
+
+  local fc=#eF.para.families
+  local count=eF.para.families[j].count
+  for i=1,count do
+    eF.para.families[j][i]=nil
+  end
+  
+  for i=j,fc-1 do
+    eF.para.families[i]=nil
+    eF.para.families[i]=eF.para.families[i-1]
+  end
+  eF.para.families[fc]=nil
+  
+  for i=1,45 do
+    local frame
+    if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
+    local f=frame[j]
+    f.onAuraList={}
+    f.onPostAuraList={}
+    f.onBuffList={}
+    f.onDebuffList={}
+    f.onPowerList={}
+    f.onUpdateList={}
+    f:Hide()
+    f=nil
+    
+    for i=j,fc-1 do
+      frame[i]=nil
+      frame[i]=frame[i+1]      
+    end
+    frame[fc]=nil
+    
+    frame:checkLoad()
+    frame:eventHandler("UNIT_AURA")
+  end--end of for i=1,45
+  
+ 
+  
+  local n=eF.posInFamilyButtonsList(j)
+  local bl=eF.familyButtonsList
+  local mmax=#bl
+  bl[n]:Hide()
+  
+  for m=n,mmax-1 do
+    bl[m]=nil
+    bl[m]=bl[m+1]
+  end
+  bl[mmax]=nil
+  
+  for m=1,#bl do
+    if bl[m].familyIndex>j then bl[m].familyIndex=bl[m].familyIndex-1 end
+  end
+  
+  local sc=eF.interface.familiesFrame.famList.scrollChild
+  sc:setFamilyPositions()
+  sc:updateFamilyButtonsIndexList()
+end
+
+local function exterminateDumbFamily(j)
+ 
+  local fc=#eF.para.families
+  local count=eF.para.families[j].count
+  for i=1,count do
+    eF.para.families[j][i]=nil
+  end
+  
+  for i=j,fc-1 do
+    eF.para.families[i]=nil
+    eF.para.families[i]=eF.para.families[i-1]
+  end
+  eF.para.families[fc]=nil
+  
+  for i=1,45 do
+    local frame
+    if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
+    local f=frame[j]
+    f.onAuraList={}
+    f.onPostAuraList={}
+    f.onBuffList={}
+    f.onDebuffList={}
+    f.onPowerList={}
+    f.onUpdateList={}
+    f:Hide()
+
+    
+    for k=1,count do
+      local c=frame[j][k]
+      c.onAuraList={}
+      c.onPostAuraList={}
+      c.onBuffList={}
+      c.onDebuffList={}
+      c.onPowerList={}
+      c.onUpdateList={}
+      c:Hide()
+      c=nil
+    end
+        
+    for i=j,fc-1 do
+      frame[i]=nil
+      frame[i]=frame[i+1]      
+    end
+    frame[fc]=nil
+    f=nil
+    
+    frame:checkLoad()
+    frame:eventHandler("UNIT_AURA")
+  end--end of for i=1,45
+  
+  
+  local n=eF.posInFamilyButtonsList(j)
+  local bl=eF.familyButtonsList
+  local mmax=#bl
+  bl[n]:Hide()
+  
+  for m=n,mmax-1 do
+    bl[m]=nil
+    bl[m]=bl[m+1]
+  end
+  bl[mmax]=nil
+  
+  for m=1,#bl do
+    if bl[m].familyIndex>j then bl[m].familyIndex=bl[m].familyIndex-1 end
+  end
+  
+  local sc=eF.interface.familiesFrame.famList.scrollChild
+  sc:setFamilyPositions()
+  sc:updateFamilyButtonsIndexList()
 end
 
 local function updateAllFramesFamilyLayout(j)
@@ -561,6 +746,14 @@ local function createNewBlacklistParas(j)
      }
 end
 
+local function createNewGroupParas(j)
+  eF.para.families[j]={
+    displayName="New Group",
+    smart=false,
+    count=0,
+     }
+end
+
 local function createNewIconParas(j,k)
   eF.para.families[j][k]={
   displayName="New Icon",
@@ -663,6 +856,7 @@ local function createFamily(self,n,pos)
   f:SetBackdrop(bd2)
   f.para=para
   f.familyIndex=n
+  f.smart=true
   
   if not pos then table.insert(eF.familyButtonsList,f) else table.insert(eF.familyButtonsList,pos,f) end
   
@@ -779,6 +973,7 @@ local function createChild(self,j,k,pos)
   f.para=para
   f.familyIndex=j
   f.childIndex=k
+  if j>1 then f.collapsible=true; f.collapsed=true end
   
   if not pos then table.insert(eF.familyButtonsList,f)else table.insert(eF.familyButtonsList,pos,f) end
   
@@ -1745,6 +1940,7 @@ sc=fL.scrollChild
 fL:SetScrollChild(sc)
 sc.createFamily=createFamily
 sc.createChild=createChild
+sc.createGroup=createGroup
 sc.updateFamilyButtonsIndexList=updateFamilyButtonsIndexList
 sc.setFamilyPositions=setFamilyPositions
 sc:SetWidth(fL:GetWidth())
@@ -3209,6 +3405,44 @@ ecb.plus:SetVertexColor(0.5,0.5,0.5)
 ecb:SetPushedTexture(ecb.plus)
 
 
+ff.elementExterminationButton=CreateFrame("Button",nil,ff)
+local eeb=ff.elementExterminationButton
+eeb:SetPoint("BOTTOMRIGHT",fL,"TOPRIGHT",0,5)
+eeb:SetSize(40,40)
+eeb:SetBackdrop(bd2)
+
+eeb.plus=eeb:CreateTexture(nil,"BACKGROUND")
+eeb.plus:SetAllPoints(true)
+eeb.plus:SetTexture(destroyTexture)
+eeb:SetNormalTexture(eeb.plus)
+
+eeb.hl=eeb:CreateTexture(nil,"BACKGROUND")
+eeb.hl:SetPoint("TOPRIGHT",eeb,"TOPRIGHT",3,3)
+eeb.hl:SetPoint("BOTTOMLEFT",eeb,"BOTTOMLEFT",-3,-4)
+eeb.hl:SetTexture("Interface\\BUTTONS\\ButtonHilight-SquareQuickslot")
+eeb:SetHighlightTexture(eeb.hl)
+
+eeb.plus=eeb:CreateTexture(nil,"BACKGROUND")
+eeb.plus:SetAllPoints(true)
+eeb.plus:SetTexture(destroyTexture)
+eeb.plus:SetVertexColor(0.5,0.5,0.5)
+eeb:SetPushedTexture(eeb.plus)
+
+eeb.text=eeb:CreateFontString(nil,"OVERLAY")
+eeb.text:SetPoint("LEFT",eeb,"RIGHT",15,0)
+eeb.text:SetFont("Fonts\\FRIZQT__.TTF",15,"OUTLINE")
+--eeb.text:SetTextColor(titleFontColor)
+eeb.text:SetTextColor(1,1,1)
+
+eeb.confirmButton=CreateFrame("Button",nil,eeb,"UIPanelButtonTemplate")
+eeb.confirmButton:SetPoint("LEFT",eeb.text,"RIGHT",5,0)
+eeb.confirmButton:SetText("Yes")
+eeb.confirmButton:SetSize(40,20)
+eeb.confirmButton.deleteJ=nil
+eeb.confirmButton.deleteK=nil
+eeb.confirmButton.textPointer=eeb.text
+eeb.confirmButton:Hide()
+
 ff.elementCreationScrollFrame=CreateFrame("ScrollFrame","eFelementCreationScrollFrame",ff,"UIPanelScrollFrameTemplate")
 local ecsf=ff.elementCreationScrollFrame
 ecsf:SetPoint("TOPLEFT",ff.famList,"TOPRIGHT",20,0)
@@ -3249,12 +3483,34 @@ ecb:SetScript("OnClick",function()
   ecsf:Show()
 end)
 
+eeb:SetScript("OnClick",function(self)
+  self.confirmButton.deleteJ=eF.activeButton.familyIndex
+  self.confirmButton.deleteK=eF.activeButton.childIndex
+  local j,k=eF.activeButton.familyIndex,eF.activeButton.childIndex
+  local name
+  if k then name=eF.para.families[j][k].displayName else name=eF.para.families[j].displayName end
+  eeb.text:SetText('Are you sure you want to delete "'..name..'" ')
+  eeb.confirmButton:Show()
+end)
+
+eeb.confirmButton:SetScript("OnClick",function(self)
+  local j,k=self.deleteJ,self.deleteK
+  if (j==1) and k then exterminateOrphan(j,k)
+  elseif not k then
+    if eF.activeButton.smart then exterminateSmartFamily(j) else exterminateDumbFamily(j) end
+  end
+  releaseAllFamilies()
+  hideAllFamilyParas()
+  self.textPointer:SetText("")
+  self:Hide()
+end)
+
 
 end --end of plus button + select
 
 --Populate select screen (ecb)
 do
-local cwlb,cblb,cib,cbb
+local cwlb,cblb,cib,cbb,cgb
 
 --create whitelist button (cwlb)
 do
@@ -3359,6 +3615,61 @@ local j=#eF.para.families+1
 createNewBlacklistParas(j)
 createAllFamilyFrame(j)
 sc:createFamily(j)
+sc:setFamilyPositions()
+eF.familyButtonsList[#eF.familyButtonsList]:SetButtonState("PUSHED")
+eF.familyButtonsList[#eF.familyButtonsList]:Click()
+afterDo(0, function() fL:SetVerticalScroll(fL:GetVerticalScrollRange()) end)
+updateAllFramesFamilyLayout(j)
+end)
+end --end of create blacklist button
+
+--create group button (cgb)
+do
+ecf.createGroupButton=CreateFrame("Button",nil,ecf)
+cgb=ecf.createGroupButton
+cgb:SetPoint("TOP",cblb,"BOTTOM",0,-40)
+cgb:SetSize(150,80)
+
+cgb.border=CreateFrame("Frame",nil,cgb)
+cgb.border:SetPoint("TOPRIGHT",cgb,"TOPRIGHT",3,3)
+cgb.border:SetPoint("BOTTOMLEFT",cgb,"BOTTOMLEFT",-3,-3)
+cgb.border:SetBackdrop(bd2)
+
+cgb.nT=cgb:CreateTexture(nil,"BACKGROUND")
+cgb.nT:SetAllPoints(true)
+cgb.nT:SetColorTexture(0.15,0.22,0.4,1)
+cgb.nT:SetGradient("vertical",0.5,0.5,0.5,0.8,0.8,0.8)
+cgb:SetNormalTexture(cgb.nT)
+  
+cgb.hl=cgb:CreateTexture(nil,"BACKGROUND")
+cgb.hl:SetAllPoints(true)
+cgb.hl:SetColorTexture(0.32,0.51,0.8)
+cgb.hl:SetGradient("vertical",0.1,0.1,0.1,0.4,0.4,0.4)
+cgb.hl:SetAlpha(0.4)
+cgb:SetHighlightTexture(cgb.hl)
+
+cgb.pT=cgb:CreateTexture(nil,"BACKGROUND")
+cgb.pT:SetAllPoints(true)
+cgb.pT:SetColorTexture(0.32,0.51,0.8)
+cgb.pT:SetGradient("vertical",0.1,0.1,0.1,0.4,0.4,0.4)
+cgb:SetPushedTexture(cgb.pT)
+
+cgb.text=cgb:CreateFontString(nil,"OVERLAY")
+cgb.text:SetFont("Fonts\\FRIZQT__.TTF",19,"OUTLINE")
+cgb.text:SetText("Create Group")
+cgb.text:SetTextColor(1,1,1) 
+cgb.text:SetPoint("CENTER")
+
+cgb.descripton=cgb:CreateFontString(nil,"OVERLAY")
+cgb.descripton:SetFont("Fonts\\FRIZQT__.TTF",12,"OUTLINE")
+cgb.descripton:SetText("")
+cgb.descripton:SetPoint("TOP",cgb,"BOTTOM",0,-8)
+
+cgb:SetScript("OnClick",function()
+local j=#eF.para.families+1
+createNewGroupParas(j)
+createAllFamilyFrame(j)
+sc:createGroup(j)
 sc:setFamilyPositions()
 eF.familyButtonsList[#eF.familyButtonsList]:SetButtonState("PUSHED")
 eF.familyButtonsList[#eF.familyButtonsList]:Click()

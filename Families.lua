@@ -606,7 +606,7 @@ local function updateFamilyLayout(self,j)
   local f=self[j]
   f.para=self.families[j]
   f:ClearAllPoints()
-  f:SetPoint(f.para.anchor, self, f.para.anchorTo, f.para.xPos, f.para.yPos)
+  f:SetPoint(f.para.anchor or "CENTER", self, f.para.anchorTo or "CENTER", f.para.xPos or 0, f.para.yPos or 0)
   
   if f.para.smart then  
     for k=1,f.para.count do
