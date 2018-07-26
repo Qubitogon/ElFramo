@@ -1192,6 +1192,28 @@ local function createGroup(self,n,pos)
     f.down:SetScript("OnClick",moveButtonDownList)
   end    
   
+  --collapsoid
+  do
+  local cpd
+  f.collapsoid=CreateFrame("Button",nil,f)
+  cpd=f.collapsoid
+  cpd:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",1,1)
+  cpd:SetSize(20,20)
+  
+  local ftex
+ 
+  ftex=cpd:CreateTexture(nil,"BACKGROUND")
+  ftex:SetAllPoints(true)
+  ftex:SetTexture("Interface\\BUTTONS\\Arrow-Down-Up")
+  cpd:SetNormalTexture(ftex)
+  
+  ftex=nil
+  ftex=cpd:CreateTexture(nil,"BACKGROUND")
+  ftex:SetAllPoints(true)
+  ftex:SetTexture("Interface\\BUTTONS\\Arrow-Down-Down")
+  cpd:SetPushedTexture(ftex)  
+  
+  end
   
 end
 
