@@ -8,6 +8,7 @@ _eF_initProfile="test"
 _eF_savVar={}
 _eF_savVar.profiles={
               default={throttle=0.1, --currently not actually applying, it's set to 0.1
+                       familyButtonsIndexList={{2,nil},{3,nil},{1,1},{1,2},{1,3},{1,4}},
                        units={
                                height=50,
                                width=70,
@@ -259,6 +260,7 @@ _eF_savVar.profiles={
                        },  --end of "default"
 
                  test={throttle=0.1, --currently not actually applying, it's set to 0.1
+                       familyButtonsIndexList={{2,nil},{3,nil},{1,1},{1,2},{1,3},{1,4}},
                        units={
                                height=50,
                                width=70,

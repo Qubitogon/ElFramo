@@ -55,7 +55,6 @@ function eF.isInList(s,lst)
   return found
 end
 
-
 function eF.posInList(s,lst)
   if not s or not lst then return nil end
   for i=1,#lst do 
@@ -68,6 +67,16 @@ function eF.posInList(s,lst)
   return i
 end
 
+function eF.posInFamilyButtonsList(j,k)
+  if (not eF.familyButtonsList) or #eF.familyButtonsList==0 then return false end
+  local lst=eF.familyButtonsList
+  local bool=false
+  local pos=nil
+  for i=1,#lst do
+    if j==lst[i].familyIndex and k==lst[i].childIndex then bool=true;pos=i; break end
+  end
+  return (bool and pos) or false
+end
 
 
 

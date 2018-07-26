@@ -6,6 +6,7 @@ local border1="Interface\\Tooltips\\UI-Tooltip-Border"
 local fontExtra="OUTLINE"
 local smallBreak="Interface\\QUESTFRAME\\UI-HorizontalBreak"
 local largeBreak="Interface\\MailFrame\\MailPopup-Divider"
+local afterDo=C_Timer.After
 local div="Interface\\HELPFRAME\\HelpFrameDivider"
 local titleFont="Fonts\\ARIALN.ttf"
 local titleFontExtra="OUTLINE"
@@ -19,9 +20,11 @@ local ySpacing=25
 local initSpacing=15
 local familyHeight=30
 local ssub=string.sub
+local trem=table.remove
 local plusTexture="Interface\\GuildBankFrame\\UI-GuildBankFrame-NewTab"
 
 eF.familyButtonsList={}
+eF.para.familyButtonsIndexList={}
 
 local function ScrollFrame_OnMouseWheel(self,delta)
   local v=self:GetVerticalScroll() - (delta*familyHeight/2)
@@ -38,6 +41,7 @@ local function releaseAllFamilies()
   local lst=eF.familyButtonsList
   
   for i=1,#lst do
+    --if lst[i]:GetButtonState()=="PUSHED" then lst[i]:SetButtonState("NORMAL") end
     lst[i]:Enable()
   end
   
@@ -365,6 +369,7 @@ local function intSetInitValues()
   local fL=ff.famList
   local sc=ff.famList.scrollChild
   local paraFam=eF.para.families
+  local bil=eF.para.familyButtonsIndexList
   --eF.interface.familiesFrame.famList.scrollChild.families
   
   --general frame
@@ -403,17 +408,32 @@ local function intSetInitValues()
   --family frame
   do 
   
-  for i=2,#paraFam do
-    sc:createFamily(i)
+  for i=1,#bil do
+    local j=bil[i][1]
+    local k=bil[i][2]
+    if k then sc:createChild(j,k) 
+    else  
+      if paraFam[j].smart then sc:createFamily(j) 
+      else
+        sc:createGroup(j)
+        for l=1,paraFam[j].count do 
+          createChild(j,k)
+        end--end of for l=1,paraFamj.count
+      end
+      
+    end--end of if
   end
-
+  
+  for i=2,#paraFam do
+    if not eF.posInFamilyButtonsList(i) then sc:createFamily(i) end
+  end
 
   for i=1,paraFam[1].count do
-    sc:createChild(1,i)
+    if not eF.posInFamilyButtonsList(1,i) then sc:createChild(1,i) end
   end
-
-
-
+  
+  print("got past")
+  
   sc:setFamilyPositions()
   
   hideAllFamilyParas()
@@ -422,6 +442,212 @@ local function intSetInitValues()
   
 end
 eF.rep.intSetInitValues=intSetInitValues
+
+local function createAllFamilyFrame(j)
+  local units=eF.units
+  local insert=table.insert  
+  
+  for i=1,45 do
+    local frame
+    if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
+    
+    eF.units.familyCount=#frame.families
+
+    frame:createFamily(j)
+    if eF.para.families[j].smart then frame:applyFamilyParas(j)
+    else
+      for k=1,eF.para.families[j].count do frame:applyChildParas(j,k) end
+    end
+ 
+  end--end of for i=1,45
+end
+
+local function createAllIconFrame(j,k)
+  local units=eF.units
+  local insert=table.insert  
+  
+  for i=1,45 do
+    local frame
+    if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
+    
+    frame[j]:createChild(k)
+    frame:applyChildParas(j,k) 
+  end--end of for i=1,45
+end
+
+local function createNewWhitelistParas(j)
+  eF.para.families[j]={displayName="New Whitelist",
+     smart=true,
+     count=3,
+     type="w",
+     xPos=0,
+     yPos=0,
+     spacing=1,
+     height=15,
+     frameLevel=4,
+     width=15,
+     anchor="CENTER",
+     anchorTo="CENTER",
+     trackType="Buffs",
+     arg1={},
+     smartIcons=true,
+     grow="right",
+     growAnchor="LEFT",
+     growAnchorTo="LEFT",
+     cdReverse=false,
+     cdWheel=true,
+     hasBorder=false,
+     borderType="debuffColor",
+     hasText=true,
+     hasTexture=true,
+     ignorePermanents=true,
+     ignoreDurationAbove=nil,
+     textType="Time left",                                     
+     textAnchor="CENTER",
+     textAnchorTo="CENTER",
+     textXOS=0,
+     textYOS=0,
+     textSize=15,
+     textR=1,
+     textG=1,
+     textB=1,
+     textA=1,
+     textDecimals=1,
+     ownOnly=false,
+     loadAlways=true,
+     }
+end
+
+local function createNewBlacklistParas(j)
+  eF.para.families[j]={displayName="New Blacklist",
+     smart=true,
+     count=3,
+     type="b",
+     xPos=0,
+     yPos=0,
+     spacing=1,
+     height=15,
+     frameLevel=4,
+     width=15,
+     anchor="CENTER",
+     anchorTo="CENTER",
+     trackType="Buffs",
+     arg1={},
+     smartIcons=true,
+     grow="right",
+     growAnchor="LEFT",
+     growAnchorTo="LEFT",
+     cdReverse=false,
+     cdWheel=true,
+     hasBorder=false,
+     borderType="debuffColor",
+     hasText=true,
+     hasTexture=true,
+     ignorePermanents=true,
+     ignoreDurationAbove=nil,
+     textType="Time left",                                     
+     textAnchor="CENTER",
+     textAnchorTo="CENTER",
+     textXOS=0,
+     textYOS=0,
+     textSize=15,
+     textR=1,
+     textG=1,
+     textB=1,
+     textA=1,
+     textDecimals=1,
+     ownOnly=false,
+     loadAlways=true,
+     }
+end
+
+local function createNewIconParas(j,k)
+  eF.para.families[j][k]={
+  displayName="New Icon",
+  type="icon",
+  trackType="Buffs",
+  trackBy="Name",
+  arg1="",
+  xPos=0,
+  yPos=0,
+  frameLevel=4,
+  height=20,
+  width=20,
+  anchor="CENTER",
+  anchorTo="CENTER",
+  cdWheel=true,
+  cdReverse=true,
+  hasBorder=false,
+  smartIcon=true,
+  hasText=true,
+  hasTexture=true,
+  textType="Time left",
+  textAnchor="CENTER",
+  textAnchorTo="CENTER",
+  textXOS=0,
+  textYOS=0,
+  textFont="Fonts\\FRIZQT__.ttf",
+  textExtra="OUTLINE",
+  textSize=14,
+  textR=0.85,
+  textG=0.85,
+  textB=0.85,
+  textA=1,
+  textDecimals=0,
+  ownOnly=true,
+  loadAlways=true,
+  }
+end
+
+local function moveButtonUpList(self)
+  local j,k=self.parentButton.familyIndex,self.parentButton.childIndex
+  local n=eF.posInFamilyButtonsList(j,k)
+  if n==1 then return end
+  local m=n-1
+  local bl=eF.familyButtonsList
+  
+  local justInCase=0
+  while m>0 and justInCase<1000 do
+    justInCase=justInCase+1
+    if not bl[m].collapsible then break end
+    m=m+1
+  end
+  
+  local save=bl[m]
+  bl[m]=bl[n]
+  bl[n]=save
+  
+
+  local sc=eF.interface.familiesFrame.famList.scrollChild
+  sc:updateFamilyButtonsIndexList()
+  sc:setFamilyPositions()
+end
+
+local function moveButtonDownList(self)
+  local j,k=self.parentButton.familyIndex,self.parentButton.childIndex
+  local n=eF.posInFamilyButtonsList(j,k)
+  local bl=eF.familyButtonsList
+  local mmax=#bl
+  
+  if n==mmax then return end
+  local m=n+1
+  
+  local justInCase=0
+  while m<mmax+1 and justInCase<1000 do
+    justInCase=justInCase+1
+    if not bl[m].collapsible then break end
+    m=m+1
+  end
+  
+  local save=bl[m]
+  bl[m]=bl[n]
+  bl[n]=save
+  
+
+  local sc=eF.interface.familiesFrame.famList.scrollChild
+  sc:updateFamilyButtonsIndexList()
+  sc:setFamilyPositions()
+end
 
 local function createFamily(self,n,pos)
 
@@ -450,7 +676,8 @@ local function createFamily(self,n,pos)
     self:Disable()
     end)
   
-  
+  local sc=eF.interface.familiesFrame.famList.scrollChild
+  sc:updateFamilyButtonsIndexList()
   
   -- normal texture
   do
@@ -491,6 +718,49 @@ local function createFamily(self,n,pos)
   f.text:SetText(para.displayName)
   end
       
+  --up and down buttons    
+  do
+    local text
+    f.up=CreateFrame("Button",nil,f)
+    f.up:SetPoint("TOPRIGHT",f,"TOPRIGHT",-1,0)
+    f.up:SetSize(f:GetHeight()/2,f:GetHeight()/2)
+    f.up.parentButton=f
+
+    text=f.up:CreateTexture(nil,"BACKGROUND")
+    text:SetAllPoints()
+    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Up")
+    text:SetRotation(math.pi/2)
+    f.up:SetNormalTexture(text)
+    
+    text=nil
+    text=f.up:CreateTexture(nil,"BACKGROUND")
+    text:SetAllPoints()
+    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Down")
+    text:SetRotation(math.pi/2)
+    f.up:SetPushedTexture(text)   
+    f.up:SetScript("OnClick",moveButtonUpList)
+    
+    f.down=CreateFrame("Button",nil,f)
+    f.down:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-1,2)
+    f.down:SetSize(f:GetHeight()/2,f:GetHeight()/2)
+    f.down.parentButton=f
+    
+    text=nil
+    text=f.down:CreateTexture(nil,"BACKGROUND")
+    text:SetAllPoints()
+    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Up")
+    text:SetRotation(math.pi/2)
+    f.down:SetNormalTexture(text)
+    
+    text=nil
+    text=f.down:CreateTexture(nil,"BACKGROUND")
+    text:SetAllPoints()
+    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Down")
+    text:SetRotation(math.pi/2)
+    f.down:SetPushedTexture(text)   
+    f.down:SetScript("OnClick",moveButtonDownList)
+  end    
+  
 end
 
 local function createChild(self,j,k,pos)
@@ -510,7 +780,7 @@ local function createChild(self,j,k,pos)
   f.familyIndex=j
   f.childIndex=k
   
-  if not pos then table.insert(eF.familyButtonsList,f) else table.insert(eF.familyButtonsList,pos,f) end
+  if not pos then table.insert(eF.familyButtonsList,f)else table.insert(eF.familyButtonsList,pos,f) end
   
   f:SetScript("OnClick",function(self)
     releaseAllFamilies()
@@ -523,6 +793,9 @@ local function createChild(self,j,k,pos)
     self:Disable()
     end)
 
+  local sc=eF.interface.familiesFrame.famList.scrollChild
+  sc:updateFamilyButtonsIndexList()
+    
   -- normal texture
   do
   f.bg=f:CreateTexture(nil,"BACKGROUND")
@@ -561,7 +834,180 @@ local function createChild(self,j,k,pos)
   f.text:SetTextColor(0.9,0.9,0.9)
   f.text:SetText(para.displayName)
   end
+  
+  --up and down buttons
+  do
+    local text
+    f.up=CreateFrame("Button",nil,f)
+    f.up:SetPoint("TOPRIGHT",f,"TOPRIGHT",-1,0)
+    f.up:SetSize(f:GetHeight()/2,f:GetHeight()/2)
+    f.up.parentButton=f
+
+    text=f.up:CreateTexture(nil,"BACKGROUND")
+    text:SetAllPoints()
+    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Up")
+    text:SetRotation(math.pi/2)
+    f.up:SetNormalTexture(text)
+    
+    text=nil
+    text=f.up:CreateTexture(nil,"BACKGROUND")
+    text:SetAllPoints()
+    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Down")
+    text:SetRotation(math.pi/2)
+    f.up:SetPushedTexture(text)   
+    f.up:SetScript("OnClick",moveButtonUpList)
+    
+    f.down=CreateFrame("Button",nil,f)
+    f.down:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-1,2)
+    f.down:SetSize(f:GetHeight()/2,f:GetHeight()/2)
+    f.down.parentButton=f
+    
+    text=nil
+    text=f.down:CreateTexture(nil,"BACKGROUND")
+    text:SetAllPoints()
+    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Up")
+    text:SetRotation(math.pi/2)
+    f.down:SetNormalTexture(text)
+    
+    text=nil
+    text=f.down:CreateTexture(nil,"BACKGROUND")
+    text:SetAllPoints()
+    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Down")
+    text:SetRotation(math.pi/2)
+    f.down:SetPushedTexture(text)   
+    f.down:SetScript("OnClick",moveButtonDownList)
+  end
+  
+end
+
+local function createGroup(self,n,pos)
+
+  local para=eF.para.families[n]
+  if self.families[n] then self.families[n]=nil end
+  
+  --button creationchr
+  self.families[n]=CreateFrame("Button",nil,self)
+  local f=self.families[n]
+  f:SetWidth(eF.interface.familiesFrame.famList:GetWidth()-25)
+  f:SetHeight(familyHeight)
+  f:SetPoint("TOPRIGHT",self,"TOPRIGHT")
+  f:SetBackdrop(bd2)
+  f.para=para
+  f.familyIndex=n
+  
+  if not pos then table.insert(eF.familyButtonsList,f) else table.insert(eF.familyButtonsList,pos,f) end
+  
+  f:SetScript("OnClick",function(self)
+    releaseAllFamilies()
+    hideAllFamilyParas()
+    eF.activePara=para
+    eF.activeButton=self
+    eF.activeFamilyIndex=self.familyIndex
+    if self.para.smart then showSmartFamilyPara() else showDumbFamilyPara() end
+    self:Disable()
+    end)
+  
+  f.collapse=function()
+  
+    print("collapsing kek")
+  end
+  
+  local sc=eF.interface.familiesFrame.famList.scrollChild
+  sc:updateFamilyButtonsIndexList()
+  
+  -- normal texture
+  do
+  f.bg=f:CreateTexture(nil,"BACKGROUND")
+  f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
+  f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
+  f.bg:SetColorTexture(0.15,0.22,0.4,1)
+  f.bg:SetGradient("vertical",0.5,0.5,0.5,0.8,0.8,0.8)
+  f:SetNormalTexture(f.bg)
+  end
+   
+  --pushed texture
+  do
+  f.bg=f:CreateTexture(nil,"BACKGROUND")
+  f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
+  f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
+  f.bg:SetColorTexture(0.32,0.51,0.8)
+  f.bg:SetGradient("vertical",0.4,0.4,0.4,0.7,0.7,0.7)
+  f:SetPushedTexture(f.bg)
+  end
+   
+  --Highlight creation
+  do
+  f.hl=f:CreateTexture(nil,"BACKGROUND")
+  f.hl:SetPoint("BOTTOM",f,"BOTTOM",0,-1)
+  f.hl:SetHeight(f:GetHeight()*0.3)
+  f.hl:SetWidth(f:GetWidth()*0.8)
+  f.hl:SetTexture("Interface\\BUTTONS\\UI-SILVER-BUTTON-HIGHLIGHT")
+  f:SetHighlightTexture(f.hl)
+  end
+  
+  --text creation
+  do
+  f.text=f:CreateFontString()
+  f.text:SetPoint("CENTER")
+  f.text:SetFont("Fonts\\ARIALN.ttf",17,fontExtra)
+  f.text:SetTextColor(0.9,0.9,0.9)
+  f.text:SetText(para.displayName)
+  end
       
+  --up and down buttons    
+  do
+    local text
+    f.up=CreateFrame("Button",nil,f)
+    f.up:SetPoint("TOPRIGHT",f,"TOPRIGHT",-1,0)
+    f.up:SetSize(f:GetHeight()/2,f:GetHeight()/2)
+    f.up.parentButton=f
+
+    text=f.up:CreateTexture(nil,"BACKGROUND")
+    text:SetAllPoints()
+    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Up")
+    text:SetRotation(math.pi/2)
+    f.up:SetNormalTexture(text)
+    
+    text=nil
+    text=f.up:CreateTexture(nil,"BACKGROUND")
+    text:SetAllPoints()
+    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Down")
+    text:SetRotation(math.pi/2)
+    f.up:SetPushedTexture(text)   
+    f.up:SetScript("OnClick",moveButtonUpList)
+    
+    f.down=CreateFrame("Button",nil,f)
+    f.down:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-1,2)
+    f.down:SetSize(f:GetHeight()/2,f:GetHeight()/2)
+    f.down.parentButton=f
+    
+    text=nil
+    text=f.down:CreateTexture(nil,"BACKGROUND")
+    text:SetAllPoints()
+    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Up")
+    text:SetRotation(math.pi/2)
+    f.down:SetNormalTexture(text)
+    
+    text=nil
+    text=f.down:CreateTexture(nil,"BACKGROUND")
+    text:SetAllPoints()
+    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Down")
+    text:SetRotation(math.pi/2)
+    f.down:SetPushedTexture(text)   
+    f.down:SetScript("OnClick",moveButtonDownList)
+  end    
+  
+  
+end
+
+local function updateFamilyButtonsIndexList()
+  local bl=eF.familyButtonsList
+  eF.para.familyButtonsIndexList={}
+  local bil=eF.para.familyButtonsIndexList
+  
+  for i=1,#bl do
+    table.insert(bil,{bl[i].familyIndex,bl[i].childIndex})
+  end
 end
 
 local function setFamilyPositions(self)
@@ -573,7 +1019,6 @@ local function setFamilyPositions(self)
     h=h+lst[i]:GetHeight()+2
   end
   self:SetHeight(h)
-
 end
 
 local function setSFFActiveValues(self)
@@ -635,7 +1080,9 @@ local function setSFFActiveValues(self)
       temps=temps.."\n"..para.arg1[i]
     end--end of for i=1,#para.arg1 
     self.list.eb:SetText(temps)
-  end--end of if#para.arg1>0
+  else
+    self.list.eb:SetText("")
+  end--end of if#para.arg1>0 else
   
   C_Timer.After(0.05,function() self.list.button:Disable()end );
 
@@ -748,7 +1195,7 @@ local function setCIFActiveValues(self)
   --text1
   do
   self.hasText1:SetChecked(para.hasText)
-  if not para.hasText1 then self.iconBlocker5:Show() else self.iconBlocker5:Hide() end
+  if not para.hasText then self.iconBlocker5:Show() else self.iconBlocker5:Hide()  end
   UIDropDownMenu_SetSelectedName(self.textType1,para.textType)
   UIDropDownMenu_SetText(self.textType1,para.textType)
   
@@ -1261,7 +1708,6 @@ ff:Hide()
 hd1b3.relatedFrame=ff
 ff:SetAllPoints()
 
-
 local fL,sc
 
 --create Scroll Frame
@@ -1299,6 +1745,7 @@ sc=fL.scrollChild
 fL:SetScrollChild(sc)
 sc.createFamily=createFamily
 sc.createChild=createChild
+sc.updateFamilyButtonsIndexList=updateFamilyButtonsIndexList
 sc.setFamilyPositions=setFamilyPositions
 sc:SetWidth(fL:GetWidth())
 sc:SetHeight(600)
@@ -2740,7 +3187,7 @@ local ecf
 do
 ff.elementCreationButton=CreateFrame("Button",nil,ff)
 local ecb=ff.elementCreationButton
-ecb:SetPoint("BOTTOMLEFT",sc,"TOPLEFT",0,5)
+ecb:SetPoint("BOTTOMLEFT",fL,"TOPLEFT",0,5)
 ecb:SetSize(40,40)
 ecb:SetBackdrop(bd2)
 
@@ -2850,6 +3297,19 @@ cwlb.descripton=cwlb:CreateFontString(nil,"OVERLAY")
 cwlb.descripton:SetFont("Fonts\\FRIZQT__.TTF",12,"OUTLINE")
 cwlb.descripton:SetText("")
 cwlb.descripton:SetPoint("TOP",cwlb,"BOTTOM",0,-8)
+
+cwlb:SetScript("OnClick",function()
+local j=#eF.para.families+1
+createNewWhitelistParas(j)
+createAllFamilyFrame(j)
+sc:createFamily(j)
+sc:setFamilyPositions()
+eF.familyButtonsList[#eF.familyButtonsList]:SetButtonState("PUSHED")
+eF.familyButtonsList[#eF.familyButtonsList]:Click()
+afterDo(0, function() fL:SetVerticalScroll(fL:GetVerticalScrollRange()) end)
+updateAllFramesFamilyLayout(j)
+end)
+
 end --end of create whitelist button
 
 --create blacklist button (cblb)
@@ -2893,6 +3353,18 @@ cblb.descripton=cblb:CreateFontString(nil,"OVERLAY")
 cblb.descripton:SetFont("Fonts\\FRIZQT__.TTF",12,"OUTLINE")
 cblb.descripton:SetText("")
 cblb.descripton:SetPoint("TOP",cblb,"BOTTOM",0,-8)
+
+cblb:SetScript("OnClick",function()
+local j=#eF.para.families+1
+createNewBlacklistParas(j)
+createAllFamilyFrame(j)
+sc:createFamily(j)
+sc:setFamilyPositions()
+eF.familyButtonsList[#eF.familyButtonsList]:SetButtonState("PUSHED")
+eF.familyButtonsList[#eF.familyButtonsList]:Click()
+afterDo(0, function() fL:SetVerticalScroll(fL:GetVerticalScrollRange()) end)
+updateAllFramesFamilyLayout(j)
+end)
 end --end of create blacklist button
 
 --create icon button (cib)
@@ -2936,6 +3408,20 @@ cib.descripton=cib:CreateFontString(nil,"OVERLAY")
 cib.descripton:SetFont("Fonts\\FRIZQT__.TTF",12,"OUTLINE")
 cib.descripton:SetText("")
 cib.descripton:SetPoint("TOP",cib,"BOTTOM",0,-8)
+
+cib:SetScript("OnClick",function()
+local j=1
+local k=eF.para.families[j].count+1
+eF.para.families[j].count=k
+
+createNewIconParas(j,k)
+createAllIconFrame(j,k)
+sc:createChild(j,k)
+sc:setFamilyPositions()
+eF.familyButtonsList[#eF.familyButtonsList]:SetButtonState("PUSHED")
+eF.familyButtonsList[#eF.familyButtonsList]:Click()
+afterDo(0, function() fL:SetVerticalScroll(fL:GetVerticalScrollRange()) end)
+end)
 end --end of icon creation button 
 
 --create bar button (cbb)
@@ -2980,8 +3466,6 @@ cbb.descripton:SetFont("Fonts\\FRIZQT__.TTF",12,"OUTLINE")
 cbb.descripton:SetText("")
 cbb.descripton:SetPoint("TOP",cbb,"BOTTOM",0,-8)
 end --end of create bar button
-
-
 
 end 
 

@@ -632,7 +632,6 @@ eF.rep.updateFamilyLayout=updateFamilyLayout
 function createFamilyChild(self,k)
   local insert=table.insert
   
-  
   if self.para[k].type=="icon" then
     if self[k] then self[k]=nil end
     self[k]=CreateFrame("Frame",nil,self)
