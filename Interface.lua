@@ -22,10 +22,27 @@ local familyHeight=30
 local ssub,trem=string.sub,table.remove
 local plusTexture="Interface\\GuildBankFrame\\UI-GuildBankFrame-NewTab"
 local destroyTexture="Interface\\PaperDollInfoFrame\\UI-GearManager-LeaveItem-Opaque"
+local arrowDownTexture="Interface\\Calendar\\MoreArrow"
 
 eF.familyButtonsList={}
 eF.para.familyButtonsIndexList={}
+eF.activeConfirmMove=nil
 --  local sc=eF.interface.familiesFrame.famList.scrollChild
+
+local function deepcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[deepcopy(orig_key)] = deepcopy(orig_value)
+        end
+        setmetatable(copy, deepcopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
 
 local function ScrollFrame_OnMouseWheel(self,delta)
   local v=self:GetVerticalScroll() - (delta*familyHeight/2)
@@ -208,7 +225,7 @@ local function exterminateOrphan(j,k)
 
   local count=eF.para.families[j].count
   eF.para.families[j].count=count-1
-
+  
   for i=1,45 do
     local frame
     if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
@@ -388,6 +405,45 @@ local function exterminateDumbFamily(j)
   sc:updateFamilyButtonsIndexList()
 end
 
+local function findGroupByName(s)
+  local lst=eF.para.families
+  local ind=nil
+  local tostring=tostring
+  
+  for i=1,#lst do 
+    if lst[i].displayName==s then ind=i; break end
+  end
+  return ind
+end
+
+local function copyChildTo(oj,ok,nj,nk)
+  if (not oj) or (not ok) or (not nj) or (not nk) then return nil end
+  local paraFam=eF.para.families
+  local sc=eF.interface.familiesFrame.famList.scrollChild
+  
+  if paraFam[nj][nk] then return nil end
+  if paraFam[nj].smart then return nil end
+  if nk>paraFam[nj].count then paraFam[nj].count=nk end
+  
+  paraFam[nj][nk]=deepcopy(paraFam[oj][ok])
+  eF.rep.createAllIconFrame(nj,nk)
+  sc:createChild(nj,nk)
+
+  sc:setFamilyPositions() 
+end
+
+local function moveOrphanToGroup(oj,ok,name)
+  local nj=findGroupByName(name)
+  if not nj then return nil end
+  local paraFam=eF.para.families
+  local nk=paraFam[nj].count+1
+  paraFam[nj].count=nk
+
+  
+  copyChildTo(oj,ok,nj,nk)
+  exterminateOrphan(oj,ok)
+end
+
 local function updateAllFramesFamilyLayout(j)
   for i=1,45 do
     local frame
@@ -504,7 +560,6 @@ local function createIP(self,name,tab) --icon picker
   eb.pTexture:SetAllPoints()
 end
 
---http://wowwiki.wikia.com/wiki/UIOBJECT_ColorSelect
 local function createCS(self,name,tab)
   self[name]=CreateFrame("Button",nil,tab)
   local cp=self[name]
@@ -602,7 +657,7 @@ local function intSetInitValues()
       else
         sc:createGroup(j)
         for l=1,paraFam[j].count do 
-          createChild(j,k)
+          sc:createChild(j,l)
         end--end of for l=1,paraFamj.count
       end
       
@@ -617,7 +672,6 @@ local function intSetInitValues()
     if not eF.posInFamilyButtonsList(1,i) then sc:createChild(1,i) end
   end
   
-  print("got past")
   
   sc:setFamilyPositions()
   
@@ -659,6 +713,7 @@ local function createAllIconFrame(j,k)
     frame:applyChildParas(j,k) 
   end--end of for i=1,45
 end
+eF.rep.createAllIconFrame=createAllIconFrame
 
 local function createNewWhitelistParas(j)
   eF.para.families[j]={displayName="New Whitelist",
@@ -748,7 +803,7 @@ end
 
 local function createNewGroupParas(j)
   eF.para.families[j]={
-    displayName="New Group",
+    displayName="G",
     smart=false,
     count=0,
      }
@@ -961,11 +1016,11 @@ local function createChild(self,j,k,pos)
 
   local para=eF.para.families[j][k]
   if self.families[j] then if self.families[j][k] then self.families[j][k]=nil end else self.families[j]={} end
-  
+
   --button creation
   self.families[j][k]=CreateFrame("Button",nil,self)
   local f=self.families[j][k]
-  if j==1 then f:SetWidth((eF.interface.familiesFrame.famList:GetWidth()-25)) else f:SetWidth((eF.interface.familiesFrame.famList:GetWidth()-25)*0.85) end
+  if j==1 then f:SetWidth((eF.interface.familiesFrame.famList:GetWidth()-25)) else f:SetWidth((eF.interface.familiesFrame.famList:GetWidth()-25)*0.92) end
   f:SetHeight(familyHeight)
   --f:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-(familyHeight+2)*(n-1))
   f:SetPoint("TOPRIGHT",self,"TOPRIGHT")
@@ -973,7 +1028,7 @@ local function createChild(self,j,k,pos)
   f.para=para
   f.familyIndex=j
   f.childIndex=k
-  if j>1 then f.collapsible=true; f.collapsed=true end
+
   
   if not pos then table.insert(eF.familyButtonsList,f)else table.insert(eF.familyButtonsList,pos,f) end
   
@@ -990,87 +1045,323 @@ local function createChild(self,j,k,pos)
 
   local sc=eF.interface.familiesFrame.famList.scrollChild
   sc:updateFamilyButtonsIndexList()
-    
-  -- normal texture
-  do
-  f.bg=f:CreateTexture(nil,"BACKGROUND")
-  f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
-  f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
-  f.bg:SetColorTexture(0.28,0.2,0.2,1)
-  f.bg:SetGradient("vertical",0.5,0.5,0.5,0.8,0.8,0.8)
-  f:SetNormalTexture(f.bg)
-  end
-   
-  --pushed texture
-  do
-  f.bg=f:CreateTexture(nil,"BACKGROUND")
-  f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
-  f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
-  f.bg:SetColorTexture(0.8,0.4,0.4)
-  f.bg:SetGradient("vertical",0.4,0.4,0.4,0.7,0.7,0.7)
-  f:SetPushedTexture(f.bg)
-  end
-   
-  --Highlight creation
-  do
-  f.hl=f:CreateTexture(nil,"BACKGROUND")
-  f.hl:SetPoint("BOTTOM",f,"BOTTOM",0,-1)
-  f.hl:SetHeight(f:GetHeight()*0.3)
-  f.hl:SetWidth(f:GetWidth()*0.8)
-  f.hl:SetTexture("Interface\\BUTTONS\\UI-SILVER-BUTTON-HIGHLIGHT")
-  f:SetHighlightTexture(f.hl)
-  end
   
-  --text creation
-  do
-  f.text=f:CreateFontString()
-  f.text:SetPoint("CENTER")
-  f.text:SetFont("Fonts\\ARIALN.ttf",17,fontExtra)
-  f.text:SetTextColor(0.9,0.9,0.9)
-  f.text:SetText(para.displayName)
-  end
-  
-  --up and down buttons
-  do
-    local text
-    f.up=CreateFrame("Button",nil,f)
-    f.up:SetPoint("TOPRIGHT",f,"TOPRIGHT",-1,0)
-    f.up:SetSize(f:GetHeight()/2,f:GetHeight()/2)
-    f.up.parentButton=f
+  if j==1 then
+    -- normal texture
+    do
+    f.bg=f:CreateTexture(nil,"BACKGROUND")
+    f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
+    f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
+    f.bg:SetColorTexture(0.28,0.2,0.2,1)
+    f.bg:SetGradient("vertical",0.5,0.5,0.5,0.8,0.8,0.8)
+    f:SetNormalTexture(f.bg)
+    end
+     
+    --pushed texture
+    do
+    f.bg=f:CreateTexture(nil,"BACKGROUND")
+    f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
+    f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
+    f.bg:SetColorTexture(0.8,0.4,0.4)
+    f.bg:SetGradient("vertical",0.4,0.4,0.4,0.7,0.7,0.7)
+    f:SetPushedTexture(f.bg)
+    end
+     
+    --Highlight creation
+    do
+    f.hl=f:CreateTexture(nil,"BACKGROUND")
+    f.hl:SetPoint("BOTTOM",f,"BOTTOM",0,-1)
+    f.hl:SetHeight(f:GetHeight()*0.3)
+    f.hl:SetWidth(f:GetWidth()*0.8)
+    f.hl:SetTexture("Interface\\BUTTONS\\UI-SILVER-BUTTON-HIGHLIGHT")
+    f:SetHighlightTexture(f.hl)
+    end
 
-    text=f.up:CreateTexture(nil,"BACKGROUND")
-    text:SetAllPoints()
-    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Up")
-    text:SetRotation(math.pi/2)
-    f.up:SetNormalTexture(text)
+    --text creation
+    do
+    f.text=f:CreateFontString()
+    f.text:SetPoint("CENTER")
+    f.text:SetFont("Fonts\\ARIALN.ttf",17,fontExtra)
+    f.text:SetTextColor(0.9,0.9,0.9)
+    f.text:SetText(para.displayName)
+    end
+
+    --up and down buttons
+    do
+      local text
+      f.up=CreateFrame("Button",nil,f)
+      f.up:SetPoint("TOPRIGHT",f,"TOPRIGHT",-1,0)
+      f.up:SetSize(f:GetHeight()/2,f:GetHeight()/2)
+      f.up.parentButton=f
+
+      text=f.up:CreateTexture(nil,"BACKGROUND")
+      text:SetAllPoints()
+      text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Up")
+      text:SetRotation(math.pi/2)
+      f.up:SetNormalTexture(text)
+      
+      text=nil
+      text=f.up:CreateTexture(nil,"BACKGROUND")
+      text:SetAllPoints()
+      text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Down")
+      text:SetRotation(math.pi/2)
+      f.up:SetPushedTexture(text)   
+      f.up:SetScript("OnClick",moveButtonUpList)
+      
+      f.down=CreateFrame("Button",nil,f)
+      f.down:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-1,2)
+      f.down:SetSize(f:GetHeight()/2,f:GetHeight()/2)
+      f.down.parentButton=f
+      
+      text=nil
+      text=f.down:CreateTexture(nil,"BACKGROUND")
+      text:SetAllPoints()
+      text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Up")
+      text:SetRotation(math.pi/2)
+      f.down:SetNormalTexture(text)
+      
+      text=nil
+      text=f.down:CreateTexture(nil,"BACKGROUND")
+      text:SetAllPoints()
+      text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Down")
+      text:SetRotation(math.pi/2)
+      f.down:SetPushedTexture(text)   
+      f.down:SetScript("OnClick",moveButtonDownList)
+    end
+
+    --move to group button
+    do
+    local mb
+    f.moveButton=CreateFrame("Button",nil,f)
+    mb=f.moveButton
+    mb:SetPoint("LEFT",f,"LEFT",1,0)
+    mb:SetSize(15,f:GetHeight()*0.5)
+    mb.buttonPointer=f
+
+    local ftex
+
+    ftex=mb:CreateTexture(nil,"BACKGROUND")
+    ftex:SetPoint("LEFT",mb,"LEFT")
+    ftex:SetSize(12,12)
+    ftex:SetTexture(arrowDownTexture)
+    ftex:SetTexCoord(0,1,0,0.5)
+    ftex:SetRotation(-math.pi/2)
+    mb:SetNormalTexture(ftex)
+
+    ftex=nil
+    ftex=mb:CreateTexture(nil,"BACKGROUND")
+    ftex:SetPoint("LEFT",mb,"LEFT")
+    ftex:SetSize(12,12)
+    ftex:SetTexture("Interface\\BUTTONS\\Arrow-Down-Down")
+    ftex:SetTexCoord(0,1,0,0.5)
+    ftex:SetRotation(-math.pi/2)
+    ftex:SetVertexColor(0.5,0.5,0.5)
+    mb:SetPushedTexture(ftex)  
+
+
+    mb:SetScript("OnClick",function(self)
+      if mb.buttonPointer.familyIndex==1 then      
+        local cm=self.buttonPointer.confirmMove
+        if cm:IsShown() then cm:Hide() else cm:Show() end
+      else
+        print("already in a group") --NYI: make it pop out of group
+      end
+    end)
+
+    end --end of move to group cutton
+
+    --confirm moving frame
+    do
+      f.confirmMove=CreateFrame("Frame",nil,eF.interface.familiesFrame)
+      local cm=f.confirmMove
+      cm:SetSize(f:GetWidth()*1.2,f:GetHeight()*2)
+      cm:SetPoint("RIGHT",f,"LEFT",-10)
+      cm:Hide()
+      cm:SetBackdrop(bd2)
+      cm:SetFrameLevel(f:GetFrameLevel()+1)
+      cm:SetScript("OnShow",function(self) 
+        self.groupNameEB:SetText("") 
+        if eF.activeConfirmMove then eF.activeConfirmMove:Hide() ; eF.activeConfirmMove=nil end
+        eF.activeConfirmMove=self
+      end)
+      
+      cm:SetScript("OnHide",function(self)  
+        eF.activeConfirmMove=nil 
+      end)
+      
+      cm.bg=cm:CreateTexture(nil,"BACKGROUND")
+      cm.bg:SetAllPoints(true)
+      cm.bg:SetColorTexture(0,0,0,0.7)
+      
+      cm.text=cm:CreateFontString(nil,"OVERLAY")
+      cm.text:SetFont(font,12)
+      cm.text:SetText("Move element to group:")
+      cm.text:SetPoint("TOPLEFT",cm,"TOPLEFT",4,-2)
+      
+      createNumberEB(cm,"groupNameEB",cm)
+      local eb=cm.groupNameEB
+      eb:SetPoint("TOPLEFT",cm.text,"BOTTOMLEFT",3,-2)
+      eb:SetWidth(cm:GetWidth()*0.8)
+      eb:SetScript("OnEnterPressed",function(self) self:ClearFocus() end)
+      
+      cm.confirmButton=CreateFrame("Button",nil,cm,"UIPanelButtonTemplate")
+      local cmcb=cm.confirmButton
+      cmcb.ebPointer=eb
+      cmcb.familyIndex=f.familyIndex
+      cmcb.childIndex=f.childIndex
+      cmcb:SetText("Confirm")
+      cmcb:SetPoint("BOTTOMLEFT",cm,"BOTTOMLEFT",2,2)
+      cmcb:SetWidth(60)
+      cmcb:SetScript("OnClick",function(self)  moveOrphanToGroup(self.familyIndex,self.childIndex,self.ebPointer:GetText())   end)
+      
+      cm.cancelButton=CreateFrame("Button",nil,cm,"UIPanelButtonTemplate")
+      local clb=cm.cancelButton
+      clb.parentPointer=cm
+      clb:SetText("Cancel")
+      clb:SetPoint("LEFT",cmcb,"RIGHT",2,0)
+      clb:SetWidth(60)
+      clb:SetScript("OnClick",function(self)  self.parentPointer:Hide()   end)
+      
+    end --end of confirm moving frame
+
+  else --else of if j==1
+    f.collapsible=true
+    local bPos=eF.posInFamilyButtonsList(j)
+    local grpButton=eF.familyButtonsList[bPos]
+    if grpButton then f.collapsed=grpButton.elementsCollapsed end
     
-    text=nil
-    text=f.up:CreateTexture(nil,"BACKGROUND")
-    text:SetAllPoints()
-    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Down")
-    text:SetRotation(math.pi/2)
-    f.up:SetPushedTexture(text)   
-    f.up:SetScript("OnClick",moveButtonUpList)
+    -- normal texture
+    do
+    f.bg=f:CreateTexture(nil,"BACKGROUND")
+    f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
+    f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
+    f.bg:SetColorTexture(0.15,0.22,0.4,1)
+    f.bg:SetGradient("vertical",0.5,0.5,0.5,0.8,0.8,0.8)
+    f:SetNormalTexture(f.bg)
+    end
+     
+    --pushed texture
+    do
+    f.bg=f:CreateTexture(nil,"BACKGROUND")
+    f.bg:SetPoint("TOPLEFT",f,"TOPLEFT",3,-3)
+    f.bg:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-3,3)
+    f.bg:SetColorTexture(0.32,0.51,0.8)
+    f.bg:SetGradient("vertical",0.4,0.4,0.4,0.7,0.7,0.7)
+    f:SetPushedTexture(f.bg)
+    end
+     
+    --Highlight creation
+    do
+    f.hl=f:CreateTexture(nil,"BACKGROUND")
+    f.hl:SetPoint("BOTTOM",f,"BOTTOM",0,-1)
+    f.hl:SetHeight(f:GetHeight()*0.3)
+    f.hl:SetWidth(f:GetWidth()*0.8)
+    f.hl:SetTexture("Interface\\BUTTONS\\UI-SILVER-BUTTON-HIGHLIGHT")
+    f:SetHighlightTexture(f.hl)
+    end
     
-    f.down=CreateFrame("Button",nil,f)
-    f.down:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-1,2)
-    f.down:SetSize(f:GetHeight()/2,f:GetHeight()/2)
-    f.down.parentButton=f
+    --text creation
+    do
+    f.text=f:CreateFontString()
+    f.text:SetPoint("CENTER")
+    f.text:SetFont("Fonts\\ARIALN.ttf",17,fontExtra)
+    f.text:SetTextColor(0.9,0.9,0.9)
+    f.text:SetText(para.displayName)
+    end
     
-    text=nil
-    text=f.down:CreateTexture(nil,"BACKGROUND")
-    text:SetAllPoints()
-    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Up")
-    text:SetRotation(math.pi/2)
-    f.down:SetNormalTexture(text)
+    --sideline
+    do
+      f.sideline=f:CreateTexture(nil,"BACKGROUND")
+      local sl=f.sideline
+      sl:SetSize(2,f:GetHeight()+4)
+      sl:SetPoint("LEFT",f,"LEFT",-6,10)
+      sl:SetColorTexture(0.86,0.83,0.4)     
+    end --end of sideline
     
-    text=nil
-    text=f.down:CreateTexture(nil,"BACKGROUND")
-    text:SetAllPoints()
-    text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Down")
-    text:SetRotation(math.pi/2)
-    f.down:SetPushedTexture(text)   
-    f.down:SetScript("OnClick",moveButtonDownList)
+    --up and down buttons
+    do
+      local text
+      f.up=CreateFrame("Button",nil,f)
+      f.up:SetPoint("TOPRIGHT",f,"TOPRIGHT",-1,0)
+      f.up:SetSize(f:GetHeight()/2,f:GetHeight()/2)
+      f.up.parentButton=f
+
+      text=f.up:CreateTexture(nil,"BACKGROUND")
+      text:SetAllPoints()
+      text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Up")
+      text:SetRotation(math.pi/2)
+      f.up:SetNormalTexture(text)
+      
+      text=nil
+      text=f.up:CreateTexture(nil,"BACKGROUND")
+      text:SetAllPoints()
+      text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-NextPage-Down")
+      text:SetRotation(math.pi/2)
+      f.up:SetPushedTexture(text)   
+      --f.up:SetScript("OnClick",moveButtonUpList) NYI
+      
+      f.down=CreateFrame("Button",nil,f)
+      f.down:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-1,2)
+      f.down:SetSize(f:GetHeight()/2,f:GetHeight()/2)
+      f.down.parentButton=f
+      
+      text=nil
+      text=f.down:CreateTexture(nil,"BACKGROUND")
+      text:SetAllPoints()
+      text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Up")
+      text:SetRotation(math.pi/2)
+      f.down:SetNormalTexture(text)
+      
+      text=nil
+      text=f.down:CreateTexture(nil,"BACKGROUND")
+      text:SetAllPoints()
+      text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Down")
+      text:SetRotation(math.pi/2)
+      f.down:SetPushedTexture(text)   
+      --f.down:SetScript("OnClick",moveButtonDownList) NYI
+    end
+    
+    --move to group button
+    do
+    local mb
+    f.moveButton=CreateFrame("Button",nil,f)
+    mb=f.moveButton
+    mb:SetPoint("LEFT",f,"LEFT",1,0)
+    mb:SetSize(15,f:GetHeight()*0.5)
+    mb.buttonPointer=f
+    
+    local ftex
+   
+    ftex=mb:CreateTexture(nil,"BACKGROUND")
+    ftex:SetPoint("LEFT",mb,"LEFT")
+    ftex:SetSize(12,12)
+    ftex:SetTexture(arrowDownTexture)
+    ftex:SetTexCoord(0,1,0,0.5)
+    ftex:SetRotation(-math.pi/2)
+    mb:SetNormalTexture(ftex)
+    
+    ftex=nil
+    ftex=mb:CreateTexture(nil,"BACKGROUND")
+    ftex:SetPoint("LEFT",mb,"LEFT")
+    ftex:SetSize(12,12)
+    ftex:SetTexture("Interface\\BUTTONS\\Arrow-Down-Down")
+    ftex:SetTexCoord(0,1,0,0.5)
+    ftex:SetRotation(-math.pi/2)
+    ftex:SetVertexColor(0.5,0.5,0.5)
+    mb:SetPushedTexture(ftex)  
+    
+    
+    mb:SetScript("OnClick",function(self)
+      if mb.buttonPointer.familyIndex==1 then      
+        local cm=self.buttonPointer.confirmMove
+        if cm:IsShown() then cm:Hide() else cm:Show() end
+      else
+        print("already in a group") --NYI: make it pop out of group
+      end
+    end)
+    
+    end --end of move to group cutton
+      
   end
   
 end
@@ -1089,6 +1380,7 @@ local function createGroup(self,n,pos)
   f:SetBackdrop(bd2)
   f.para=para
   f.familyIndex=n
+  f.elementsCollapsed=true
   
   if not pos then table.insert(eF.familyButtonsList,f) else table.insert(eF.familyButtonsList,pos,f) end
   
@@ -1102,9 +1394,19 @@ local function createGroup(self,n,pos)
     self:Disable()
     end)
   
-  f.collapse=function()
-  
+  f.collapse=function(self) 
     print("collapsing kek")
+    local j=self.familyIndex
+    local lst=eF.familyButtonsList
+    local cl=not self.elementsCollapsed
+    
+    for i=1,#lst do
+      if (lst[i].familyIndex==j) and lst[i].childIndex then lst[i].collapsed=cl end  
+    end
+    local sc=eF.interface.familiesFrame.famList.scrollChild
+    sc:setFamilyPositions()
+    
+    self.elementsCollapsed=cl
   end
   
   local sc=eF.interface.familiesFrame.famList.scrollChild
@@ -1197,23 +1499,36 @@ local function createGroup(self,n,pos)
   local cpd
   f.collapsoid=CreateFrame("Button",nil,f)
   cpd=f.collapsoid
-  cpd:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",1,1)
-  cpd:SetSize(20,20)
+  cpd:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",-1,-1)
+  cpd:SetSize(15,f:GetHeight()*0.5)
+  cpd.buttonIndex=f
   
   local ftex
  
   ftex=cpd:CreateTexture(nil,"BACKGROUND")
-  ftex:SetAllPoints(true)
-  ftex:SetTexture("Interface\\BUTTONS\\Arrow-Down-Up")
+  ftex:SetPoint("BOTTOMLEFT",cpd,"BOTTOMLEFT",2,2)
+  ftex:SetTexture(arrowDownTexture)
+  ftex:SetTexCoord(0,1,0,0.5)
+  ftex:SetSize(12,12)
   cpd:SetNormalTexture(ftex)
   
   ftex=nil
   ftex=cpd:CreateTexture(nil,"BACKGROUND")
-  ftex:SetAllPoints(true)
-  ftex:SetTexture("Interface\\BUTTONS\\Arrow-Down-Down")
+  ftex:SetPoint("BOTTOMLEFT",cpd,"BOTTOMLEFT",2,2)
+  ftex:SetTexture(arrowDownTexture)
+  ftex:SetVertexColor(0.5,0.5,0.5)
+  ftex:SetTexCoord(0,1,0,0.5)
+  ftex:SetSize(12,12)
   cpd:SetPushedTexture(ftex)  
   
-  end
+  
+  cpd:SetScript("OnClick",function()
+    cpd.buttonIndex:collapse()
+  end)
+  
+  
+  end --end of collapsoid
+  
   
 end
 
@@ -1223,8 +1538,9 @@ local function updateFamilyButtonsIndexList()
   local bil=eF.para.familyButtonsIndexList
   
   for i=1,#bl do
-    table.insert(bil,{bl[i].familyIndex,bl[i].childIndex})
+    if not bl[i].collapsible then table.insert(bil,{bl[i].familyIndex,bl[i].childIndex}) end
   end
+  
 end
 
 local function setFamilyPositions(self)
@@ -1232,8 +1548,14 @@ local function setFamilyPositions(self)
   local h=0
   local lst=eF.familyButtonsList
   for i=1,#lst do
-    lst[i]:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-h)
-    h=h+lst[i]:GetHeight()+2
+    if not lst[i].collapsed then
+      lst[i]:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-h)
+      h=h+lst[i]:GetHeight()+2
+      if not lst[i]:IsShown() then lst[i]:Show() end
+    else
+      if lst[i]:IsShown() then lst[i]:Hide() end
+    end
+    
   end
   self:SetHeight(h)
 end
@@ -3755,6 +4077,7 @@ eF.familyButtonsList[#eF.familyButtonsList]:SetButtonState("PUSHED")
 eF.familyButtonsList[#eF.familyButtonsList]:Click()
 afterDo(0, function() fL:SetVerticalScroll(fL:GetVerticalScrollRange()) end)
 end)
+
 end --end of icon creation button 
 
 --create bar button (cbb)
