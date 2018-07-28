@@ -1953,7 +1953,7 @@ fD.ebHeight:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
 h=self:GetNumber()
 if h==0 then h=eF.para.units.height; self:SetText(h)
-else eF.para.units.height=h; eF.units:updateSize() end
+else eF.para.units.height=h; eF.units:updateAllParas() end
 end)
 
 createNumberEB(fD,"ebWidth",fD)
@@ -1964,7 +1964,7 @@ fD.ebWidth:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
 w=self:GetNumber()
 if w==0 then w=eF.para.units.width; self:SetText(w)
-else eF.para.units.width=w; eF.units:updateSize() end
+else eF.para.units.width=w; eF.units:updateAllParas() end
 end)
 
 end
@@ -1996,7 +1996,7 @@ fD.hClassColor:SetScript("OnClick",function(self)
   eF.para.layout.byClassColor=ch
   if ch then fD.hColor.blocker:Show() else fD.hColor.blocker:Hide() end 
   eF.units.byClassColor=ch
-  eF.units:updateHealthVis()
+  eF.units:updateAllParas()
 end)
 
 createCS(fD,"hColor",fD)
@@ -2019,7 +2019,7 @@ fD.hColor.opacityFunc=function()
   eF.units.hpR=r
   eF.units.hpG=g
   eF.units.hpB=b
-  eF.units:updateHealthVis()
+  eF.units:updateAllParas()
 end
 
 fD.hColor.blocker=CreateFrame("Frame",nil,fD)
@@ -2045,7 +2045,7 @@ fD.hDir.initialize=function(frame,level,menuList)
    info.func=function(self,arg1,arg2,checked)
      eF.para.units.healthGrow=arg1
      eF.units.healthGrow=arg1
-     eF.units:updateHealthVis()
+     eF.units:updateAllParas()
      UIDropDownMenu_SetText(frame,v)
      UIDropDownMenu_SetSelectedName(frame,v)
      CloseDropDownMenus()
@@ -2067,7 +2067,7 @@ eF.para.units.hpGrad1B=n;
 eF.units.hpGrad1R=n;
 eF.units.hpGrad1G=n;
 eF.units.hpGrad1B=n;
-eF.units:updateGrad() 
+eF.units:updateAllParas()
 end)
 
 createNumberEB(fD,"gradFinal",fD)
@@ -2082,7 +2082,7 @@ eF.para.units.hpGrad2B=n;
 eF.units.hpGrad2R=n;
 eF.units.hpGrad2G=n;
 eF.units.hpGrad2B=n;
-eF.units:updateGrad() 
+eF.units:updateAllParas()
 end)
 
 end--end of Health Frame
@@ -2115,7 +2115,7 @@ fD.nClassColor:SetScript("OnClick",function(self)
   eF.para.units.textColorByClass=ch
   eF.units.textColorByClass=ch
   if ch then fD.nColor.blocker:Show() else fD.nColor.blocker:Hide() end 
-  eF.units:updateTextColor() 
+  eF.units:updateAllParas()
 end)
 
 
@@ -2139,7 +2139,7 @@ fD.nColor.opacityFunc=function()
   eF.units.textR=r
   eF.units.textG=g
   eF.units.textB=b
-  eF.units:updateTextColor()
+  eF.units:updateAllParas()
 end
 
 fD.nColor.blocker=CreateFrame("Frame",nil,fD)
@@ -2159,7 +2159,7 @@ fD.nMax:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
 n=self:GetNumber()
 if n==0 then n=eF.para.units.textLim; self:SetText(n)
-else eF.para.units.textLim=n; eF.units.textLim=n; eF.units:updateTextLim() end
+else eF.para.units.textLim=n; eF.units.textLim=n; eF.units:updateAllParas() end
 end)
 
 createNumberEB(fD,"nSize",fD)
@@ -2169,7 +2169,7 @@ fD.nSize:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
 n=self:GetNumber()
 if n==0 then n=eF.para.units.textSize; self:SetText(n)
-else eF.para.units.textSize=n; eF.units.textSize=n; eF.units:updateTextFont() end
+else eF.para.units.textSize=n; eF.units.textSize=n; eF.units:updateAllParas() end
 end)
 
 
@@ -2179,7 +2179,7 @@ fD.nAlpha.text:SetText("Alpha:")
 fD.nAlpha:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
 a=self:GetNumber()
-eF.para.units.textA=a; eF.units.textA=a; eF.units:updateTextColor() 
+eF.para.units.textA=a; eF.units.textA=a; eF.units:updateAllParas()
 end)
 
 
@@ -2194,11 +2194,11 @@ fD.nFont.initialize=function(frame,level,menuList)
    info.func=function(self,arg1,arg2,checked)
      eF.para.units.textFont="Fonts\\"..arg1..".ttf"
      eF.units.textFont="Fonts\\"..arg1..".ttf"
-     eF.units:updateTextPos()
+     eF.units:updateAllParas()
      UIDropDownMenu_SetText(frame,v)
      UIDropDownMenu_SetSelectedName(frame,v)
      CloseDropDownMenus()
-     eF.units:updateTextFont()
+     eF.units:updateAllParas()
    end
    
    UIDropDownMenu_AddButton(info)
@@ -2216,7 +2216,7 @@ fD.nPos.initialize=function(frame,level,menuList)
    info.func=function(self,arg1,arg2,checked)
      eF.para.units.textPos=arg1
      eF.units.textPos=arg1
-     eF.units:updateTextPos()
+     eF.units:updateAllParas()
      UIDropDownMenu_SetText(frame,v)
      UIDropDownMenu_SetSelectedName(frame,v)
      CloseDropDownMenus()
@@ -3886,7 +3886,8 @@ eeb:SetScript("OnClick",function(self)
 end)
 
 eeb.confirmButton:SetScript("OnClick",function(self)
-  local j,k=self.deleteJ,self.deleteK
+  local j,k=self.deleteJ,self.delete
+  if j==1 and not k then return end
   if k then exterminateChild(j,k)
   else
     if eF.activeButton.smart then exterminateSmartFamily(j) else exterminateDumbFamily(j) end

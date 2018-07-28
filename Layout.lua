@@ -23,6 +23,7 @@ local function initLayoutFrame()
 end
 eF.rep.initLayoutFrame=initLayoutFrame
 
+--NYI layout update needs revisiting ::needs groupParas differentiation ++ needs in combat stuff (include pre-setting frame positions etc)
 local function layoutUpdate(self)
   local width=eF.units.width or 30
   local height=eF.units.height or 30

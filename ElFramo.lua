@@ -25,10 +25,10 @@ eF.units.updateSize=eF.rep.updateUnitFrameSize
 eF.units.updateTextFont=eF.rep.updateUnitFrameTextFont
 eF.units.updateHealthVis=eF.rep.updateUnitFrameHealthVisuals
 eF.units.updateTextColor=eF.rep.updateUnitFrameTextColor
-eF.units.updateTextColor=eF.rep.updateUnitFrameTextColor
 eF.units.updateTextLim=eF.rep.updateUnitFrameTextLim
 eF.units.updateTextPos=eF.rep.updateUnitFrameTextPos
 eF.units.updateGrad=eF.rep.updateUnitFrameGrad
+eF.units.updateAllParas=eF.rep.updateAllUnitParas
 eF.units:SetScript("OnUpdate",units.onUpdate)
 eF.units:RegisterEvent("GROUP_ROSTER_UPDATE")
 eF.units:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -95,7 +95,11 @@ eF.rep.unitDisable=unitDisable
 local function unitUpdateText(self)
   local unit=self.id
   local name=UnitName(unit)
-  local units=eF.units
+  if not name then return end
+  local units
+  if self.group and eF.para.groupParas then units=eF.unitsGroup else units=eF.units end
+
+  print(unit,name,units.textLim)
   if units.textLim then name=strsub(name,1,units.textLim) end
 
   self.text:SetText(name)
@@ -197,6 +201,10 @@ local function createUnitFrame(self,unit)
   self[unit].id=unit
   self[unit].events={"UNIT_HEALTH_FREQUENT","UNIT_MAXHEALTH","UNIT_CONNECTION","UNIT_FACTION","UNIT_AURA","UNIT_POWER_UPDATE"}
 
+  if unit=="player" or unit=="party1" or unit=="party2" or unit=="party3" or unit=="party4" then
+    self[unit].updateTextColor=eF.rep.updateTextColorGroupFrame; self.group=true else self[unit].updateTextColor=eF.rep.updateTextColorRaidFrame; self.group=false 
+  end
+  
   self[unit]:SetAttribute("unit",unit)
   self[unit]:SetAttribute("type1","target")
   
@@ -298,10 +306,123 @@ local function createUnitFrame(self,unit)
   self[unit].disable=eF.rep.unitDisable
   self[unit].eventHandler=eF.rep.unitEventHandler
   self[unit].checkLoad=eF.rep.unitLoad
+  self[unit].updateHPbyClass=eF.rep.updateHPbyClass
   self[unit]:SetScript("OnEvent",self[unit].eventHandler)
   
 end --end of CreateUnitFrame()
 eF.rep.createUnitFrame=createUnitFrame
+
+local function updateTextColorRaidFrame(self)
+  local a
+  local para=eF.para.units
+  a=para.textA or 1
+  
+  if para.textColorByClass then
+    local r,g,b = 1,1,1
+    local _,CLASS=UnitClass(self.id)
+    if CLASS then r,g,b=GetClassColor(CLASS) end
+    self.text:SetTextColor(r,g,b,a)
+  else
+    local r,g,b = para.textR or 1, para.textG or 1, para.textB or 1
+    self.text:SetTextColor(r,g,b,a)
+  end
+  
+end
+eF.rep.updateTextColorRaidFrame=updateTextColorRaidFrame
+
+local function updateTextColorGroupFrame(self)
+  local a
+  local groupParas=eF.para.groupParas
+  local para
+  if groupParas then para= eF.para.unitsGroup;  else para=eF.para.units end
+  
+  a=para.textA or 1
+  
+  if para.textColorByClass then
+  
+    local r,g,b = 1,1,1
+    local _,CLASS=UnitClass(self.id)
+    if CLASS then r,g,b=GetClassColor(CLASS) end
+    self.text:SetTextColor(r,g,b,a)
+  else
+    local r,g,b = para.textR or 1, para.textG or 1, para.textB or 1
+    self.text:SetTextColor(r,g,b,a)
+  end
+  
+end
+eF.rep.updateTextColorGroupFrame=updateTextColorGroupFrame
+
+local function updateAllUnitParas(self)
+  local u,l
+  local groupParas=eF.para.groupParas
+  for i=1,45 do
+    local unit
+    
+    if i<6 then 
+      unit=eF.partyLoop[i]
+      if groupParas then u=eF.para.unitsGroup; l=eF.para.layout else u=eF.para.units; l=eF.para.layout end
+    else 
+      unit=eF.raidLoop[i-5] 
+      u=eF.para.units 
+      l=eF.para.layout
+    end
+    local f=self[unit]
+    
+    
+    ---HP
+    f:SetSize(u.width or 50,u.height or 70)
+    f.hp:ClearAllPoints()
+    if u.healthGrow=="up" then 
+      f.hp:SetPoint("BOTTOMLEFT"); f.hp:SetPoint("BOTTOMRIGHT");  f.hp:SetHeight(u.height); f.hp:SetOrientation("VERTICAL"); f.hp:SetReverseFill(false)
+    elseif u.healthGrow=="right" then
+      f.hp:SetPoint("BOTTOMLEFT"); f.hp:SetPoint("TOPLEFT"); f.hp:SetWidth(u.width); f.hp:SetOrientation("HORIZONTAL"); f.hp:SetReverseFill(false)  
+    elseif u.healthGrow=="down" then
+      f.hp:SetPoint("TOPRIGHT"); f.hp:SetPoint("TOPLEFT"); f.hp:SetHeight(u.height); f.hp:SetOrientation("VERTICAL"); f.hp:SetReverseFill(true)
+    elseif u.healthGrow=="left" then
+      f.hp:SetPoint("TOPRIGHT"); f.hp:SetPoint("BOTTOMRIGHT"); f.hp:SetWidth(u.width); f.hp:SetOrientation("HORIZONTAL"); f.hp:SetReverseFill(true)
+    end
+  
+    if u.hpTexture then
+      f.hp:SetStatusBarTexture(f.hpTexture,0,0.8,0)
+    end
+  
+    if not l.byClassColor then
+      local r,g,b,a=u.hpR,u.hpG,u.hpB,u.hpA
+      f.hp:SetStatusBarTexture(r,g,b,a)
+    else
+      f:updateHPbyClass()
+    end
+    
+    local hpTexture=f.hp:GetStatusBarTexture()
+    
+    if self.hpGrad then
+      hpTexture:SetGradientAlpha(u.hpGradOrientation,u.hpGrad1R,u.hpGrad1G,u.hpGrad1B,u.hpGrad1A,u.hpGrad2R,u.hpGrad2G,u.hpGrad2B,u.hpGrad2A)
+    end
+    
+    ---TEXT
+    f.text:SetFont(u.textFont,u.textSize,u.textExtra)
+    f.text:ClearAllPoints()
+    f.text:SetPoint(u.textPos,f,u.textPos,u.textXOS,u.textYOS)
+
+    f:updateTextColor()
+    f:updateText()
+    
+    if u.borderSize then
+      local r=u.borderR or 0
+      local g=u.borderG or 0
+      local b=u.borderB or 0
+      for k,v in next,{"RIGHT","TOP","LEFT","BOTTOM"} do
+        local bn=eF.borderInfo(v)      
+        f[bn]:SetColorTexture(1,1,1)
+      end
+    end
+    
+    
+    
+    
+  end --end of for i=1,45
+end
+eF.rep.updateAllUnitParas=updateAllUnitParas
 
 local function initUnitsUnits()
 
@@ -345,6 +466,7 @@ end
 eF.rep.unitsFrameOnUpdate=unitsFrameOnUpdate
 
 local function unitsOnGroupUpdate(self)
+
     local raid=IsInRaid()
     self.raid=IsInRaid() --is used for the updatefunction
     local num=GetNumGroupMembers() --for some reason gives 0 when solo
@@ -357,42 +479,38 @@ local function unitsOnGroupUpdate(self)
     for n=1,num do
       local unit=lst[n]  
       local class,CLASS=UnitClass(unit)
-      if self.byClassColor then
-      
-        local alpha=units.hpA or 1
-        local r,g,b=GetClassColor(CLASS)       
-        units[unit].hp:SetStatusBarTexture(r,g,b,alpha)
-        --units[unit].hp:SetStatusBarColor(r,g,b,hpA)
+      if self.byClassColor then  
+        self[unit].hp:updateHPbyClass()
       end--end of byClassColor
         
-      units[unit]:enable()
-      if units[unit].text then units[unit]:updateText() end 
+      self[unit]:enable()
+      if self[unit].text then self[unit]:updateText() end 
       
       local role=UnitGroupRolesAssigned(unit)
-      units[unit].role=role      
-      units[unit].class=class
+      self[unit].role=role      
+      self[unit].class=class
       --DO ALL THE FAMILY DEPENDENCIES
-      units:checkLoad()
+      self:checkLoad()
       
     end --end of for n=1,num
       
     --Hide all others
     if not raid then     
       for i=num+1,5 do
-        local unit=eF.partyLoop[i]; if units[unit].enabled then units[unit]:disable();  else break end
+        local unit=eF.partyLoop[i]; if self[unit].enabled then self[unit]:disable();  else break end
       end    
       for i=1,40 do
-        local unit=eF.raidLoop[i]; if units[unit].enabled then units[unit]:disable(); else break end
+        local unit=eF.raidLoop[i]; if self[unit].enabled then self[unit]:disable(); else break end
       end
      
     else  
     
       for i=1,5 do
-        local unit=eF.partyLoop[i]; if units[unit].enabled then units[unit]:disable(); else break end
+        local unit=eF.partyLoop[i]; if self[unit].enabled then self[unit]:disable(); else break end
       end
     
       for i=num+1,40 do
-        local unit=eF.raidLoop[i]; if units[unit].enabled then units[unit]:disable() ; else break end
+        local unit=eF.raidLoop[i]; if self[unit].enabled then self[unit]:disable() ; else break end
       end
     end
 end
@@ -498,120 +616,6 @@ local function unitLoad(self,ins,enc)
 end
 eF.rep.unitLoad=unitLoad
 
-local function updateUnitFrameSize(self)
-  local h,w
-  local para=eF.para.units
-  h=para.height or 50
-  w=para.width or 50
-  
-  for i=1,45 do
-    local id
-    if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
-    self[id]:SetHeight(h)
-    self[id]:SetWidth(w)
-    local o=self[id].hp:GetOrientation()
-    if o=="VERTICAL" then self[id].hp:SetHeight(h)
-    else self[id].hp:SetWidth(w) end 
-  end
-end
-eF.rep.updateUnitFrameSize=updateUnitFrameSize
-
-local function updateUnitFrameTextFont(self)
-  local s,f,e
-  local para=eF.para.units
-  s=para.textSize or 13
-  f=para.textFont or "Fonts\\FRIZQT__.ttf"
-  e=para.textExtra or nil
-
-  for i=1,45 do
-    local id
-    if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
-    self[id].text:SetFont(f,s,e)
-  end
-end
-eF.rep.updateUnitFrameTextFont=updateUnitFrameTextFont
-
-local function updateUnitFrameTextColor(self)
-  local a
-  local para=eF.para.units
-  a=para.textA or 1
-  if units.textColorByClass then 
-
-      for i=1,45 do
-        local id
-        if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end   
-        local _,CLASS=UnitClass(id)
-        local r=1
-        local g=1
-        local b=1
-        if CLASS then r,g,b=GetClassColor(CLASS) end
-        self[id].text:SetTextColor(r,g,b,a)
-      end
-  
-  else --else of byClassColor
-    local r=para.textR or 1 
-    local g=para.textG or 1 
-    local b=para.textB or 1 
-      for i=1,45 do
-        local id
-        if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end   
-        self[id].text:SetTextColor(r,g,b,a)
-      end
-  end
-end
-eF.rep.updateUnitFrameTextColor=updateUnitFrameTextColor
-
-local function updateUnitFrameTextPos(self)
-  local pos,xos,yos
-  local para=eF.para.units
-  pos=para.textPos or "CENTER"
-  xos=para.textXOS or 0
-  yos=para.textYOS or 0
-
-  for i=1,45 do
-    local id
-    if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
-    self[id].text:ClearAllPoints()
-    self[id].text:SetPoint(pos,self[id],pos,xos,yos)
-  end
-end
-eF.rep.updateUnitFrameTextPos=updateUnitFrameTextPos
-
-local function updateUnitFrameTextLim(self)
-  local n
-  local para=eF.para.units
-  n=para.textLim or 4
-  local tbl
-  if self.raid then tbl=eF.raidLoop else tbl=eF.partyLoop end
-  
-  for i=1,self.num do
-    local id=tbl[i]
-    self[id]:updateText()
-  end
-end
-eF.rep.updateUnitFrameTextLim=updateUnitFrameTextLim
-
-local function updateUnitFrameGrad(self)
-  local r1,g1,b1,r2,g2,b2
-  local para=eF.para.units
-  r1=para.hpGrad1R
-  g1=para.hpGrad1G
-  b1=para.hpGrad1B
-  r2=para.hpGrad2R
-  g2=para.hpGrad2G
-  b2=para.hpGrad2B
-  
-  for i=1,45 do
-    local id
-    if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
-    local hpTexture=self[id].hp:GetStatusBarTexture()
-    
-    hpTexture:SetGradient(self.hpGradOrientation,r1,g1,b1,r2,g2,b2)
-  end
-
-end
-eF.rep.updateUnitFrameGrad=updateUnitFrameGrad
- 
 local function updateUnitFrameHealthVisuals(self)
   local para=eF.para.units
   local hG=para.healthGrow
@@ -642,10 +646,7 @@ local function updateUnitFrameHealthVisuals(self)
     
     for i=1,self.num do
       local unit=lst[i]
-      local _,CLASS=UnitClass(unit)
-      local r,g,b=0,0,0
-      if CLASS then r,g,b=GetClassColor(CLASS) end
-      self[unit].hp:SetStatusBarTexture(r,g,b,a)
+      unit:updateHPbyClass()
     end
   
   else
@@ -660,37 +661,15 @@ local function updateUnitFrameHealthVisuals(self)
 end
 eF.rep.updateUnitFrameHealthVisuals=updateUnitFrameHealthVisuals
 
-local function updateUnitFrameTextColor(self)
-  local para=eF.para.units
-  local byCC=eF.para.units.textColorByClass
-  local a=self.textA or 1
-  --update color if byCC
-  if byCC then
-    local lst
-    if raid then lst=eF.raidLoop
-    else lst=eF.partyLoop end  
-    
-    for i=1,self.num do
-      local unit=lst[i]
-      local _,CLASS=UnitClass(unit)
-      local r,g,b=0,0,0
-      if CLASS then r,g,b=GetClassColor(CLASS) end
-      self[unit].text:SetTextColor(r,g,b,a)
-    end
-  
-  else
-    
-    local r,g,b=self.textR,self.textG,self.textB
-    for i=1,45 do
-      local unit
-      if i<6 then unit=eF.partyLoop[i] else unit=eF.raidLoop[i-5] end
-      self[unit].text:SetTextColor(r,g,b,a)
-    end
-  
-  end
- 
+local function updateHPbyClass(self)
+  local unit=self.id
+  local _,CLASS=UnitClass(unit)
+  local r,g,b=0,0,0
+  if self.group and eF.para.groupParas then para=eF.unitsGroup else para=eF.units end
+  if CLASS then r,g,b=GetClassColor(CLASS) end
+  self.hp:SetStatusBarTexture(r,g,b)
 end
-eF.rep.updateUnitFrameTextColor=updateUnitFrameTextColor
+eF.rep.updateHPbyClass=updateHPbyClass
 
 --initUnitsFrame()
 --initUnitsUnits()
