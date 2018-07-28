@@ -454,7 +454,7 @@ local function unitLoad(self,ins,enc)
       
     else --else of if selfj.smart
       local nk=self[j].para.count
-      for k=1,nk do       
+      for k=1,nk do   
         if self[j][k]:checkLoad(role,ins,enc,class) then
           local onAura=self[j][k].onAuraList
           local onBuff=self[j][k].onBuffList

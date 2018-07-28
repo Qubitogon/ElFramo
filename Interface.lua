@@ -221,7 +221,7 @@ local function updateAllFramesChildParas(j,k)
   end--end of for i=1,45
 end
 
-local function exterminateOrphan(j,k)
+local function exterminateChild(j,k)
   
   
   local count=eF.para.families[j].count
@@ -268,7 +268,7 @@ local function exterminateOrphan(j,k)
   bl[mmax]=nil
   
   for m=1,#bl do
-    if bl[m].familyIndex==j and bl[m].childIndex>k then bl[m].childIndex=bl[m].childIndex-1 end
+    if bl[m].familyIndex==j and (bl[m].childIndex) and (bl[m].childIndex>k) then bl[m].childIndex=bl[m].childIndex-1 end
   end
   
   local sc=eF.interface.familiesFrame.famList.scrollChild
@@ -422,7 +422,6 @@ local function copyChildTo(oj,ok,nj,nk)
   local paraFam=eF.para.families
   local sc=eF.interface.familiesFrame.famList.scrollChild
   
-  if paraFam[nj][nk] then return nil end
   if paraFam[nj].smart then return nil end
   if nk>paraFam[nj].count then paraFam[nj].count=nk end
   
@@ -430,7 +429,7 @@ local function copyChildTo(oj,ok,nj,nk)
   eF.rep.createAllIconFrame(nj,nk)
   sc:createChild(nj,nk)
 
-  sc:setFamilyPositions() 
+  sc:setFamilyPositions()
 end
 
 local function moveOrphanToGroup(oj,ok,name)
@@ -441,8 +440,24 @@ local function moveOrphanToGroup(oj,ok,name)
   paraFam[nj].count=nk
 
   copyChildTo(oj,ok,nj,nk)
-  exterminateOrphan(oj,ok)
+  exterminateChild(oj,ok)
   
+  return true
+  
+end
+
+local function makeOrphan(oj,ok)
+
+  if (not oj) or (not ok) then return nil end
+  local paraFam=eF.para.families
+  
+  if not paraFam[oj][ok] then return nil end
+  local nk=paraFam[1].count+1
+  paraFam[1].count=nk
+  
+  copyChildTo(oj,ok,1,nk)
+  exterminateChild(oj,ok)
+
   return true
   
 end
@@ -1166,12 +1181,8 @@ local function createChild(self,j,k,pos)
 
 
     mb:SetScript("OnClick",function(self)
-      if mb.buttonPointer.familyIndex==1 then      
-        local cm=self.buttonPointer.confirmMove
-        if cm:IsShown() then cm:Hide() else cm:Show() end
-      else
-        print("already in a group") --NYI: make it pop out of group
-      end
+      local cm=self.buttonPointer.confirmMove
+      if cm:IsShown() then cm:Hide() else cm:Show() end   
     end)
 
     end --end of move to group cutton
@@ -1367,12 +1378,7 @@ local function createChild(self,j,k,pos)
     
     
     mb:SetScript("OnClick",function(self)
-      if mb.buttonPointer.familyIndex==1 then      
-        local cm=self.buttonPointer.confirmMove
-        if cm:IsShown() then cm:Hide() else cm:Show() end
-      else
-        print("already in a group") --NYI: make it pop out of group
-      end
+      makeOrphan(self.buttonPointer.familyIndex,self.buttonPointer.childIndex)
     end)
     
     end --end of move to group cutton
@@ -2927,7 +2933,6 @@ do
     if not ch then sff.iconBlocker5:Show() else sff.iconBlocker5:Hide() end
     updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end)
-  --NYI not hiding border
   
   createDD(sff,"textType1",sff)
   sff.textType1.text:SetPoint("RIGHT",sff.hasText1.text,"RIGHT",0,-ySpacing)
@@ -3845,7 +3850,6 @@ ecsf.border:SetBackdrop(bd)
 
 ff.elementCreationFrame=CreateFrame("Frame","eFecf",ff)
 ecf=ff.elementCreationFrame
-
 ecf:SetPoint("TOP",ecsf,"TOP",0,-20)
 ecf:SetWidth(ecsf:GetWidth()*0.8)
 ecf:SetHeight(ecsf:GetHeight()*0.6)
@@ -3883,8 +3887,8 @@ end)
 
 eeb.confirmButton:SetScript("OnClick",function(self)
   local j,k=self.deleteJ,self.deleteK
-  if (j==1) and k then exterminateOrphan(j,k)
-  elseif not k then
+  if k then exterminateChild(j,k)
+  else
     if eF.activeButton.smart then exterminateSmartFamily(j) else exterminateDumbFamily(j) end
   end
   releaseAllFamilies()
