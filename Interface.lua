@@ -222,7 +222,8 @@ local function updateAllFramesChildParas(j,k)
 end
 
 local function exterminateOrphan(j,k)
-
+  
+  
   local count=eF.para.families[j].count
   eF.para.families[j].count=count-1
   
@@ -439,9 +440,11 @@ local function moveOrphanToGroup(oj,ok,name)
   local nk=paraFam[nj].count+1
   paraFam[nj].count=nk
 
-  
   copyChildTo(oj,ok,nj,nk)
   exterminateOrphan(oj,ok)
+  
+  return true
+  
 end
 
 local function updateAllFramesFamilyLayout(j)
@@ -806,6 +809,7 @@ local function createNewGroupParas(j)
     displayName="G",
     smart=false,
     count=0,
+    buttonsIndexList={},
      }
 end
 
@@ -858,17 +862,18 @@ local function moveButtonUpList(self)
   while m>0 and justInCase<1000 do
     justInCase=justInCase+1
     if not bl[m].collapsible then break end
-    m=m+1
+    m=m-1
   end
   
   local save=bl[m]
   bl[m]=bl[n]
   bl[n]=save
   
-
+  
   local sc=eF.interface.familiesFrame.famList.scrollChild
   sc:updateFamilyButtonsIndexList()
   sc:setFamilyPositions()
+  
 end
 
 local function moveButtonDownList(self)
@@ -895,6 +900,7 @@ local function moveButtonDownList(self)
   local sc=eF.interface.familiesFrame.famList.scrollChild
   sc:updateFamilyButtonsIndexList()
   sc:setFamilyPositions()
+  
 end
 
 local function createFamily(self,n,pos)
@@ -1183,6 +1189,7 @@ local function createChild(self,j,k,pos)
         self.groupNameEB:SetText("") 
         if eF.activeConfirmMove then eF.activeConfirmMove:Hide() ; eF.activeConfirmMove=nil end
         eF.activeConfirmMove=self
+        self.groupNameEB:SetFocus()
       end)
       
       cm:SetScript("OnHide",function(self)  
@@ -1207,12 +1214,20 @@ local function createChild(self,j,k,pos)
       cm.confirmButton=CreateFrame("Button",nil,cm,"UIPanelButtonTemplate")
       local cmcb=cm.confirmButton
       cmcb.ebPointer=eb
-      cmcb.familyIndex=f.familyIndex
-      cmcb.childIndex=f.childIndex
+      cmcb.parentPointer=cm
+      cmcb.buttonPointer=f
       cmcb:SetText("Confirm")
       cmcb:SetPoint("BOTTOMLEFT",cm,"BOTTOMLEFT",2,2)
       cmcb:SetWidth(60)
-      cmcb:SetScript("OnClick",function(self)  moveOrphanToGroup(self.familyIndex,self.childIndex,self.ebPointer:GetText())   end)
+      cmcb:SetScript("OnClick",function(self)
+      local name=self.ebPointer:GetText()
+      if moveOrphanToGroup(self.buttonPointer.familyIndex,self.buttonPointer.childIndex,name) then 
+        self.parentPointer:Hide() 
+      else      
+        self.ebPointer:SetText('"'..name..'" not found')
+      end   
+      
+      end)
       
       cm.cancelButton=CreateFrame("Button",nil,cm,"UIPanelButtonTemplate")
       local clb=cm.cancelButton
@@ -1380,6 +1395,7 @@ local function createGroup(self,n,pos)
   f:SetBackdrop(bd2)
   f.para=para
   f.familyIndex=n
+  f.group=true
   f.elementsCollapsed=true
   
   if not pos then table.insert(eF.familyButtonsList,f) else table.insert(eF.familyButtonsList,pos,f) end
@@ -1395,7 +1411,6 @@ local function createGroup(self,n,pos)
     end)
   
   f.collapse=function(self) 
-    print("collapsing kek")
     local j=self.familyIndex
     local lst=eF.familyButtonsList
     local cl=not self.elementsCollapsed
@@ -1472,6 +1487,7 @@ local function createGroup(self,n,pos)
     text:SetRotation(math.pi/2)
     f.up:SetPushedTexture(text)   
     f.up:SetScript("OnClick",moveButtonUpList)
+
     
     f.down=CreateFrame("Button",nil,f)
     f.down:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-1,2)
@@ -1491,7 +1507,7 @@ local function createGroup(self,n,pos)
     text:SetTexture("Interface\\BUTTONS\\UI-SpellbookIcon-PrevPage-Down")
     text:SetRotation(math.pi/2)
     f.down:SetPushedTexture(text)   
-    f.down:SetScript("OnClick",moveButtonDownList)
+    f.down:SetScript("OnClick",moveButtonDownList) 
   end    
   
   --collapsoid
@@ -1547,17 +1563,45 @@ local function setFamilyPositions(self)
   --f:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-(familyHeight+2)*(n-1))
   local h=0
   local lst=eF.familyButtonsList
+  local insert=table.insert
+  local rem=table.remove
+  local l={}
+  local lc={}
+  --make sure gorups and children are in line
   for i=1,#lst do
-    if not lst[i].collapsed then
-      lst[i]:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-h)
-      h=h+lst[i]:GetHeight()+2
-      if not lst[i]:IsShown() then lst[i]:Show() end
+    if lst[i].collapsible then insert(lc,lst[i]) else insert(l,lst[i]) end
+  end
+  
+  for i=1,#l do
+    if l[i].group then 
+      local j=l[i].familyIndex
+      for k=#lc,1,-1 do
+        local ce=lc[k]
+        if (ce) and (ce.familyIndex==j) then insert(l,i+1,ce); rem(lc,k) end  
+      end   
+    end 
+  end
+  
+  --hide remaining bastards that were deleted
+  for i=1,#lc do lc[i]:Hide() end
+  
+  --render
+  for i=1,#l do
+  
+    if not l[i].collapsed then
+      l[i]:SetPoint("TOPRIGHT",self,"TOPRIGHT",-4,-5-h)
+      h=h+l[i]:GetHeight()+2
+      if not l[i]:IsShown() then l[i]:Show() end
+      
     else
-      if lst[i]:IsShown() then lst[i]:Hide() end
-    end
     
+      if l[i]:IsShown() then l[i]:Hide() end
+      
+    end   
   end
   self:SetHeight(h)
+  
+  eF.familyButtonsList=l
 end
 
 local function setSFFActiveValues(self)
