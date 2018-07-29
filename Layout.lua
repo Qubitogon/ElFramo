@@ -38,6 +38,7 @@ local function layoutUpdate(self)
   if not raid then
     if eF.para.groupParas then para=eF.para.unitsGroup else para=eF.para.units end
     local width,height,spacing,grow1,grow2=para.width,para.height,para.spacing,para.grow1,para.grow2
+
     for n=1,num do
       local unit=eF.partyLoop[n]
       local x=0
@@ -60,13 +61,14 @@ local function layoutUpdate(self)
     end   
 
   else --if not raid else
-
     local line=1
     local nmax=self.maxInLine or 5 
     local n
     para=eF.para.units
+    local width,height,spacing,grow1,grow2=para.width,para.height,para.spacing,para.grow1,para.grow2
+
     
-    if not self.byGroup then 
+    if not para.byGroup then 
       local x=0
       local y=0
       nmax=5 
@@ -106,7 +108,6 @@ local function layoutUpdate(self)
       local groups={-1,-1,-1,-1,-1,-1,-1,-1}
       local x=0
       local y=0
-      
       for i=1,num do
 
         local unit=eF.raidLoop[i]

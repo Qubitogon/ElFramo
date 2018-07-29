@@ -52,8 +52,8 @@ local function unitsEventHandler(self,event)
     self:onGroupUpdate()    
   elseif event=="PLAYER_REGEN_DISABLED" then
     eF.interface:Hide()
-    if eF.OOCActions.layoutUpdate then eF.layout:update() end
-    if eF.OOCActions.groupUpdate then self:onGroupUpdate() end
+    if eF.OOCActions.layoutUpdate then eF.layout:update(); eF.OOCActions.layoutUpdate=false end
+    if eF.OOCActions.groupUpdate then self:onGroupUpdate(); eF.OOCActions.groupUpdate=false end
   end
     
 end

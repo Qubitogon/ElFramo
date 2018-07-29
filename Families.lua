@@ -231,7 +231,7 @@ eF.rep.checkLoad=checkLoad
 local function createFamilyFrame(self,j)
   local insert=table.insert
   if self[j] then self[j]=nil end
-  self[j]=CreateFrame("Frame",nil,frame)
+  self[j]=CreateFrame("Frame",nil,self)
   local f=self[j]
   f.unitFrame=self
   f.id=self.id
@@ -526,21 +526,29 @@ local function applyChildParas(self,j,k)
         insert(c.onDebuffList,{eF.rep.iconAdoptAuraByName,c})
       end
     end
-        
+    
+    if c.para.trackType=="Static" then
+      c:Show()
+    end
+    
     if c.para.hasTexture then
       c.texture:Show()
-      if c.para.texture then c.texture:SetTexture(c.para.texture)  
-      elseif c.para.hasColorTexture then 
-        local r=c.para.textureR or 0
-        local g=c.para.textureG or 0
-        local b=c.para.textureB or 0
-        local a=c.para.textureA or 1
-        c.texture:SetColorTexture(r,g,b,a)               
-      else c.smartIcon=true;  
-      end     
-      if (not c.para.texture or c.para.smartIcon) then
+      local r=c.para.textureR or 0
+      local g=c.para.textureG or 0
+      local b=c.para.textureB or 0
+      local a=c.para.textureA or 1
+      
+      if c.para.texture and not (c.para.texture=="") then 
+        c.texture:SetTexture(c.para.texture)  
+        c.texture:SetVertexColor(r,g,b)
+      elseif not c.para.smartIcon then
+        c.texture:SetColorTexture(r,g,b,a)  
+        print("setting color texture")
+      else 
+        c.smartIcon=true; 
+        c.texture:SetVertexColor(r,g,b)
         insert(c.onPostAuraList,{eF.rep.iconApplySmartIcon,c})
-      end
+      end     
     else
       c.texture:Hide()
     end
@@ -595,7 +603,7 @@ local function applyChildParas(self,j,k)
   elseif c.para.type=="bar" then
  
   end
-
+  
 end
 eF.rep.applyChildParas=applyChildParas
 

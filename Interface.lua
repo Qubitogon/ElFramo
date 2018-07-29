@@ -217,7 +217,6 @@ local function updateAllFramesChildParas(j,k)
     frame:applyChildParas(j,k)
     frame:checkLoad()
     frame:eventHandler("UNIT_AURA")
-
   end--end of for i=1,45
 end
 
@@ -1761,7 +1760,9 @@ local function setCIFActiveValues(self)
   if para.hasTexture then if para.smartIcon then self.iconBlocker2:Show() else self.iconBlocker2:Hide() end end
   
   if para.texture then self.icon:SetText(para.texture);self.icon.pTexture:SetTexture(para.texture) end
+  self.textureColor.thumb:SetVertexColor(para.textureR,para.textureG,para.textureB)
   
+
   
   end
 
@@ -3431,18 +3432,39 @@ do
   end)
   --NYI: update without reload
 
+
+
+  createCS(cif,"textureColor",cif)
+  local tC=cif.textureColor
+  tC.text:SetPoint("RIGHT",cif.icon.text,"RIGHT",0,-ySpacing)
+  tC.text:SetText("Color:")
+  tC.getOldRGBA=function()
+    local r=eF.activePara.textureR
+    local g=eF.activePara.textureG
+    local b=eF.activePara.textureB
+  return r,g,b
+  end
+  
+  tC.opacityFunc=function()
+    local r,g,b=ColorPickerFrame:GetColorRGB()
+    local a=OpacitySliderFrame:GetValue()
+    tC.thumb:SetVertexColor(r,g,b)
+    eF.activePara.textureR=r
+    eF.activePara.textureG=g
+    eF.activePara.textureB=b
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex) 
+  end
+
   cif.iconBlocker2=CreateFrame("Button",nil,cif)
   local iB2=cif.iconBlocker2
   iB2:SetFrameLevel(cif:GetFrameLevel()+3)
   iB2:SetPoint("TOPLEFT",cif.icon.text,"TOPLEFT",-2,12)
-  iB2:SetHeight(50)
+  iB2:SetHeight(80)
   iB2:SetWidth(175)
   iB2.texture=iB2:CreateTexture(nil,"OVERLAY")
   iB2.texture:SetAllPoints()
   iB2.texture:SetColorTexture(0.07,0.07,0.07,0.4)
-
-
-
+  
   end --end of icon settings
 
   --create CDwheel settings
@@ -3885,7 +3907,7 @@ eeb:SetScript("OnClick",function(self)
 end)
 
 eeb.confirmButton:SetScript("OnClick",function(self)
-  local j,k=self.deleteJ,self.delete
+  local j,k=self.deleteJ,self.deleteK
   if j==1 and not k then return end
   if k then exterminateChild(j,k)
   else
