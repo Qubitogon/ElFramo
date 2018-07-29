@@ -622,7 +622,6 @@ local function intSetInitValues()
   local fD=gF.frameDim
   local para=eF.para
   local units=para.units
-  local layout=para.layout
   local ff=int.familiesFrame
   local fL=ff.famList
   local sc=ff.famList.scrollChild
@@ -641,9 +640,9 @@ local function intSetInitValues()
   fD.nMax:SetText(units.textLim)
   fD.nSize:SetText(units.textSize)
   
-  fD.hClassColor:SetChecked(layout.byClassColor)
-  fD.hColor.blocked=layout.byClassColor
-  if layout.byClassColor then fD.hColor.blocker:Show() else fD.hColor.blocker:Hide() end
+  fD.hClassColor:SetChecked(units.byClassColor)
+  fD.hColor.blocked=units.byClassColor
+  if units.byClassColor then fD.hColor.blocker:Show() else fD.hColor.blocker:Hide() end
   fD.hColor.thumb:SetVertexColor(units.hpR,units.hpG,units.hpB)
   
   fD.nClassColor:SetChecked(units.textColorByClass)
@@ -1953,7 +1952,7 @@ fD.ebHeight:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
 h=self:GetNumber()
 if h==0 then h=eF.para.units.height; self:SetText(h)
-else eF.para.units.height=h; eF.units:updateAllParas() end
+else eF.para.units.height=h; eF.units:updateAllParas(); eF.layout:update() end
 end)
 
 createNumberEB(fD,"ebWidth",fD)
@@ -1964,7 +1963,7 @@ fD.ebWidth:SetScript("OnEnterPressed", function(self)
 self:ClearFocus()
 w=self:GetNumber()
 if w==0 then w=eF.para.units.width; self:SetText(w)
-else eF.para.units.width=w; eF.units:updateAllParas() end
+else eF.para.units.width=w; eF.units:updateAllParas(); eF.layout:update() end
 end)
 
 end
@@ -1993,7 +1992,7 @@ fD.hClassColor:SetScript("OnClick",function(self)
   local ch=self:GetChecked()
   self:SetChecked(ch)
   fD.hColor.blocked=ch
-  eF.para.layout.byClassColor=ch
+  eF.para.units.byClassColor=ch
   if ch then fD.hColor.blocker:Show() else fD.hColor.blocker:Hide() end 
   eF.units.byClassColor=ch
   eF.units:updateAllParas()

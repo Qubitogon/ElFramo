@@ -32,12 +32,14 @@ eF.units.updateAllParas=eF.rep.updateAllUnitParas
 eF.units:SetScript("OnUpdate",units.onUpdate)
 eF.units:RegisterEvent("GROUP_ROSTER_UPDATE")
 eF.units:RegisterEvent("PLAYER_ENTERING_WORLD")
+eF.units:RegisterEvent("PLAYER_REGEN_DISABLED")
+eF.units:RegisterEvent("UNIT_NAME_UPDATE")
 eF.units:SetScript("OnEvent",units.onEvent)
 --apply all relevant non-table parameters
 for k,v in pairs(eF.para.units) do
   if type(v)~="table" then eF.units[k]=v; end
 end 
-for k,v in pairs(eF.para.layout) do
+for k,v in pairs(eF.para.units) do
   if type(v)~="table" then eF.units[k]=v end
 end 
 
@@ -48,7 +50,11 @@ local function unitsEventHandler(self,event)
   
   if event=="GROUP_ROSTER_UPDATE" or event=="PLAYER_ENTERING_WORLD"  then
     self:onGroupUpdate()    
-  end--END OF IF event==GROUP_ROSTER_UDPATE
+  elseif event=="PLAYER_REGEN_DISABLED" then
+    eF.interface:Hide()
+    if eF.OOCActions.layoutUpdate then eF.layout:update() end
+    if eF.OOCActions.groupUpdate then self:onGroupUpdate() end
+  end
     
 end
 eF.rep.unitsEventHandler=unitsEventHandler
@@ -79,16 +85,17 @@ eF.rep.unitEnable=unitEnable
 local function unitDisable(self)
   
   if not self.enabled then return end
-  UnregisterUnitWatch(self)
+
   self.enabled=false
   self:Hide()
   
+  --[[
   local unit=self.id
   for i=1,#self.events do
     self:UnregisterEvent(self.events[i])
     --self:RegisterEvent(self.events[i])
   end
-  
+  ]] --not really needed as there just wont be any of those events happening any more :/
 end
 eF.rep.unitDisable=unitDisable
 
@@ -99,7 +106,6 @@ local function unitUpdateText(self)
   local units
   if self.group and eF.para.groupParas then units=eF.unitsGroup else units=eF.units end
 
-  print(unit,name,units.textLim)
   if units.textLim then name=strsub(name,1,units.textLim) end
 
   self.text:SetText(name)
@@ -149,25 +155,25 @@ local function unitEventHandler(self,event)
       
     --BUFFS
     for i=1,40 do
-      local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss,own=UnitAura(self.id,i)
+      local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss=UnitAura(self.id,i)
       if not name then break end   
       
       local c=self.onBuffList
       for j=1,#c do
         local v=c[j]
-        v[1](v[2],name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
+        v[1](v[2],name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
       end  
     
     end
     --DEBUFFS
     for i=1,40 do
-      local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss,own=UnitAura(self.id,i,"HARMFUL")
+      local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss=UnitAura(self.id,i,"HARMFUL")
       if not name then break end 
       
       local c=self.onDebuffList
       for j=1,#c do
         local v=c[j]
-        v[1](v[2],name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
+        v[1](v[2],name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
       end
       
     end 
@@ -185,6 +191,15 @@ local function unitEventHandler(self,event)
       local v=c[j]
       v[1](v[2])
     end
+  
+  elseif event=="UNIT_FLAGS" then
+    local id=self.id
+    local dead,connected=UnitIsDeadOrGhost(id),UnitIsConnected(id)
+    
+    self.offlineFrame:Hide();self.deadFrame:Hide()
+    if dead then self.deadFrame:Show()
+    elseif not connected then self.offlineFrame:Show()
+    end
     
   end 
 end
@@ -199,7 +214,7 @@ local function createUnitFrame(self,unit)
   
   self[unit]=CreateFrame("Button",nil,self,"SecureUnitButtonTemplate")
   self[unit].id=unit
-  self[unit].events={"UNIT_HEALTH_FREQUENT","UNIT_MAXHEALTH","UNIT_CONNECTION","UNIT_FACTION","UNIT_AURA","UNIT_POWER_UPDATE"}
+  self[unit].events={"UNIT_HEALTH_FREQUENT","UNIT_MAXHEALTH","UNIT_CONNECTION","UNIT_FACTION","UNIT_AURA","UNIT_POWER_UPDATE","UNIT_FLAGS"}
 
   if unit=="player" or unit=="party1" or unit=="party2" or unit=="party3" or unit=="party4" then
     self[unit].updateTextColor=eF.rep.updateTextColorGroupFrame; self.group=true else self[unit].updateTextColor=eF.rep.updateTextColorRaidFrame; self.group=false 
@@ -244,7 +259,7 @@ local function createUnitFrame(self,unit)
   end
   
   
-  if not eF.para.layout.byClassColor then
+  if not eF.para.units.byClassColor then
     local r,g,b,alpha=eF.para.units.hpR,eF.para.units.hpG,eF.para.units.hpB,eF.para.units.hpA
     self[unit].hp:SetStatusBarTexture(r,g,b,alpha)
   end
@@ -301,6 +316,32 @@ local function createUnitFrame(self,unit)
   self[unit]:updateBorders()
   end
 
+  
+  --create dead frame
+  self[unit].deadFrame=CreateFrame("Frame",nil,self[unit])
+  self[unit].deadFrame:SetAllPoints(true)
+  self[unit].deadFrame:SetFrameLevel(self[unit]:GetFrameLevel()+1)
+  self[unit].deadFrame.texture=self[unit].deadFrame:CreateTexture(nil,"BACKGROUND")
+  self[unit].deadFrame.texture:SetAllPoints(true)
+  self[unit].deadFrame.texture:SetColorTexture(0.5,0.5,0.5,0.2)
+  self[unit].deadFrame.text=self[unit].deadFrame:CreateFontString(nil,"OVERLAY")
+  self[unit].deadFrame.text:SetFont(self.textFont,self.textSize,self.textExtra)
+  self[unit].deadFrame.text:SetText("DEAD")
+  self[unit].deadFrame.text:SetPoint("CENTER")
+  self[unit].deadFrame:Hide()
+  
+  --create offline frame
+  self[unit].offlineFrame=CreateFrame("Frame",nil,self[unit])
+  self[unit].offlineFrame:SetAllPoints(true)
+  self[unit].offlineFrame:SetFrameLevel(self[unit]:GetFrameLevel()+1)
+  self[unit].offlineFrame.texture=self[unit].offlineFrame:CreateTexture(nil,"BACKGROUND")
+  self[unit].offlineFrame.texture:SetAllPoints(true)
+  self[unit].offlineFrame.texture:SetColorTexture(0.3,0.3,0.3,0.3)
+  self[unit].offlineFrame.text=self[unit].offlineFrame:CreateFontString(nil,"OVERLAY")
+  self[unit].offlineFrame.text:SetFont(self.textFont,self.textSize,self.textExtra)
+  self[unit].offlineFrame.text:SetText("OFFLINE")
+  self[unit].offlineFrame.text:SetPoint("CENTER")
+  self[unit].offlineFrame:Hide()
   
   self[unit].enable=eF.rep.unitEnable
   self[unit].disable=eF.rep.unitDisable
@@ -360,11 +401,10 @@ local function updateAllUnitParas(self)
     
     if i<6 then 
       unit=eF.partyLoop[i]
-      if groupParas then u=eF.para.unitsGroup; l=eF.para.layout else u=eF.para.units; l=eF.para.layout end
+      if groupParas then u=eF.para.unitsGroup else u=eF.para.units end
     else 
       unit=eF.raidLoop[i-5] 
       u=eF.para.units 
-      l=eF.para.layout
     end
     local f=self[unit]
     
@@ -386,7 +426,7 @@ local function updateAllUnitParas(self)
       f.hp:SetStatusBarTexture(f.hpTexture,0,0.8,0)
     end
   
-    if not l.byClassColor then
+    if not u.byClassColor then
       local r,g,b,a=u.hpR,u.hpG,u.hpB,u.hpA
       f.hp:SetStatusBarTexture(r,g,b,a)
     else
@@ -403,7 +443,10 @@ local function updateAllUnitParas(self)
     f.text:SetFont(u.textFont,u.textSize,u.textExtra)
     f.text:ClearAllPoints()
     f.text:SetPoint(u.textPos,f,u.textPos,u.textXOS,u.textYOS)
-
+    
+    f.deadFrame.text:SetFont(u.textFont,u.textSize,u.textExtra)
+    f.offlineFrame.text:SetFont(u.textFont,u.textSize,u.textExtra)
+    
     f:updateTextColor()
     f:updateText()
     
@@ -466,7 +509,7 @@ end
 eF.rep.unitsFrameOnUpdate=unitsFrameOnUpdate
 
 local function unitsOnGroupUpdate(self)
-
+    local byCC
     local raid=IsInRaid()
     self.raid=IsInRaid() --is used for the updatefunction
     local num=GetNumGroupMembers() --for some reason gives 0 when solo
@@ -475,16 +518,18 @@ local function unitsOnGroupUpdate(self)
     local lst
     if raid then lst=eF.raidLoop
     else lst=eF.partyLoop end  
-      
+     
+    if party and eF.para.groupParas then byCC=eF.para.unitsParty.byClassColor else byCC=eF.para.units.byClassColor end
+     
     for n=1,num do
       local unit=lst[n]  
       local class,CLASS=UnitClass(unit)
-      if self.byClassColor then  
-        self[unit].hp:updateHPbyClass()
+      if byCC then  
+        self[unit]:updateHPbyClass()
       end--end of byClassColor
         
       self[unit]:enable()
-      if self[unit].text then self[unit]:updateText() end 
+      self[unit]:updateText()
       
       local role=UnitGroupRolesAssigned(unit)
       self[unit].role=role      
@@ -619,7 +664,7 @@ eF.rep.unitLoad=unitLoad
 local function updateUnitFrameHealthVisuals(self)
   local para=eF.para.units
   local hG=para.healthGrow
-  local byCC=eF.para.layout.byClassColor
+  local byCC=eF.para.units.byClassColor
  
  --update orientation
   for i=1,45 do

@@ -5,6 +5,8 @@ eF.raidLoop={}
 eF.positions={"CENTER","RIGHT","TOPRIGHT","TOP","TOPLEFT","LEFT","BOTTOMLEFT","BOTTOM","BOTTOMRIGHT"}
 eF.orientations={"up","down","right","left"}
 eF.fonts={"FRIZQT__","ARIALN","skurri","MORPHEUS"}
+eF.OOCActions={layoutUpdate=false,groupUpdate=false}
+
 
 for i=1,40 do
   local s="raid"..tostring(i)

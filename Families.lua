@@ -31,16 +31,18 @@ local function initCreateFamilyFrames()
 end --end of createFamilyFrames()
 eF.rep.initCreateFamilyFrames=initCreateFamilyFrames
 
-local function iconAdoptAuraByName(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
+local function iconAdoptAuraByName(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
   if self.filled then return  end
   if name==self.para.arg1 then
+  
+    if self.para.ownOnly and not (unitCaster=="player") then return end    
+    
     self.name=name
     self.icon=icon
     self.count=count
     self.debuffType=debuffType
     self.duration=duration
     self.expirationTime=expirationTime
-    self.own=own
     self.unitCaster=unitCaster
     self.canSteal=canSteal
     self.spellId=spellId
@@ -52,17 +54,18 @@ local function iconAdoptAuraByName(self,name,icon,count,debuffType,duration,expi
 end
 eF.rep.iconAdoptAuraByName=iconAdoptAuraByName
 
-local function iconUnconditionalAdopt(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss,own)
+local function iconUnconditionalAdopt(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
 
   if self.filled then return  end
+    
+    if self.para.ownOnly and not (unitCaster=="player") then return end    
+
     self.name=name
     self.icon=icon
     self.count=count
     self.debuffType=debuffType
- 
     self.duration=duration
     self.expirationTime=expirationTime
-    self.own=own
     self.unitCaster=unitCaster
     self.canSteal=canSteal
     self.spellId=spellId
@@ -74,35 +77,29 @@ local function iconUnconditionalAdopt(self,name,icon,count,debuffType,duration,e
 end
 eF.rep.iconUnconditionalAdopt=iconUnconditionalAdopt
 
-local function blacklistFamilyAdopt(self,name,...)
+local function blacklistFamilyAdopt(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
   if self.full or eF.isInList(name,self.para.arg1) then return end
-  local dur=select(4,...)
-  if self.para.ignorePermanents and dur==0 then return end
-  local caster=select(6,...)
-  if self.para.ownOnly and not (caster=="player") then return end
+  if self.para.ignorePermanents and duration==0 then return end
+  if self.para.ownOnly and not (unitCaster=="player") then return end
   local iDA=self.para.ignoreDurationAbove
-  if iDA then if dur>iDA then return end end 
-  
+  if iDA then if duration>iDA then return end end 
   self.active=self.active+1
   self.filled=true
-  self[self.active]:adopt(name,...)
+  self[self.active]:adopt(name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
   if self.active==self.para.count then self.full=true end
   
 end
 eF.rep.blacklistFamilyAdopt=blacklistFamilyAdopt
 
-local function whitelistFamilyAdopt(self,name,...)
+local function whitelistFamilyAdopt(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
   if self.full or not eF.isInList(name,self.para.arg1) then return end
-  local dur=select(4,...)
-  if self.para.ignorePermanents and dur==0 then return end
-  local caster=select(6,...)
-  if self.para.ownOnly and not (caster=="player") then return end
+  if self.para.ignorePermanents and duration==0 then return end
+  if self.para.ownOnly and not (unitCaster=="player") then return end
   local iDA=self.para.ignoreDurationAbove
-  if iDA then if dur>iDA then return end end 
-  
+  if iDA then if duration>iDA then return end end 
   self.active=self.active+1
   self.filled=true
-  self[self.active]:adopt(name,...)
+  self[self.active]:adopt(name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
   if self.active==self.para.count then self.full=true end
   
 end
