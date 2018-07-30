@@ -145,7 +145,8 @@ local function iconUpdateTextTypeT(self)
 
   s=self.expirationTime-t
   
-  if s<0 or (iDA and s>iDA ) then s='';
+  --if s<0 or (iDA and s>iDA ) then s='';
+  if (iDA and s>iDA ) then s='';
   else local dec=self.para.textDecimals or 1; s=eF.toDecimal(s,dec) end
 
   self.text:SetText(s)
@@ -455,7 +456,11 @@ local function applyFamilyParas(self,j)
         c.text:Hide()
       end--end of if frame.hasText
       
-      if #c.onUpdateList>0 then c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction) end
+      if #c.onUpdateList>0 then 
+        c.throttle=(0.1^math.floor(f.para.textDecimals))*0.15 or 0.1
+        c.elapsed=100
+        c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction) 
+      end
       
     end --end for k=1,frame.families.count
   
@@ -506,6 +511,8 @@ local function applyChildParas(self,j,k)
     if c.para.trackType=="Static" then
       c:Show()
       c.static=true
+      c.expirationTime=0
+      c.duration=0
     end
     
     if c.para.hasTexture then
@@ -573,12 +580,13 @@ local function applyChildParas(self,j,k)
     --give the OnUdpate function to the frame
     c.onUpdateFunc=eF.rep.frameOnUpdateFunction
     if #c.onUpdateList>0 then
+      c.throttle=(0.1^math.floor(c.para.textDecimals))*0.15 or 0.1
+      c.elapsed=100
       c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction)
     end
 
    end
-    
-  ------------BAR-------------------
+   
   if c.para.type=="bar" then
     
     --c:SetWidth(c.para.width)
@@ -621,6 +629,43 @@ local function applyChildParas(self,j,k)
     
   end
   
+  if c.para.type=="border" then
+  
+    if c.para.trackType=="Buffs" then
+      insert(c.onAuraList,{eF.rep.iconFrameDisable,c})
+      if c.para.trackBy=="Name" then 
+        insert(c.onBuffList,{eF.rep.iconAdoptAuraByName,c})
+      end
+    end
+
+    if c.para.trackType=="Debuffs" then
+      insert(c.onAuraList,{eF.rep.iconFrameDisable,c})
+      if c.para.trackBy=="Name" then 
+        insert(c.onDebuffList,{eF.rep.iconAdoptAuraByName,c})
+      end
+    end
+    
+    if c.para.trackType=="Static" then
+      c:Show()
+      c.static=true
+      c.expirationTime=0
+      c.duration=0
+    end
+          
+    -------------VISUAL STUFF
+    local r,g,b,a=c.para.borderR or 1,c.para.borderG or 1,c.para.borderB or 1,c.para.borderA or 1
+    local size=c.para.borderSize or 2
+    for k,v in next,{"RIGHT","TOP","LEFT","BOTTOM"} do
+      local loc,p1,p2,w,f11,f12,f21,f22=eF.borderInfo(v)
+      c[loc]:SetColorTexture(r,g,b)
+      c[loc]:SetPoint(p1,self,p1,f11*(size),f12*(size))
+      c[loc]:SetPoint(p2,self,p2,f21*(size),f22*(size))
+      c[loc]:SetAlpha(a)
+      if w then c[loc]:SetWidth(size);
+      else c[loc]:SetHeight(size); end  
+    end
+          
+  end
   
 end
 eF.rep.applyChildParas=applyChildParas
@@ -821,6 +866,58 @@ function createFamilyChild(self,k)
     
   end--end of if bar
   
+  if self.para[k].type=="border" then
+    if self[k] then self[k]=nil end
+    self[k]=CreateFrame("Frame",nil,self)
+    local c=self[k]
+    c.para=self.para[k]
+    c:SetPoint("CENTER")
+    c:SetFrameLevel( (c.para.frameLevel or 1)+self:GetFrameLevel())
+
+    c.disable=eF.rep.iconFrameDisable
+    c.enable=eF.rep.iconFrameEnable
+    c:disable()
+          
+    -----------LOADING STUFF
+    c.checkLoad=eF.rep.checkLoad
+    c.loaded=false
+    c.onAuraList={}
+    c.onPostAuraList={}
+    c.onBuffList={}
+    c.onDebuffList={}
+    c.onUpdateList={}
+    c.onPowerList={}
+    
+    
+    if c.para.trackType=="Buffs" then
+      insert(c.onAuraList,{eF.rep.iconFrameDisable,c})
+      if c.para.trackBy=="Name" then 
+        insert(c.onBuffList,{eF.rep.iconAdoptAuraByName,c})
+      end
+    end
+
+    if c.para.trackType=="Debuffs" then
+      insert(c.onAuraList,{eF.rep.iconFrameDisable,c})
+      if c.para.trackBy=="Name" then 
+        insert(c.onDebuffList,{eF.rep.iconAdoptAuraByName,c})
+      end
+    end
+          
+    -------------VISUAL STUFF
+    local size=c.para.borderSize or 2
+    for k,v in next,{"RIGHT","TOP","LEFT","BOTTOM"} do
+      local loc,p1,p2,w,f11,f12,f21,f22=eF.borderInfo(v)
+      c[loc]=c:CreateTexture(nil,"OVERLAY")
+      c[loc]:SetColorTexture(1,1,1)
+      c[loc]:SetPoint(p1,self,p1,f11*(size),f12*(size))
+      c[loc]:SetPoint(p2,self,p2,f21*(size),f22*(size))
+      if w then c[loc]:SetWidth(size);
+      else c[loc]:SetHeight(size); end  
+    end
+        
+  
+  end
+  
   local c=self[k]
   
   do  --loading conditions
@@ -834,6 +931,8 @@ function createFamilyChild(self,k)
   end --end of loading conditons
 
   --give the OnUdpate function to the frame
+  c.elapsed=0
+  c.throttle=c.throttle or 0
   c.onUpdateFunc=eF.rep.frameOnUpdateFunction
   if #c.onUpdateList>0 then
     c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction)
@@ -843,7 +942,10 @@ function createFamilyChild(self,k)
 end
 eF.rep.createFamilyChild=createFamilyChild
 
-local function frameOnUpdateFunction(self)
+local function frameOnUpdateFunction(self,elapsed)
+  self.elapsed=self.elapsed+elapsed
+  if self.elapsed<self.throttle then return end
+  self.elapsed=0
   local lst=self.onUpdateList
   for i=1,#lst do
     lst[i](self)

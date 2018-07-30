@@ -531,8 +531,10 @@ local function hideAllFamilyParas()
   ff.dumbFamilyFrame:Hide()
   ff.smartFamilyScrollFrame:Hide()
   ff.childIconScrollFrame:Hide()
+  ff.childBorderScrollFrame:Hide()
   ff.childBarFrame:Hide()
   ff.elementCreationScrollFrame:Hide()
+  
 end
 
 local function showSmartFamilyPara()
@@ -555,6 +557,12 @@ end
 local function showChildBarPara()
   local cBF=eF.interface.familiesFrame.childBarFrame
   cBF:Show()
+end
+
+local function showChildBorderPara()
+  local ff=eF.interface.familiesFrame
+  ff.childBorderScrollFrame:Show()
+  ff.childBorderFrame:setValues()
 end
 
 local function createIP(self,name,tab) --icon picker
@@ -843,6 +851,9 @@ local function createNewIconParas(j,k)
   width=20,
   anchor="CENTER",
   anchorTo="CENTER",
+  textureR=1,
+  textureG=1,
+  textureB=1,
   cdWheel=true,
   cdReverse=true,
   hasBorder=false,
@@ -864,6 +875,23 @@ local function createNewIconParas(j,k)
   textDecimals=0,
   ownOnly=true,
   loadAlways=true,
+  }
+end
+
+local function createNewBorderParas(j,k)
+eF.para.families[j][k]={
+  displayName="New Border",
+  type="border",
+  trackType="Buffs",
+  trackBy="Name",
+  arg1="",
+  borderSize=2,
+  ownOnly=true,
+  loadAlways=true,
+  borderR=1,
+  borderG=1,
+  borderB=1,
+  borderA=1,
   }
 end
 
@@ -1066,7 +1094,10 @@ local function createChild(self,j,k,pos)
     eF.activeButton=self
     eF.activeFamilyIndex=self.familyIndex
     eF.activeChildIndex=self.childIndex
-    if self.para.type=="icon" then showChildIconPara() elseif self.para.type=="bar" then showChildBarPara() end
+    if self.para.type=="icon" then showChildIconPara() 
+    elseif self.para.type=="bar" then showChildBarPara() 
+    elseif self.para.type=="border" then showChildBorderPara()
+    end
     local tabs=eF.interface.familiesFrame.tabs
     if not tabs:IsShown() then tabs:Show() end
     tab1:SetButtonState("PUSHED")
@@ -1825,6 +1856,36 @@ local function setCIFActiveValues(self)
   
   
   end --end of text1
+  
+end --end of setCIFActiveValues func 
+
+local function setCBOFActiveValues(self)
+  local para=eF.activePara
+  eF.activeParaWindow=self
+  
+  --general
+  do
+  self.name:SetText(para.displayName)
+  
+  UIDropDownMenu_SetSelectedName(self.trackType,para.trackType)
+  UIDropDownMenu_SetText(self.trackType,para.trackType)
+
+  if para.trackType=="Static" then self.iconBlocker1:Show() else self.iconBlocker1:Hide() end
+
+  
+  UIDropDownMenu_SetSelectedName(self.trackBy,para.trackBy)
+  UIDropDownMenu_SetText(self.trackBy,para.trackBy)
+  
+  if para.arg1 then self.spell:SetText(para.arg1) else self.spell:SetText("") end
+  
+  self.ownOnly:SetChecked(para.ownOnly)
+  
+  self.borderSize:SetText(para.borderSize or 2)
+  self.borderAlpha:SetText(para.borderA or 1)
+
+  self.borderColor.thumb:SetVertexColor(para.borderR,para.borderG,para.borderB)
+  
+  end
   
 end --end of setCIFActiveValues func 
 
@@ -4087,7 +4148,7 @@ do
   local iB2=cif.iconBlocker2
   iB2:SetFrameLevel(cif:GetFrameLevel()+3)
   iB2:SetPoint("TOPLEFT",cif.icon.text,"TOPLEFT",-2,12)
-  iB2:SetHeight(80)
+  iB2:SetHeight(25)
   iB2:SetWidth(175)
   iB2.texture=iB2:CreateTexture(nil,"OVERLAY")
   iB2.texture:SetAllPoints()
@@ -4416,6 +4477,211 @@ cbf.text:SetFont(titleFont,20,titleFontExtra)
 cbf.text:SetTextColor(0.9,0.9,0.9)
 cbf.text:SetText("child bar frame here")
 end --end of create child bar frame
+
+--create child border frame
+do
+  
+  local cbosf,cbof
+  
+  --create scroll frame + box etc
+  do
+  
+  ff.childBorderScrollFrame=CreateFrame("ScrollFrame","eFChildBorderScrollFrame",ff,"UIPanelScrollFrameTemplate")
+  cbosf=ff.childBorderScrollFrame
+  cbosf:SetPoint("TOPLEFT",ff.famList,"TOPRIGHT",20,-22)
+  cbosf:SetPoint("BOTTOMRIGHT",ff.famList,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
+  cbosf:SetClipsChildren(true)
+  cbosf:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)
+  
+
+  cbosf.border=CreateFrame("Frame",nil,ff)
+  cbosf.border:SetPoint("TOPLEFT",cbosf,"TOPLEFT",-5,5)
+  cbosf.border:SetPoint("BOTTOMRIGHT",cbosf,"BOTTOMRIGHT",5,-5)
+  cbosf.border:SetBackdrop(bd)
+  
+  ff.childBorderFrame=CreateFrame("Frame","eFcbof",ff)
+  cbof=ff.childBorderFrame
+  cbof:SetPoint("TOP",cbosf,"TOP",0,-20)
+  cbof:SetWidth(cbosf:GetWidth()*0.8)
+  cbof:SetHeight(cbosf:GetHeight()*1.2)
+ 
+  cbosf.ScrollBar:ClearAllPoints()
+  cbosf.ScrollBar:SetPoint("TOPRIGHT",cbosf,"TOPRIGHT",-6,-18)
+  cbosf.ScrollBar:SetPoint("BOTTOMLEFT",cbosf,"BOTTOMRIGHT",-16,18)
+  cbosf.ScrollBar.bg=cbosf.ScrollBar:CreateTexture(nil,"BACKGROUND")
+  cbosf.ScrollBar.bg:SetAllPoints()
+  cbosf.ScrollBar.bg:SetColorTexture(0,0,0,0.5)
+  
+  cbosf:SetScrollChild(cbof)
+  
+  cbosf.bg=cbosf:CreateTexture(nil,"BACKGROUND")
+  cbosf.bg:SetAllPoints()
+  cbosf.bg:SetColorTexture(0.07,0.07,0.07,1)
+
+  cbof.setValues=setCBOFActiveValues
+
+  
+  end --end of scroll frame + box etc
+  
+  --create general settings stuff
+  do
+  cbof.title1=cbof:CreateFontString(nil,"OVERLAY")
+  local t=cbof.title1
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("General")
+  t:SetPoint("TOPLEFT",cbof,"TOPLEFT",50,-25)
+
+  cbof.title1Spacer=cbof:CreateTexture(nil,"OVERLAY")
+  local tS=cbof.title1Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createNumberEB(cbof,"name",cbof)
+  cbof.name.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  cbof.name.text:SetText("Name:")
+  cbof.name:SetWidth(80)
+  cbof.name:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  name=self:GetText()
+  if not name or name=="" then name=eF.activePara.displayName; self:SetText(name)
+  else 
+    eF.activePara.displayName=name; 
+    eF.activeButton.text:SetText(name)
+  end
+  end)
+
+  createDD(cbof,"trackType",cbof)
+  cbof.trackType.text:SetPoint("RIGHT",cbof.name.text,"RIGHT",0,-ySpacing)
+  cbof.trackType.text:SetText("Tracks:")
+  cbof.trackType.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst={"Buffs","Debuffs","Static"}
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.trackType=v
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+       if v=="Static" then cbof.iconBlocker1:Show() else cbof.iconBlocker1:Hide() end
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+  UIDropDownMenu_SetWidth(cbof.trackType,80)
+  
+  createDD(cbof,"trackBy",cbof)
+  cbof.trackBy.text:SetPoint("RIGHT",cbof.trackType.text,"RIGHT",0,-ySpacing)
+  cbof.trackBy.text:SetText("Track by:")
+  cbof.trackBy.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst={"Name"}
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.trackBy=v
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+  UIDropDownMenu_SetWidth(cbof.trackType,80)
+  
+  createNumberEB(cbof,"spell",cbof)
+  cbof.spell.text:SetPoint("RIGHT",cbof.trackBy.text,"RIGHT",0,-ySpacing)
+  cbof.spell.text:SetText("Spell:")
+  cbof.spell:SetWidth(80)
+  cbof.spell:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  spell=self:GetText()
+  if not spell or spell=="" then spell=eF.activePara.arg1; self:SetText(spell)
+  else 
+    eF.activePara.arg1=spell;
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end
+  end)
+
+  createCB(cbof,"ownOnly",cbof)
+  cbof.ownOnly.text:SetPoint("RIGHT",cbof.spell.text,"RIGHT",0,-ySpacing)
+  cbof.ownOnly.text:SetText("Own only:")
+  cbof.ownOnly:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.ownOnly=ch
+  end)
+  
+  cbof.iconBlocker1=CreateFrame("Button",nil,cbof)
+  local iB1=cbof.iconBlocker1
+  iB1:SetFrameLevel(cbof:GetFrameLevel()+3)
+  iB1:SetPoint("TOPRIGHT",cbof.trackBy,"TOPRIGHT",2,2)
+  iB1:SetPoint("BOTTOMLEFT",cbof.ownOnly.text,"BOTTOMLEFT",-15,-2)
+  iB1.texture=iB1:CreateTexture(nil,"OVERLAY")
+  iB1.texture:SetAllPoints()
+  iB1.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+  
+  
+  createNumberEB(cbof,"borderSize",cbof)
+  cbof.borderSize.text:SetPoint("RIGHT",cbof.ownOnly.text,"RIGHT",0,-ySpacing)
+  cbof.borderSize.text:SetText("Size:")
+  cbof.borderSize:SetWidth(80)
+  cbof.borderSize:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  borderSize=self:GetNumber()
+  if not borderSize or borderSize=="" then borderSize=(eF.activePara.borderSize or 2); self:SetText(borderSize or 2)
+  else 
+    eF.activePara.borderSize=borderSize;
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end
+  end)
+  
+  createCS(cbof,"borderColor",cbof)
+  cbof.borderColor.text:SetPoint("RIGHT",cbof.borderSize.text,"RIGHT",0,-ySpacing)
+  cbof.borderColor.text:SetText("Color:")
+  cbof.borderColor.getOldRGBA=function()
+    local r=eF.activePara.borderR
+    local g=eF.activePara.borderG
+    local b=eF.activePara.borderB
+  return r,g,b
+  end
+  
+  cbof.borderColor.opacityFunc=function()
+    local r,g,b=ColorPickerFrame:GetColorRGB()
+    local a=OpacitySliderFrame:GetValue()
+    cbof.borderColor.thumb:SetVertexColor(r,g,b)
+    eF.activePara.borderR=r
+    eF.activePara.borderG=g
+    eF.activePara.borderB=b
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex) 
+  end
+  
+  createNumberEB(cbof,"borderAlpha",cbof)
+  cbof.borderAlpha.text:SetPoint("RIGHT",cbof.borderColor.text,"RIGHT",0,-ySpacing)
+  cbof.borderAlpha.text:SetText("Alpha:")
+  cbof.borderAlpha:SetWidth(80)
+  cbof.borderAlpha:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  borderAlpha=self:GetNumber()
+  if not borderAlpha or borderAlpha=="" then borderAlpha=(eF.activePara.borderA or 1); self:SetText(borderAlpha or 1)
+  else 
+    eF.activePara.borderA=borderAlpha;
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end
+  end)
+  
+  end--end of general settings
+  
+  
+end --end of create child border frame
 
 --family + child creation
 do
@@ -4820,6 +5086,64 @@ cbb.descripton:SetFont("Fonts\\FRIZQT__.TTF",12,"OUTLINE")
 cbb.descripton:SetText("")
 cbb.descripton:SetPoint("TOP",cbb,"BOTTOM",0,-8)
 end --end of create bar button
+
+--create border button (cbob)
+do
+ecf.createBorderButton=CreateFrame("Button",nil,ecf)
+cbob=ecf.createBorderButton
+cbob:SetPoint("TOP",cbb,"BOTTOM",0,-40)
+cbob:SetSize(150,80)
+
+cbob.border=CreateFrame("Frame",nil,cbob)
+cbob.border:SetPoint("TOPRIGHT",cbob,"TOPRIGHT",3,3)
+cbob.border:SetPoint("BOTTOMLEFT",cbob,"BOTTOMLEFT",-3,-3)
+cbob.border:SetBackdrop(bd2)
+
+cbob.nT=cbob:CreateTexture(nil,"BACKGROUND")
+cbob.nT:SetAllPoints(true)
+cbob.nT:SetColorTexture(0.28,0.2,0.2,1)
+cbob.nT:SetGradient("vertical",0.5,0.5,0.5,0.8,0.8,0.8)
+cbob:SetNormalTexture(cbob.nT)
+
+cbob.hl=cbob:CreateTexture(nil,"BACKGROUND")
+cbob.hl:SetAllPoints(true)
+cbob.hl:SetColorTexture(0.8,0.4,0.4)
+cbob.hl:SetGradient("vertical",0.1,0.1,0.1,0.4,0.4,0.4)
+cbob.hl:SetAlpha(0.4)
+cbob:SetHighlightTexture(cbob.hl)
+
+cbob.pT=cbob:CreateTexture(nil,"BACKGROUND")
+cbob.pT:SetAllPoints(true)
+cbob.pT:SetColorTexture(0.8,0.4,0.4)
+cbob.pT:SetGradient("vertical",0.1,0.1,0.1,0.4,0.4,0.4)
+cbob:SetPushedTexture(cbob.pT)
+
+cbob.text=cbob:CreateFontString(nil,"OVERLAY")
+cbob.text:SetFont("Fonts\\FRIZQT__.TTF",19,"OUTLINE")
+cbob.text:SetText("Create Border")
+cbob.text:SetTextColor(1,1,1) 
+cbob.text:SetPoint("CENTER")
+
+cbob.descripton=cbob:CreateFontString(nil,"OVERLAY")
+cbob.descripton:SetFont("Fonts\\FRIZQT__.TTF",12,"OUTLINE")
+cbob.descripton:SetText("")
+cbob.descripton:SetPoint("TOP",cbob,"BOTTOM",0,-8)
+
+cbob:SetScript("OnClick",function()
+local j=1
+local k=eF.para.families[j].count+1
+eF.para.families[j].count=k
+
+createNewBorderParas(j,k)
+createAllIconFrame(j,k)
+sc:createChild(j,k)
+sc:setFamilyPositions()
+eF.familyButtonsList[#eF.familyButtonsList]:SetButtonState("PUSHED")
+eF.familyButtonsList[#eF.familyButtonsList]:Click()
+afterDo(0, function() fL:SetVerticalScroll(fL:GetVerticalScrollRange()) end)
+end)
+
+end --end of border creation button 
 
 end 
 

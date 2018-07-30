@@ -517,7 +517,7 @@ local function unitsOnGroupUpdate(self)
     
     if num==1 then 
       local spec=GetSpecialization()
-      local role=select(6,GetSpecializationInfo(spec))
+      local role=select(5,GetSpecializationInfo(spec))
       eF.info.playerRole=role
     else 
       eF.info.playerRole=UnitGroupRolesAssigned("player")
@@ -544,7 +544,8 @@ local function unitsOnGroupUpdate(self)
       self[unit]:updateText()
       
       local role=UnitGroupRolesAssigned(unit)
-      self[unit].role=role      
+      if role=="NONE" and unit=="player" then self[unit].role=eF.info.playerRole 
+      else self[unit].role=role end
       self[unit].class=class
       self:checkLoad()
       
@@ -709,7 +710,6 @@ local function checkElementLoad(self,unitRole,unitClass)
   return b
 end
 eF.rep.checkElementLoad=checkElementLoad
-
 
 local function updateUnitFrameHealthVisuals(self)
   local para=eF.para.units
