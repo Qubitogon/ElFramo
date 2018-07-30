@@ -27,7 +27,9 @@ local arrowDownTexture="Interface\\Calendar\\MoreArrow"
 eF.familyButtonsList={}
 eF.para.familyButtonsIndexList={}
 eF.activeConfirmMove=nil
+eF.activeParaWindow=nil
 --  local sc=eF.interface.familiesFrame.famList.scrollChild
+-- local ftabs=eF.interface.familiesFrame.tabs
 
 local function deepcopy(orig)
     local orig_type = type(orig)
@@ -63,6 +65,8 @@ local function releaseAllFamilies()
     lst[i]:Enable()
   end
   
+  eF.interface.familiesFrame.tabs.tab1:Enable()
+  eF.interface.familiesFrame.tabs.tab2:Enable()
 end
 
 local function header1ReleaseAll()
@@ -663,7 +667,6 @@ local function intSetInitValues()
   
   --family frame
   do 
-  
   for i=1,#bil do
     local j=bil[i][1]
     local k=bil[i][2]
@@ -684,10 +687,10 @@ local function intSetInitValues()
     if not eF.posInFamilyButtonsList(i) then sc:createFamily(i) end
   end
 
+  
   for i=1,paraFam[1].count do
     if not eF.posInFamilyButtonsList(1,i) then sc:createChild(1,i) end
   end
-  
   
   sc:setFamilyPositions()
   
@@ -935,6 +938,7 @@ local function createFamily(self,n,pos)
   if not pos then table.insert(eF.familyButtonsList,f) else table.insert(eF.familyButtonsList,pos,f) end
   
   f:SetScript("OnClick",function(self)
+    local tab1=eF.interface.familiesFrame.tabs.tab1
     releaseAllFamilies()
     hideAllFamilyParas()
     eF.activePara=para
@@ -942,6 +946,10 @@ local function createFamily(self,n,pos)
     eF.activeFamilyIndex=self.familyIndex
     if self.para.smart then showSmartFamilyPara() else showDumbFamilyPara() end
     self:Disable()
+    local tabs=eF.interface.familiesFrame.tabs
+    if not tabs:IsShown() then tabs:Show() end
+    tab1:SetButtonState("PUSHED")
+    tab1:Click()
     end)
   
   local sc=eF.interface.familiesFrame.famList.scrollChild
@@ -1032,7 +1040,6 @@ local function createFamily(self,n,pos)
 end
 
 local function createChild(self,j,k,pos)
-
   local para=eF.para.families[j][k]
   if self.families[j] then if self.families[j][k] then self.families[j][k]=nil end else self.families[j]={} end
 
@@ -1052,6 +1059,7 @@ local function createChild(self,j,k,pos)
   if not pos then table.insert(eF.familyButtonsList,f)else table.insert(eF.familyButtonsList,pos,f) end
   
   f:SetScript("OnClick",function(self)
+    local tab1=eF.interface.familiesFrame.tabs.tab1
     releaseAllFamilies()
     hideAllFamilyParas()
     eF.activePara=para
@@ -1059,6 +1067,10 @@ local function createChild(self,j,k,pos)
     eF.activeFamilyIndex=self.familyIndex
     eF.activeChildIndex=self.childIndex
     if self.para.type=="icon" then showChildIconPara() elseif self.para.type=="bar" then showChildBarPara() end
+    local tabs=eF.interface.familiesFrame.tabs
+    if not tabs:IsShown() then tabs:Show() end
+    tab1:SetButtonState("PUSHED")
+    tab1:Click()
     self:Disable()
     end)
 
@@ -1405,6 +1417,7 @@ local function createGroup(self,n,pos)
   if not pos then table.insert(eF.familyButtonsList,f) else table.insert(eF.familyButtonsList,pos,f) end
   
   f:SetScript("OnClick",function(self)
+    local tab1=eF.interface.familiesFrame.tabs.tab1
     releaseAllFamilies()
     hideAllFamilyParas()
     eF.activePara=para
@@ -1412,6 +1425,11 @@ local function createGroup(self,n,pos)
     eF.activeFamilyIndex=self.familyIndex
     if self.para.smart then showSmartFamilyPara() else showDumbFamilyPara() end
     self:Disable()
+    
+    local tabs=eF.interface.familiesFrame.tabs
+    if not tabs:IsShown() then tabs:Show() end
+    tab1:SetButtonState("PUSHED")
+    tab1:Click()
     end)
   
   f.collapse=function(self) 
@@ -1610,6 +1628,7 @@ end
 
 local function setSFFActiveValues(self)
   local para=eF.activePara
+  eF.activeParaWindow=self
 
   --general
   do
@@ -1720,7 +1739,7 @@ end --end of setSFFActiveValues func
 
 local function setCIFActiveValues(self)
   local para=eF.activePara
-
+  eF.activeParaWindow=self
   --general
   do
   self.name:SetText(para.displayName)
@@ -1808,6 +1827,81 @@ local function setCIFActiveValues(self)
   end --end of text1
   
 end --end of setCIFActiveValues func 
+
+local function setLoadActiveValues(self)
+  local para=eF.activePara
+  local isInList=eF.isInList
+  local Classes=eF.Classes
+  local ROLES=eF.ROLES
+  
+  --loadAlways
+  self.loadAlways:SetChecked(para.loadAlways)
+  if para.loadAlways then self.iconBlocker1:Show() else self.iconBlocker1:Hide() end
+  
+  --load unit classes + player classes
+  self.unitClassLoadAlways:SetChecked(para.unitClassLoadAlways)
+  if para.unitClassLoadAlways then self.iconBlocker2:Show() else self.iconBlocker2:Hide() end
+  self.playerClassLoadAlways:SetChecked(para.playerClassLoadAlways)
+  if para.playerClassLoadAlways then self.iconBlocker3:Show() else self.iconBlocker3:Hide() end
+  
+  for i=1,#Classes do
+    local class=Classes[i]
+    local unitClass="unit"..class
+    local playerClass="player"..class
+    self[unitClass]:SetChecked(isInList(class,para.loadUnitClassList))
+    self[playerClass]:SetChecked(isInList(class,para.loadPlayerClassList)) 
+  end
+  
+  --load unit roles + player roles
+  self.unitRoleLoadAlways:SetChecked(para.unitRoleLoadAlways)
+  if para.unitRoleLoadAlways then self.iconBlocker5:Show() else self.iconBlocker5:Hide() end
+  self.playerRoleLoadAlways:SetChecked(para.playerRoleLoadAlways)
+  if para.playerRoleLoadAlways then self.iconBlocker4:Show() else self.iconBlocker4:Hide() end
+  
+  for i=1,#ROLES do
+    local role=ROLES[i]
+    local unitRole="unit"..role
+    local playerRole="player"..role
+    
+    self[unitRole]:SetChecked(isInList(role,para.loadUnitRoleList))
+    self[playerRole]:SetChecked(isInList(role,para.loadPlayerRoleList)) 
+  end
+  
+  --instance loadInstanceList
+  self.instanceLoadAlways:SetChecked(para.instanceLoadAlways)
+  if para.instanceLoadAlways then self.iconBlocker6:Show() else self.iconBlocker6:Hide() end
+  
+  if para.loadInstanceList and #para.loadInstanceList>0 then
+    local temps=para.loadInstanceList[1]
+    for i=2,#para.loadInstanceList do
+      temps=temps.."\n"..para.loadInstanceList[i]
+    end--end of for i=1,#para.loadInstanceList 
+    self.loadInstanceList.eb:SetText(temps)
+  else
+    self.loadInstanceList.eb:SetText("")
+  end--end of if#para.loadInstanceList>0 else
+  
+  C_Timer.After(0.05,function() self.loadInstanceList.button:Disable() end);
+  
+  
+  --encounter loadInstanceList
+  self.encounterLoadAlways:SetChecked(para.encounterLoadAlways)
+  if para.encounterLoadAlways then self.iconBlocker7:Show() else self.iconBlocker7:Hide() end
+  
+  if para.loadEncounterList and #para.loadEncounterList>0 then
+    local temps=para.loadEncounterList[1]
+    for i=2,#para.loadEncounterList do
+      temps=temps.."\n"..para.loadEncounterList[i]
+    end--end of for i=1,#para.loadEncounterList 
+    self.loadEncounterList.eb:SetText(temps)
+  else
+    self.loadEncounterList.eb:SetText("")
+  end--end of if#para.loadEncounterList>0 else
+  
+  C_Timer.After(0.05,function() self.loadEncounterList.button:Disable() end);
+  
+end
+
 
 --create main frame
 do
@@ -2299,7 +2393,7 @@ ff:SetAllPoints()
 
 local fL,sc
 
---create Scroll Frame
+--create Scroll Frame 
 do
 ff.famList=CreateFrame("ScrollFrame","eFFamScroll",ff,"UIPanelScrollFrameTemplate")
 fL=ff.famList
@@ -2351,7 +2445,7 @@ do
   do
   ff.smartFamilyScrollFrame=CreateFrame("ScrollFrame","eFSmartFamilyScrollFrame",ff,"UIPanelScrollFrameTemplate")
   sfsf=ff.smartFamilyScrollFrame
-  sfsf:SetPoint("TOPLEFT",ff.famList,"TOPRIGHT",20,0)
+  sfsf:SetPoint("TOPLEFT",ff.famList,"TOPRIGHT",20,-22)
   sfsf:SetPoint("BOTTOMRIGHT",ff.famList,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
   sfsf:SetClipsChildren(true)
   sfsf:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)
@@ -2382,7 +2476,6 @@ do
 
   sff.setValues=setSFFActiveValues
   end --end of scroll frame + box etc
-
 
   --create general settings stuff
   do
@@ -3095,6 +3188,539 @@ do
   
 end --end of create smart FF
 
+--create tabs
+do
+ff.tabs=CreateFrame("Frame",nil,ff)
+ff.tabs:SetPoint("BOTTOMLEFT",ff.smartFamilyScrollFrame.border,"TOPLEFT",0,-10)
+ff.tabs:SetPoint("BOTTOMRIGHT",ff.smartFamilyScrollFrame.border,"TOPRIGHT",0,-10)
+ff.tabs:SetHeight(32)
+
+ff.tabs.tab1=CreateFrame("Button",nil,ff.tabs)
+local tab1=ff.tabs.tab1
+tab1:SetPoint("TOPLEFT")
+tab1:SetPoint("BOTTOMRIGHT",ff.tabs,"BOTTOM",-15,0)
+tab1:SetBackdrop(bd)
+
+tab1.text=tab1:CreateFontString(nil,"OVERLAY")
+tab1.text:SetPoint("CENTER")
+tab1.text:SetFont(font2,17,fontExtra)
+tab1.text:SetText("Parameters")
+tab1.text:SetTextColor(0.9,0.9,0.1)
+
+tab1.nTexture=tab1:CreateTexture(nil,"BACKGROUND")
+tab1.nTexture:SetPoint("TOPLEFT",tab1,"TOPLEFT",6,-6)
+tab1.nTexture:SetPoint("BOTTOMRIGHT",tab1,"BOTTOMRIGHT",-6,6)
+tab1.nTexture:SetColorTexture(0.1,0.1,0.1)
+tab1:SetNormalTexture(tab1.nTexture)
+
+tab1.pTexture=tab1:CreateTexture(nil,"BACKGROUND")
+tab1.pTexture:SetPoint("TOPLEFT",tab1,"TOPLEFT",6,-6)
+tab1.pTexture:SetPoint("BOTTOMRIGHT",tab1,"BOTTOMRIGHT",-6,0)
+tab1.pTexture:SetColorTexture(0.07,0.07,0.07)
+tab1:SetPushedTexture(tab1.pTexture)
+
+tab1:SetScript("OnClick",function(self)
+  self:Disable()
+  ff.tabs.tab2:Enable()
+  eF.interface.familiesFrame.loadingParaScrollFrame:Hide()
+  eF.activeParaWindow:Show()
+  end)
+  
+ff.tabs.tab2=CreateFrame("Button",nil,ff.tabs)
+local tab2=ff.tabs.tab2
+tab2:SetPoint("LEFT",tab1,"RIGHT",0,0)
+tab2:SetHeight(tab1:GetHeight())
+tab2:SetWidth(tab1:GetWidth())
+tab2:SetBackdrop(bd)
+
+tab2.text=tab2:CreateFontString(nil,"OVERLAY")
+tab2.text:SetPoint("CENTER")
+tab2.text:SetFont(font2,17,fontExtra)
+tab2.text:SetText("Loading Conditions")
+tab2.text:SetTextColor(0.9,0.9,0.1)
+
+tab2.nTexture=tab2:CreateTexture(nil,"BACKGROUND")
+tab2.nTexture:SetPoint("TOPLEFT",tab2,"TOPLEFT",6,-6)
+tab2.nTexture:SetPoint("BOTTOMRIGHT",tab2,"BOTTOMRIGHT",-6,6)
+tab2.nTexture:SetColorTexture(0.1,0.1,0.1)
+tab2:SetNormalTexture(tab2.nTexture)
+
+tab2.pTexture=tab2:CreateTexture(nil,"BACKGROUND")
+tab2.pTexture:SetPoint("TOPLEFT",tab2,"TOPLEFT",6,-6)
+tab2.pTexture:SetPoint("BOTTOMRIGHT",tab2,"BOTTOMRIGHT",-6,0)
+tab2.pTexture:SetColorTexture(0.07,0.07,0.07)
+tab2:SetPushedTexture(tab2.pTexture)
+
+tab2:SetScript("OnClick",function(self) 
+  self:Disable()
+  ff.tabs.tab1:Enable()
+  eF.activeParaWindow:Hide()
+  eF.interface.familiesFrame.loadingParaScrollFrame:Show()
+  eF.interface.familiesFrame.loadingParaFrame:setLoadActiveValues()
+  end)
+
+ff.tabs:Hide()
+end
+
+--create loading conditions frame
+do
+  local function loadAllFrames() 
+    eF.units:checkLoad()
+  end
+  
+  local lpsf,lpf
+  --frame creation
+  do
+  ff.loadingParaScrollFrame=CreateFrame("ScrollFrame","eFLoadParaScrollFrame",ff,"UIPanelScrollFrameTemplate")
+  lpsf=ff.loadingParaScrollFrame
+  lpsf:Hide()
+  lpsf:SetFrameLevel(ff:GetFrameLevel()+2)
+  lpsf:SetPoint("TOPLEFT",ff.famList,"TOPRIGHT",20,-22)
+  lpsf:SetPoint("BOTTOMRIGHT",ff.famList,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
+  lpsf:SetClipsChildren(true)
+  lpsf:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)
+  
+  lpsf.border=CreateFrame("Frame",nil,ff)
+  lpsf.border:SetPoint("TOPLEFT",lpsf,"TOPLEFT",-5,5)
+  lpsf.border:SetPoint("BOTTOMRIGHT",lpsf,"BOTTOMRIGHT",5,-5)
+  lpsf.border:SetBackdrop(bd)
+  
+  ff.loadingParaFrame=CreateFrame("Frame","eFlpf",ff)
+  lpf=ff.loadingParaFrame
+  lpf:SetPoint("TOP",lpsf,"TOP",0,-20)
+  lpf:SetWidth(lpsf:GetWidth()*0.8)
+  lpf:SetHeight(700)
+  lpf.setLoadActiveValues=setLoadActiveValues
+  
+  lpsf.ScrollBar:ClearAllPoints()
+  lpsf.ScrollBar:SetPoint("TOPRIGHT",lpsf,"TOPRIGHT",-6,-18)
+  lpsf.ScrollBar:SetPoint("BOTTOMLEFT",lpsf,"BOTTOMRIGHT",-16,18)
+  lpsf.ScrollBar.bg=lpsf.ScrollBar:CreateTexture(nil,"BACKGROUND")
+  lpsf.ScrollBar.bg:SetAllPoints()
+  lpsf.ScrollBar.bg:SetColorTexture(0,0,0,0.5)
+  
+  lpsf:SetScrollChild(lpf)
+  
+  lpsf.bg=lpsf:CreateTexture(nil,"BACKGROUND")
+  lpsf.bg:SetAllPoints()
+  lpsf.bg:SetColorTexture(0.07,0.07,0.07,1)
+
+  end
+  
+  --[[]]
+  --load always
+  do
+  createCB(lpf,"loadAlways",lpf)
+  lpf.loadAlways.text:SetPoint("TOPLEFT",lpf,"TOPLEFT",25,-initSpacing*1.5)
+  lpf.loadAlways.text:SetText("Load Always:")
+  lpf.loadAlways:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.loadAlways=ch
+    if ch then lpf.iconBlocker1:Show() else lpf.iconBlocker1:Hide() end
+    loadAllFrames()
+  end)
+  
+  lpf.iconBlocker1=CreateFrame("Button",nil,lpf)
+  local iB1=lpf.iconBlocker1
+  iB1:SetFrameLevel(lpf:GetFrameLevel()+3)
+  iB1:SetPoint("TOPLEFT",lpf.loadAlways.text,"TOPLEFT",-10,-20)
+  iB1:SetPoint("BOTTOMRIGHT",lpf,"BOTTOMRIGHT",50,0)
+  iB1.texture=iB1:CreateTexture(nil,"OVERLAY")
+  iB1.texture:SetAllPoints()
+  iB1.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+  iB1:Hide()
+  
+  end
+
+  --unit classes
+  do
+  local function applyClassParas()
+    local insert=table.insert
+    local Classes=eF.Classes
+    local lst={}
+    for i=1,#Classes do
+      if lpf["unit"..Classes[i]]:GetChecked() then insert(lst,Classes[i]) end
+    end
+    eF.activePara.loadUnitClassList=lst
+  end
+  
+  lpf.title1=lpf:CreateFontString(nil,"OVERLAY")
+  local t=lpf.title1
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Load if unit is class:")
+  t:SetPoint("TOPLEFT",lpf.loadAlways.text,"TOPLEFT",0,-40)
+
+  lpf.title1Spacer=lpf:CreateTexture(nil,"OVERLAY")
+  local tS=lpf.title1Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createCB(lpf,"unitClassLoadAlways",lpf)
+  lpf.unitClassLoadAlways.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  lpf.unitClassLoadAlways.text:SetText("Load always:")
+  lpf.unitClassLoadAlways:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.unitClassLoadAlways= ch
+    if ch then lpf.iconBlocker2:Show() else lpf.iconBlocker2:Hide() end
+    loadAllFrames()
+  end)
+  
+  for i=1,#eF.Classes do
+  local class=eF.Classes[i]
+  local unitClass="unit"..class
+  createCB(lpf,unitClass,lpf)
+  if i==1 then lpf[unitClass].text:SetPoint("RIGHT",lpf.unitClassLoadAlways.text,"RIGHT",0,-ySpacing*1.5)
+  else lpf[unitClass].text:SetPoint("RIGHT",lpf["unit"..eF.Classes[i-1]].text,"RIGHT",0,-ySpacing) end
+  lpf[unitClass].text:SetText(class..":")
+  lpf[unitClass]:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    applyClassParas()
+    loadAllFrames()
+  end)
+  end--end of for i=1,#eF.Classes
+  
+  
+  lpf.iconBlocker2=CreateFrame("Button",nil,lpf)
+  local iB2=lpf.iconBlocker2
+  iB2:SetFrameLevel(lpf:GetFrameLevel()+3)
+  iB2:SetPoint("TOPLEFT",lpf["unit"..eF.Classes[1]].text,"TOPLEFT",-10,5)
+  iB2:SetSize(150,300)
+  iB2.texture=iB2:CreateTexture(nil,"OVERLAY")
+  iB2.texture:SetAllPoints()
+  iB2.texture:SetColorTexture(0.07,0.07,0.07,0.4)  
+  iB2:Hide()
+
+  end--end of unit classes
+  
+  --player classes
+  do
+  local function applyClassParas()
+    local insert=table.insert
+    local Classes=eF.Classes
+    local lst={}
+    for i=1,#Classes do
+      if lpf["player"..Classes[i]]:GetChecked() then insert(lst,Classes[i]) end
+    end
+    eF.activePara.loadPlayerClassList=lst
+  end
+  
+  lpf.title2=lpf:CreateFontString(nil,"OVERLAY")
+  local t=lpf.title2
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Load if player is class:")
+  t:SetPoint("LEFT",lpf.title1,"LEFT",160,0)
+
+  lpf.title2Spacer=lpf:CreateTexture(nil,"OVERLAY")
+  local tS=lpf.title2Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createCB(lpf,"playerClassLoadAlways",lpf)
+  lpf.playerClassLoadAlways.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  lpf.playerClassLoadAlways.text:SetText("Load always:")
+  lpf.playerClassLoadAlways:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.playerClassLoadAlways=ch
+    if ch then lpf.iconBlocker3:Show() else lpf.iconBlocker3:Hide() end
+    loadAllFrames()
+  end)
+  
+  for i=1,#eF.Classes do
+  local class=eF.Classes[i]
+  local playerClass="player"..class
+  createCB(lpf,playerClass,lpf)
+  if i==1 then lpf[playerClass].text:SetPoint("RIGHT",lpf.playerClassLoadAlways.text,"RIGHT",0,-ySpacing*1.5)
+  else lpf[playerClass].text:SetPoint("RIGHT",lpf["player"..eF.Classes[i-1]].text,"RIGHT",0,-ySpacing) end
+  lpf[playerClass].text:SetText(class..":")
+  lpf[playerClass]:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    applyClassParas()
+    loadAllFrames()
+  end)
+  end--end of for i=1,#eF.Classes
+  
+  
+  lpf.iconBlocker3=CreateFrame("Button",nil,lpf)
+  local iB3=lpf.iconBlocker3
+  iB3:SetFrameLevel(lpf:GetFrameLevel()+3)
+  iB3:SetPoint("TOPLEFT",lpf["player"..eF.Classes[1]].text,"TOPLEFT",-10,5)
+  iB3:SetSize(150,300)
+  iB3.texture=iB3:CreateTexture(nil,"OVERLAY")
+  iB3.texture:SetAllPoints()
+  iB3.texture:SetColorTexture(0.07,0.07,0.07,0.4)  
+  iB3:Hide()
+
+  end--end of palyer classes
+  
+  --player roles
+  do
+  local function applyRoleParas()
+    local insert=table.insert
+    local ROLES=eF.ROLES
+    local lst={}
+    for i=1,#ROLES do
+      if lpf["player"..ROLES[i]]:GetChecked() then insert(lst,ROLES[i]) end
+    end
+    eF.activePara.loadPlayerRoleList=lst
+  end
+  
+  lpf.title3=lpf:CreateFontString(nil,"OVERLAY")
+  local t=lpf.title3
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Load if player is role:")
+  t:SetPoint("LEFT",lpf.title2,"LEFT",160,0)
+
+  lpf.title3Spacer=lpf:CreateTexture(nil,"OVERLAY")
+  local tS=lpf.title3Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createCB(lpf,"playerRoleLoadAlways",lpf)
+  lpf.playerRoleLoadAlways.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  lpf.playerRoleLoadAlways.text:SetText("Load always:")
+  lpf.playerRoleLoadAlways:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.playerRoleLoadAlways=ch
+    if ch then lpf.iconBlocker4:Show() else lpf.iconBlocker4:Hide() end
+    loadAllFrames()
+  end)
+  
+  for i=1,#eF.ROLES do
+  local ROLE=eF.ROLES[i]
+  local playerROLE="player"..ROLE
+  createCB(lpf,playerROLE,lpf)
+  if i==1 then lpf[playerROLE].text:SetPoint("RIGHT",lpf.playerRoleLoadAlways.text,"RIGHT",0,-ySpacing*1.5)
+  else lpf[playerROLE].text:SetPoint("RIGHT",lpf["player"..eF.ROLES[i-1]].text,"RIGHT",0,-ySpacing) end
+  lpf[playerROLE].text:SetText(ROLE..":")
+  lpf[playerROLE]:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    applyRoleParas()
+    loadAllFrames()
+  end)
+  end--end of for i=1,#eF.ROLES
+  
+  
+  lpf.iconBlocker4=CreateFrame("Button",nil,lpf)
+  local iB4=lpf.iconBlocker4
+  iB4:SetFrameLevel(lpf:GetFrameLevel()+3)
+  iB4:SetPoint("TOPLEFT",lpf["player"..eF.ROLES[1]].text,"TOPLEFT",-10,5)
+  iB4:SetSize(150,100)
+  iB4.texture=iB4:CreateTexture(nil,"OVERLAY")
+  iB4.texture:SetAllPoints()
+  iB4.texture:SetColorTexture(0.07,0.07,0.07,0.4)  
+  iB4:Hide()
+
+  end--end of palyer roles
+  
+  --unit roles
+  do
+  local function applyRoleParas()
+    local insert=table.insert
+    local ROLES=eF.ROLES
+    local lst={}
+    for i=1,#ROLES do
+      if lpf["unit"..ROLES[i]]:GetChecked() then insert(lst,ROLES[i]) end
+    end
+    eF.activePara.loadUnitRoleList=lst
+  end
+  
+  lpf.title4=lpf:CreateFontString(nil,"OVERLAY")
+  local t=lpf.title4
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Load if unit is role:")
+  t:SetPoint("LEFT",lpf.title3,"LEFT",0,-180)
+
+  lpf.title4Spacer=lpf:CreateTexture(nil,"OVERLAY")
+  local tS=lpf.title4Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createCB(lpf,"unitRoleLoadAlways",lpf)
+  lpf.unitRoleLoadAlways.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  lpf.unitRoleLoadAlways.text:SetText("Load always:")
+  lpf.unitRoleLoadAlways:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.unitRoleLoadAlways=ch
+    if ch then lpf.iconBlocker5:Show() else lpf.iconBlocker5:Hide() end
+    loadAllFrames()
+  end)
+  
+  for i=1,#eF.ROLES do
+  local ROLE=eF.ROLES[i]
+  local unitROLE="unit"..ROLE
+  createCB(lpf,unitROLE,lpf)
+  if i==1 then lpf[unitROLE].text:SetPoint("RIGHT",lpf.unitRoleLoadAlways.text,"RIGHT",0,-ySpacing*1.5)
+  else lpf[unitROLE].text:SetPoint("RIGHT",lpf["unit"..eF.ROLES[i-1]].text,"RIGHT",0,-ySpacing) end
+  lpf[unitROLE].text:SetText(ROLE..":")
+  lpf[unitROLE]:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    applyRoleParas()
+    loadAllFrames()
+  end)
+  end--end of for i=1,#eF.ROLES
+  
+  
+  lpf.iconBlocker5=CreateFrame("Button",nil,lpf)
+  local iB5=lpf.iconBlocker5
+  iB5:SetFrameLevel(lpf:GetFrameLevel()+3)
+  iB5:SetPoint("TOPLEFT",lpf["unit"..eF.ROLES[1]].text,"TOPLEFT",-10,5)
+  iB5:SetSize(150,100)
+  iB5.texture=iB5:CreateTexture(nil,"OVERLAY")
+  iB5.texture:SetAllPoints()
+  iB5.texture:SetColorTexture(0.07,0.07,0.07,0.4)  
+  iB5:Hide()
+
+  end--end of unit roles
+  
+ 
+  --GetInstanceInfo()
+  --instance IDs
+  do
+  lpf.title5=lpf:CreateFontString(nil,"OVERLAY")
+  local t=lpf.title5
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Load in instances:")
+  t:SetPoint("LEFT",lpf.title1,"LEFT",0,-400)
+
+  lpf.title5Spacer=lpf:CreateTexture(nil,"OVERLAY")
+  local tS=lpf.title5Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+  
+  createCB(lpf,"instanceLoadAlways",lpf)
+  lpf.instanceLoadAlways.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  lpf.instanceLoadAlways.text:SetText("Load always:")
+  lpf.instanceLoadAlways:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.instanceLoadAlways=ch
+    if ch then lpf.iconBlocker6:Show() else lpf.iconBlocker6:Hide() end
+    loadAllFrames()
+  end)
+  
+  createListCB(lpf,"loadInstanceList",lpf)
+  lpf.loadInstanceList:SetPoint("TOPLEFT",lpf.instanceLoadAlways.text,"TOPLEFT",0,-ySpacing)
+  lpf.loadInstanceList.button:SetScript("OnClick", function(self)
+  local sfind,ssub,insert=strfind,strsub,table.insert
+  local x=self.eb:GetText()
+  self:Disable()
+  self.eb:ClearFocus()
+  local old=0
+  local new=0
+  local antiCrash=0
+  local rtbl={}
+  while new do
+    new=sfind(x,"\n",old+1)
+    local ss=ssub(x,old,new)
+    insert(rtbl,ss:match("^%s*(.-)%s*$"))
+    old=new
+    antiCrash=antiCrash+1
+    if antiCrash>500 then break end
+  end
+  eF.activePara.loadInstanceList=rtbl
+  loadAllFrames()
+  end) 
+  
+  lpf.iconBlocker6=CreateFrame("Button",nil,lpf)
+  local iB6=lpf.iconBlocker6
+  iB6:SetFrameLevel(lpf:GetFrameLevel()+3)
+  iB6:SetPoint("TOPLEFT",lpf.loadInstanceList,"TOPLEFT",-10,5)
+  iB6:SetPoint("BOTTOMRIGHT",lpf.loadInstanceList,"BOTTOMRIGHT",20,-30)
+  iB6.texture=iB6:CreateTexture(nil,"OVERLAY")
+  iB6.texture:SetAllPoints()
+  iB6.texture:SetColorTexture(0.07,0.07,0.07,0.4)  
+  iB6:Hide()
+  end
+  
+  --http://www.wowinterface.com/forums/showthread.php?t=48377
+  --https://wow.gamepedia.com/ENCOUNTER_START
+  --encounters
+  do
+  lpf.title6=lpf:CreateFontString(nil,"OVERLAY")
+  local t=lpf.title6
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Load in encounters:")
+  t:SetPoint("LEFT",lpf.title5,"LEFT",270,0)
+
+  lpf.title6Spacer=lpf:CreateTexture(nil,"OVERLAY")
+  local tS=lpf.title6Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+  
+  createCB(lpf,"encounterLoadAlways",lpf)
+  lpf.encounterLoadAlways.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  lpf.encounterLoadAlways.text:SetText("Load always:")
+  lpf.encounterLoadAlways:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.encounterLoadAlways=ch
+    if ch then lpf.iconBlocker7:Show() else lpf.iconBlocker7:Hide() end
+    loadAllFrames()
+  end)
+  
+  createListCB(lpf,"loadEncounterList",lpf)
+  lpf.loadEncounterList:SetPoint("TOPLEFT",lpf.encounterLoadAlways.text,"TOPLEFT",0,-ySpacing)
+  lpf.loadEncounterList.button:SetScript("OnClick", function(self)
+  local sfind,ssub,insert=strfind,strsub,table.insert
+  local x=self.eb:GetText()
+  self:Disable()
+  self.eb:ClearFocus()
+  local old=0
+  local new=0
+  local antiCrash=0
+  local rtbl={}
+  while new do
+    new=sfind(x,"\n",old+1)
+    local ss=ssub(x,old,new)
+    insert(rtbl,ss:match("^%s*(.-)%s*$"))
+    old=new
+    antiCrash=antiCrash+1
+    if antiCrash>500 then break end
+  end
+  eF.activePara.loadEncounterList=rtbl
+  loadAllFrames()
+  end) 
+  
+  lpf.iconBlocker7=CreateFrame("Button",nil,lpf)
+  local iB7=lpf.iconBlocker7
+  iB7:SetFrameLevel(lpf:GetFrameLevel()+3)
+  iB7:SetPoint("TOPLEFT",lpf.loadEncounterList,"TOPLEFT",-10,5)
+  iB7:SetPoint("BOTTOMRIGHT",lpf.loadEncounterList,"BOTTOMRIGHT",20,-30)
+  iB7.texture=iB7:CreateTexture(nil,"OVERLAY")
+  iB7.texture:SetAllPoints()
+  iB7.texture:SetColorTexture(0.07,0.07,0.07,0.4)  
+  iB7:Hide()
+  end
+  
+end
+
 --create dumb family frame
 do
 ff.dumbFamilyFrame=CreateFrame("Frame","eFDFF",ff)
@@ -3118,11 +3744,13 @@ end --end of create dumb FF
 do
   
   local cisf,cif
+  
   --create scroll frame + box etc
   do
+  
   ff.childIconScrollFrame=CreateFrame("ScrollFrame","eFChildIconScrollFrame",ff,"UIPanelScrollFrameTemplate")
   cisf=ff.childIconScrollFrame
-  cisf:SetPoint("TOPLEFT",ff.famList,"TOPRIGHT",20,0)
+  cisf:SetPoint("TOPLEFT",ff.famList,"TOPRIGHT",20,-22)
   cisf:SetPoint("BOTTOMRIGHT",ff.famList,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
   cisf:SetClipsChildren(true)
   cisf:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)
@@ -3859,7 +4487,7 @@ eeb.confirmButton:Hide()
 
 ff.elementCreationScrollFrame=CreateFrame("ScrollFrame","eFelementCreationScrollFrame",ff,"UIPanelScrollFrameTemplate")
 local ecsf=ff.elementCreationScrollFrame
-ecsf:SetPoint("TOPLEFT",ff.famList,"TOPRIGHT",20,0)
+ecsf:SetPoint("TOPLEFT",ff.famList,"TOPRIGHT",20,-22)
 ecsf:SetPoint("BOTTOMRIGHT",ff.famList,"BOTTOMRIGHT",20+ff:GetWidth()*0.72,0)
 ecsf:SetClipsChildren(true)
 ecsf:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)

@@ -4,9 +4,12 @@ eF.partyLoop={"player","party1","party2","party3","party4"}
 eF.raidLoop={}
 eF.positions={"CENTER","RIGHT","TOPRIGHT","TOP","TOPLEFT","LEFT","BOTTOMLEFT","BOTTOM","BOTTOMRIGHT"}
 eF.orientations={"up","down","right","left"}
+eF.Classes={"Death Knight","Demon Hunter","Druid","Hunter","Mage","Monk","Paladin","Priest","Rogue","Shaman","Warlock","Warrior"}
+eF.ROLES={"DAMAGER","HEALER","TANK"}
 eF.fonts={"FRIZQT__","ARIALN","skurri","MORPHEUS"}
 eF.OOCActions={layoutUpdate=false,groupUpdate=false}
-
+eF.info={}
+eF.info.playerClass=UnitClass("player")
 
 for i=1,40 do
   local s="raid"..tostring(i)
@@ -43,16 +46,16 @@ function eF.toDecimal(f,d)
 end
 
 function eF.isInList(s,lst)
-
   if not s or not lst then return false end
   local found=false
+  local tostring=tostring
   for i=1,#lst do 
-    if type(lst[i])==type(s) then
+      s=tostring(s)
       if lst[i]==s then
         found=true
         break
       end
-    end
+    --end
   end
   return found
 end

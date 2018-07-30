@@ -201,33 +201,6 @@ local function statusBarPowerUpdate(self)
 end
 eF.rep.statusBarPowerUpdate=statusBarPowerUpdate
 
-local function checkLoad(self,role,enc,ins,class)
-  if self.loadAlways then 
-    if not self.loaded then 
-      self.loaded=true; 
-      if self.static then self:enable() end
-    end
-    return true 
-  end 
-  
-  local inList=eF.isInList
-  local b=true
-  if self.loadRole and not inList(role,self.loadRoleList) then b=false
-  elseif self.loadEncounter and not inList(enc,self.loadEncounterList) then b=false 
-  elseif self.loadInstance and not inList(ins,self.loadInstanceList) then b=false
-  elseif self.loadClass and not inList(class,self.loadClassList) then b=false
-  end
-  
-  if not b and self.loaded then self.loaded=false; self:disable() end
-  if b and not self.loaded then 
-    if self.static then self:enable() end
-    self.loaded=true
-  end
-  
-  return b
-end
-eF.rep.checkLoad=checkLoad
-
 local function createFamilyFrame(self,j)
   local insert=table.insert
   if self[j] then self[j]=nil end
@@ -378,6 +351,7 @@ local function createFamilyFrame(self,j)
     end --end for k=1,frame.families.count
   end--end of if frame.families[j].smart else
 
+  f.loaded=true
 end
 eF.rep.createFamilyFrame=createFamilyFrame
 
@@ -496,6 +470,8 @@ eF.rep.applyFamilyParas=applyFamilyParas
 local function applyChildParas(self,j,k)
   local insert=table.insert
   local c=self[j][k]
+  if not c then return end
+  
   c.para=self.families[j][k]
   
 
@@ -529,6 +505,7 @@ local function applyChildParas(self,j,k)
     
     if c.para.trackType=="Static" then
       c:Show()
+      c.static=true
     end
     
     if c.para.hasTexture then
@@ -543,7 +520,6 @@ local function applyChildParas(self,j,k)
         c.texture:SetVertexColor(r,g,b)
       elseif not c.para.smartIcon then
         c.texture:SetColorTexture(r,g,b,a)  
-        print("setting color texture")
       else 
         c.smartIcon=true; 
         c.texture:SetVertexColor(r,g,b)
@@ -600,9 +576,51 @@ local function applyChildParas(self,j,k)
       c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction)
     end
 
-  elseif c.para.type=="bar" then
- 
+   end
+    
+  ------------BAR-------------------
+  if c.para.type=="bar" then
+    
+    --c:SetWidth(c.para.width)
+    --c:SetHeight(c.para.height)
+    c:ClearAllPoints()
+    --c:SetPoint(c.para.anchor,self,c.para.anchorTo,c.para.xPos,c.para.yPos)
+    
+    if c.para.trackType=="power" then
+      insert(c.onPowerList,{eF.rep.statusBarPowerUpdate,c})
+      c.id=self.id
+      c.static=true
+      c:Show()
+    end
+
+    if c.para.grow=="up" or not c.para.grow then 
+      c:SetPoint("BOTTOM",self,c.para.anchorTo,c.para.xPos,c.para.yPos)
+      c:SetWidth(c.para.lFix)
+      c:SetHeight(c.para.lMax)
+      c:SetOrientation("VERTICAL")
+    elseif c.para.grow=="down" then 
+      c:SetPoint("TOP",self,c.para.anchorTo,c.para.xPos,c.para.yPos)
+      c:SetWidth(c.para.lFix)
+      c:SetHeight(c.para.lMax)
+      c:SetOrientation("VERTICAL")
+    elseif c.para.grow=="right" then 
+      c:SetPoint("LEFT",self,c.para.anchorTo,c.para.xPos,c.para.yPos)
+      c:SetWidth(c.para.lMax)
+      c:SetHeight(c.para.lFix)
+      c:SetOrientation("HORIZONTAL") 
+    else
+      c:SetPoint("RIGHT",self,c.para.anchorTo,c.para.xPos,c.para.yPos)
+      c:SetWidth(c.para.lMax)
+      c:SetHeight(c.para.lFix)
+      c:SetOrientation("HORIZONTAL")
+    end
+    
+    local r,g,b,a=c.para.textureR or 1,c.para.textureG or 1,c.para.textureB or 1, c.para.textureA or 1
+    c:SetStatusBarTexture(r,g,b,a)  
+    c:SetMinMaxValues(0,1)  
+    
   end
+  
   
 end
 eF.rep.applyChildParas=applyChildParas
@@ -636,6 +654,7 @@ eF.rep.updateFamilyLayout=updateFamilyLayout
 
 function createFamilyChild(self,k)
   local insert=table.insert
+  if not self.para[k] then return end
   
   if self.para[k].type=="icon" then
     if self[k] then self[k]=nil end
@@ -659,7 +678,7 @@ function createFamilyChild(self,k)
     c.onDebuffList={}
     c.onUpdateList={}
     c.onPowerList={}
-
+    
     
     if c.para.trackType=="Buffs" then
       insert(c.onAuraList,{eF.rep.iconFrameDisable,c})
@@ -820,7 +839,7 @@ function createFamilyChild(self,k)
     c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction)
   end
 
-  
+  c.loaded=true --initially youre always loaded, you get checked afterwards
 end
 eF.rep.createFamilyChild=createFamilyChild
 

@@ -185,7 +185,6 @@ local function unitEventHandler(self,event)
     end
   
   elseif event=="UNIT_POWER_UPDATE" then
-  
     local c=self.onPowerList
     for j=1,#c do
       local v=c[j]
@@ -515,6 +514,19 @@ local function unitsOnGroupUpdate(self)
     local num=GetNumGroupMembers() --for some reason gives 0 when solo
     if num==0 then num=1 end
     self.num=num
+    
+    if num==1 then 
+      local spec=GetSpecialization()
+      local role=select(6,GetSpecializationInfo(spec))
+      eF.info.playerRole=role
+    else 
+      eF.info.playerRole=UnitGroupRolesAssigned("player")
+    end
+    
+    local instanceName,_,_,_,_,_,_,instanceID=GetInstanceInfo()
+    eF.info.instanceName=instanceName
+    eF.info.instanceID=instanceID
+    
     local lst
     if raid then lst=eF.raidLoop
     else lst=eF.partyLoop end  
@@ -534,7 +546,6 @@ local function unitsOnGroupUpdate(self)
       local role=UnitGroupRolesAssigned(unit)
       self[unit].role=role      
       self[unit].class=class
-      --DO ALL THE FAMILY DEPENDENCIES
       self:checkLoad()
       
     end --end of for n=1,num
@@ -561,22 +572,25 @@ local function unitsOnGroupUpdate(self)
 end
 eF.rep.unitsOnGroupUpdate=unitsOnGroupUpdate
 
-local function unitsLoad(self,ins,enc) ---self here is eF.units !!!
+local function unitsLoad(self) ---self here is eF.units !!!
   
   local tbl
   if self.raid then tbl=eF.raidLoop else tbl=eF.partyLoop end
   for i=1,self.num do 
     local unit=tbl[i]
-    self[unit]:checkLoad(ins,enc)    
+    self[unit]:checkLoad()    
   end 
 end
 eF.rep.unitsLoad=unitsLoad
 
-local function unitLoad(self,ins,enc)
+local function unitLoad(self)
   local insert=table.insert
   local nj=#self.families
-  local role=self.role
-  local class=self.class
+  local unitRole=self.role
+  local unitClass=self.class
+  local checkElementLoad=eF.rep.checkElementLoad
+  eF.info.inEncounter=IsEncounterInProgress()
+  
   self.onAuraList={}
   self.onBuffList={}
   self.onDebuffList={}
@@ -584,7 +598,7 @@ local function unitLoad(self,ins,enc)
   self.onPostAuraList={}
   for j=1,nj do 
     if self[j].smart then 
-      if self[j]:checkLoad(role,ins,enc,class) then
+      if checkElementLoad(self[j],unitRole,unitClass) then
         local onAura=self[j].onAuraList
         local onBuff=self[j].onBuffList
         local onDebuff=self[j].onDebuffList
@@ -618,7 +632,7 @@ local function unitLoad(self,ins,enc)
     else --else of if selfj.smart
       local nk=self[j].para.count
       for k=1,nk do   
-        if self[j][k]:checkLoad(role,ins,enc,class) then
+        if checkElementLoad(self[j][k],unitRole,unitClass) then
           local onAura=self[j][k].onAuraList
           local onBuff=self[j][k].onBuffList
           local onDebuff=self[j][k].onDebuffList
@@ -655,11 +669,47 @@ local function unitLoad(self,ins,enc)
     end--end of if smart else 
     
   end--end of for j=1,nj
-  
-  
-  
+ 
 end
 eF.rep.unitLoad=unitLoad
+
+local function checkElementLoad(self,unitRole,unitClass)
+  if not self then return end 
+  
+  local para=self.para
+  
+  
+  if para.loadAlways then 
+    if not self.loaded then 
+      self.loaded=true; 
+      if self.static then self:enable() end
+    end
+    return true 
+  end 
+  
+  
+  local inList=eF.isInList
+  local b=true
+  local info=eF.info
+  local playerRole,playerClass,instanceName,instanceID,encounterID,inEncounter=info.playerRole,info.playerClass,info.instanceName,info.instanceID,info.encounterID,info.inEncounter
+
+  if b and (not para.instanceLoadAlways) and not (inList(instanceID,para.loadInstanceList) or inList(instanceName,para.loadInstanceList)) then b=false end
+  if b and (not para.encounterLoadAlways) and not (inEncounter and inList(encounterID,para.loadEncounterList)) then b=false end
+  if b and (not para.unitRoleLoadAlways) and not inList(unitRole,para.loadUnitRoleList) then b=false end
+  if b and (not para.unitClassLoadAlways) and not inList(unitClass,para.loadUnitClassList) then b=false end
+  if b and (not para.playerRoleLoadAlways) and not inList(playerRole,para.loadPlayerRoleList) then b=false end
+  if b and (not para.playerClassLoadAlways) and not inList(playerClass,para.loadPlayerClassList) then b=false end
+
+  if not b and self.loaded then self.loaded=false; self:disable() end
+  if b and not self.loaded then 
+    if self.static then self:enable() end
+    self.loaded=true
+  end
+  
+  return b
+end
+eF.rep.checkElementLoad=checkElementLoad
+
 
 local function updateUnitFrameHealthVisuals(self)
   local para=eF.para.units
