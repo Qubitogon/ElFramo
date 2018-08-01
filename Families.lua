@@ -317,24 +317,22 @@ local function createFamilyFrame(self,j)
       c.cdFrame:Hide()
       
       --text
-      if f.para.hasText then
-        c.text=c:CreateFontString()
-        local font=f.para.textFont or "Fonts\\FRIZQT__.ttf"
-        local size=f.para.textSize or 20
-        local xOS=f.para.textXOS or 0
-        local yOS=f.para.textYOS or 0
-        local r=f.para.textR
-        local g=f.para.textG
-        local b=f.para.textB
-        local a=f.para.textA
-        local extra=f.para.textExtra or "OUTLINE"
-        local iDA=c.para.textIgnoreDurationAbove
-        c.text:SetFont(font,size,extra)    
-        c.text:SetPoint(f.para.textAnchor,c,f.para.textAnchorTo,xOS,yOS)
-        c.text:SetTextColor(r,g,b,a)
-        if iDA then c.textIgnoreDurationAbove=iDA end
-        if c.para.textType=="t" then insert(c.onUpdateList,eF.rep.iconUpdateTextTypeT) end 
-      end--end of if frame.hasText
+      c.text=c:CreateFontString()
+      local font=f.para.textFont or "Fonts\\FRIZQT__.ttf"
+      local size=f.para.textSize or 20
+      local xOS=f.para.textXOS or 0
+      local yOS=f.para.textYOS or 0
+      local r=f.para.textR or 1
+      local g=f.para.textG or 1
+      local b=f.para.textB or 1
+      local a=f.para.textA or 1
+      local extra=f.para.textExtra or "OUTLINE"
+      local iDA=c.para.textIgnoreDurationAbove
+      c.text:SetFont(font,size,extra)    
+      c.text:SetPoint(f.para.textAnchor,c,f.para.textAnchorTo,xOS,yOS)
+      c.text:SetTextColor(r,g,b,a)
+      if iDA then c.textIgnoreDurationAbove=iDA end
+      if c.para.textType=="t" then insert(c.onUpdateList,eF.rep.iconUpdateTextTypeT) end 
     
       --give the OnUpdate function to the frame
       c.onUpdateFunc=eF.rep.frameOnUpdateFunction
@@ -472,7 +470,7 @@ local function applyFamilyParas(self,j)
 end
 eF.rep.applyFamilyParas=applyFamilyParas
 
-local function applyChildParas(self,j,k)
+function applyChildParas(self,j,k)
   local insert=table.insert
   local c=self[j][k]
   if not c then return end
@@ -600,27 +598,33 @@ local function applyChildParas(self,j,k)
       c.static=true
       c:Show()
     end
-
+    
+    c:SetSize(0,0)
+    
     if c.para.grow=="up" or not c.para.grow then 
       c:SetPoint("BOTTOM",self,c.para.anchorTo,c.para.xPos,c.para.yPos)
       c:SetWidth(c.para.lFix)
       c:SetHeight(c.para.lMax)
       c:SetOrientation("VERTICAL")
+      c:SetReverseFill(false)
     elseif c.para.grow=="down" then 
       c:SetPoint("TOP",self,c.para.anchorTo,c.para.xPos,c.para.yPos)
       c:SetWidth(c.para.lFix)
       c:SetHeight(c.para.lMax)
       c:SetOrientation("VERTICAL")
+      c:SetReverseFill(true)
     elseif c.para.grow=="right" then 
       c:SetPoint("LEFT",self,c.para.anchorTo,c.para.xPos,c.para.yPos)
       c:SetWidth(c.para.lMax)
       c:SetHeight(c.para.lFix)
       c:SetOrientation("HORIZONTAL") 
+      c:SetReverseFill(false)
     else
       c:SetPoint("RIGHT",self,c.para.anchorTo,c.para.xPos,c.para.yPos)
       c:SetWidth(c.para.lMax)
       c:SetHeight(c.para.lFix)
       c:SetOrientation("HORIZONTAL")
+      c:SetReverseFill(true)
     end
     
     local r,g,b,a=c.para.textureR or 1,c.para.textureG or 1,c.para.textureB or 1, c.para.textureA or 1
@@ -805,7 +809,7 @@ function createFamilyChild(self,k)
     local c=self[k]
     c.para=self.para[k]
 
-    c:SetFrameLevel(c.para.frameLevel+self:GetFrameLevel())
+    c:SetFrameLevel( (c.para.frameLevel or 1)+self:GetFrameLevel())
 
     c.disable=eF.rep.iconFrameDisable
     c.enable=eF.rep.iconFrameEnable
@@ -837,8 +841,6 @@ function createFamilyChild(self,k)
     end 
     
     --VISUALS
-    
-   
     if c.para.grow=="up" or not c.para.grow then 
       c:SetPoint("BOTTOM",frame,c.para.anchorTo,c.para.xPos,c.para.yPos)
       c:SetWidth(c.para.lFix)

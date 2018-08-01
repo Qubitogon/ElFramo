@@ -181,6 +181,8 @@ local function layoutUpdate(self)
    
    end--end  of if self.byGroup else
   
+    
+  
   end-- end of if not raid else
     
   eF.units:onGroupUpdate()

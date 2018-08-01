@@ -14,7 +14,6 @@ eF.info.playerClass=UnitClass("player")
 for i=1,40 do
   local s="raid"..tostring(i)
   table.insert(eF.raidLoop,s)
-  --print(eF.raidLoop[i])
 end
 
 

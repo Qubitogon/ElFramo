@@ -1,4 +1,5 @@
 local _,eF=...
+local afterDo=C_Timer.After
 
 local function initUnitsFrame()
 eF.units=CreateFrame("Frame","units",UIParent)
@@ -48,8 +49,13 @@ eF.rep.initUnitsFrame=initUnitsFrame
 
 local function unitsEventHandler(self,event)
   
-  if event=="GROUP_ROSTER_UPDATE" or event=="PLAYER_ENTERING_WORLD"  then
+  if event=="GROUP_ROSTER_UPDATE" then
     self:onGroupUpdate()    
+  elseif event=="PLAYER_ENTERING_WORLD" then  
+    self:onGroupUpdate()
+    afterDo(3,function() self:onGroupUpdate() end)
+  elseif event=="UNIT_NAME_UPDATE" then
+    self:onGroupUpdate()
   elseif event=="PLAYER_REGEN_DISABLED" then
     eF.interface:Hide()
     if eF.OOCActions.layoutUpdate then eF.layout:update(); eF.OOCActions.layoutUpdate=false end
@@ -71,6 +77,7 @@ local function unitEnable(self)
   if self.enabled then return end
   self.enabled=true
   self:Show()
+  if InCombatLockdown() then return end
   RegisterUnitWatch(self)
   local unit=self.id
   for i=1,#self.events do
@@ -88,14 +95,13 @@ local function unitDisable(self)
 
   self.enabled=false
   self:Hide()
-  
-  --[[
+  if InCombatLockdown() then return end
+  UnregisterUnitWatch(self)
   local unit=self.id
   for i=1,#self.events do
     self:UnregisterEvent(self.events[i])
-    --self:RegisterEvent(self.events[i])
   end
-  ]] --not really needed as there just wont be any of those events happening any more :/
+  
 end
 eF.rep.unitDisable=unitDisable
 
