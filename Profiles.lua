@@ -10,6 +10,7 @@ _eF_savVar.profiles={
                  default={throttle=0.1, --currently not actually applying, it's set to 0.1
                        familyButtonsIndexList={},
                        groupParas=false,
+                       version=1,
                        units={
                                height=50,
                                width=70,

@@ -5926,13 +5926,29 @@ ecsf.bg=ecsf:CreateTexture(nil,"BACKGROUND")
 ecsf.bg:SetAllPoints()
 ecsf.bg:SetColorTexture(0.07,0.07,0.07,1)
 
-ecb:SetScript("OnClick",function() 
+ecb:SetScript("OnClick",function()
+  local tabs=eF.interface.familiesFrame.tabs
+  if tabs:IsShown() then 
+    tabs.tab1:SetButtonState("PUSHED")
+    tabs.tab1:Click()
+    tabs:Hide()
+  end
+
   releaseAllFamilies()
   hideAllFamilyParas()
   ecsf:Show()
 end)
 
 eeb:SetScript("OnClick",function(self)
+  local text=eeb.text:GetText()
+  if not ( (text=="") or (text==nil) ) then 
+    eeb.text:SetText(""); 
+    self.confirmButton.deleteJ=nil
+    self.confirmButton.deleteK=nil
+    self.confirmButton:Hide()
+    return
+  end
+  
   self.confirmButton.deleteJ=eF.activeButton.familyIndex
   self.confirmButton.deleteK=eF.activeButton.childIndex
   local j,k=eF.activeButton.familyIndex,eF.activeButton.childIndex

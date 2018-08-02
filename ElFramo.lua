@@ -34,7 +34,9 @@ eF.units:SetScript("OnUpdate",units.onUpdate)
 eF.units:RegisterEvent("GROUP_ROSTER_UPDATE")
 eF.units:RegisterEvent("PLAYER_ENTERING_WORLD")
 eF.units:RegisterEvent("PLAYER_REGEN_DISABLED")
+eF.units:RegisterEvent("PLAYER_REGEN_ENABLED")
 eF.units:RegisterEvent("UNIT_NAME_UPDATE")
+eF.units:RegisterEvent("ENCOUNTER_START")
 eF.units:SetScript("OnEvent",units.onEvent)
 
 
@@ -42,7 +44,7 @@ eF.units:SetScript("OnEvent",units.onEvent)
 end
 eF.rep.initUnitsFrame=initUnitsFrame
 
-local function unitsEventHandler(self,event)
+local function unitsEventHandler(self,event,...)
   
   if event=="GROUP_ROSTER_UPDATE" then
     self:onGroupUpdate()    
@@ -53,8 +55,14 @@ local function unitsEventHandler(self,event)
     self:onGroupUpdate()
   elseif event=="PLAYER_REGEN_DISABLED" then
     eF.interface:Hide()
+  elseif event=="PLAYER_REGEN_ENABLED" then
     if eF.OOCActions.layoutUpdate then eF.layout:update(); eF.OOCActions.layoutUpdate=false end
     if eF.OOCActions.groupUpdate then self:onGroupUpdate(); eF.OOCActions.groupUpdate=false end
+    eF.info.encounterID=nil
+    self:checkLoad()    
+  elseif event=="ENCOUNTER_START" then
+    eF.info.encounterID=...
+    self:checkLoad()
   end
     
 end
@@ -123,10 +131,13 @@ end
 eF.rep.unitUpdateText=unitUpdateText
 
 local function updateUnitBorders(self)
-  local size=eF.para.units.borderSize
-  local r=eF.para.units.borderR
-  local g=eF.para.units.borderG
-  local b=eF.para.units.borderB
+  local para
+  if ((self.id=="player") or (self.id=="party1") or (self.id=="party2") or (self.id=="party3") or (self.id=="party4")) and (eF.para.groupParas)
+  then para=eF.para.unitsGroup else para=eF.para.units end
+  local size=para.borderSize
+  local r=para.borderR
+  local g=para.borderG
+  local b=para.borderB
 
   if not (size and self.borderRight) then return end 
   
@@ -559,6 +570,8 @@ local function unitsOnGroupUpdate(self)
         
       self[unit]:enable()
       self[unit]:updateText()
+      self[unit]:eventHandler("UNIT_FLAGS")
+      
       
       local role=UnitGroupRolesAssigned(unit)
       if role=="NONE" and unit=="player" then self[unit].role=eF.info.playerRole 
@@ -607,7 +620,7 @@ local function unitLoad(self)
   local unitRole=self.role
   local unitClass=self.class
   local checkElementLoad=eF.rep.checkElementLoad
-  eF.info.inEncounter=IsEncounterInProgress()
+
   
   self.onAuraList={}
   self.onBuffList={}
@@ -696,7 +709,6 @@ local function checkElementLoad(self,unitRole,unitClass)
   
   local para=self.para
   
-  
   if para.loadAlways then 
     if not self.loaded then 
       self.loaded=true; 
@@ -709,15 +721,21 @@ local function checkElementLoad(self,unitRole,unitClass)
   local inList=eF.isInList
   local b=true
   local info=eF.info
-  local playerRole,playerClass,instanceName,instanceID,encounterID,inEncounter=info.playerRole,info.playerClass,info.instanceName,info.instanceID,info.encounterID,info.inEncounter
-
+  local playerRole,playerClass,instanceName,instanceID,encounterID=info.playerRole,info.playerClass,info.instanceName,info.instanceID,info.encounterID
+  
   if b and (not para.instanceLoadAlways) and not (inList(instanceID,para.loadInstanceList) or inList(instanceName,para.loadInstanceList)) then b=false end
-  if b and (not para.encounterLoadAlways) and not (inEncounter and inList(encounterID,para.loadEncounterList)) then b=false end
+
+  if b and (not para.encounterLoadAlways) and not (inList(encounterID,para.loadEncounterList)) then b=false end
+
   if b and (not para.unitRoleLoadAlways) and not inList(unitRole,para.loadUnitRoleList) then b=false end
+
   if b and (not para.unitClassLoadAlways) and not inList(unitClass,para.loadUnitClassList) then b=false end
+
   if b and (not para.playerRoleLoadAlways) and not inList(playerRole,para.loadPlayerRoleList) then b=false end
+
   if b and (not para.playerClassLoadAlways) and not inList(playerClass,para.loadPlayerClassList) then b=false end
 
+  
   if not b and self.loaded then self.loaded=false; self:disable() end
   if b and not self.loaded then 
     if self.static then self:enable() end
