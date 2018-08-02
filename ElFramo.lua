@@ -127,12 +127,12 @@ local function updateUnitBorders(self)
   local r=eF.para.units.borderR
   local g=eF.para.units.borderG
   local b=eF.para.units.borderB
-  self:ClearAllPoints()
 
   if not (size and self.borderRight) then return end 
   
   for k,v in next,{"RIGHT","TOP","LEFT","BOTTOM"} do 
     local loc,p1,p2,w,f11,f12,f21,f22=eF.borderInfo(v)
+    self[loc]:ClearAllPoints()
     self[loc]:SetVertexColor(r,g,b)
     self[loc]:SetPoint(p1,self,p1,f11*(size),f12*(size))
     self[loc]:SetPoint(p2,self,p2,f21*(size),f22*(size))
