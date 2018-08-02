@@ -39,39 +39,54 @@ local function layoutUpdate(self)
     if eF.para.groupParas then para=eF.para.unitsGroup else para=eF.para.units end
     local width,height,spacing,grow1,grow2=para.width,para.height,para.spacing,para.grow1,para.grow2
 
-    for n=1,num do
-      local unit=eF.partyLoop[n]
-      local x=0
-      local y=0
-      if grow1=="right" then 
-        x=(n-1)*(width+spacing)
-        y=0
-      elseif grow1=="down" then
-        y=(1-n)*(height+spacing)
-        x=0
-      elseif grow1=="up" then
-        y=(n-1)*(height+spacing)
-        x=0
-      elseif grow1=="left" then
-        x=(1-n)*(width+spacing)
-      end    
+    local line=1
+    local n
+    local nmax=para.maxInLine or 5 
 
-      units[unit]:SetPoint("TOPLEFT",units,"TOPLEFT",x,y)
+    local x=0
+    local y=0
+    for i=1,5 do
+      local unit=eF.partyLoop[i]
+
+      n=i --pointless, i would be fine but too lazy to change all of them
+      line=math.floor((n-1)/nmax)+1
       
-    end   
+      if grow1=="right" then 
+        x=((n-1)%nmax)*(width+spacing)
+        if grow2=="up" then y=(line-1)*(height+spacing)
+        elseif grow2=="down" then y=(1-line)*(height+spacing) end  
+        
+      elseif grow1=="down" then
+        y=-((n-1)%nmax)*(height+spacing)
+
+        if grow2=="right" then x=(line-1)*(width+spacing);
+        elseif grow2=="left" then x=(1-line)*(width+spacing) end   
+        
+      elseif grow1=="up" then
+        y=((n-1)%nmax)*(height+spacing)
+        if grow2=="right" then x=(line-1)*(width+spacing)
+        elseif grow2=="left" then x=(1-line)*(width+spacing) end  
+        
+      elseif grow1=="left" then
+        x=-((n-1)%nmax)*(width+spacing)
+        if grow2=="up" then y=(line-1)*(height+spacing)
+        elseif grow2=="down" then y=(1-line)*(height+spacing) end
+      end    
+      units[unit]:SetPoint("TOPLEFT",units,"TOPLEFT",x,y)    
+   end
+      
 
   else --if not raid else
     local line=1
-    local nmax=self.maxInLine or 5 
     local n
     para=eF.para.units
+    local nmax=para.maxInLine or 5 
     local width,height,spacing,grow1,grow2=para.width,para.height,para.spacing,para.grow1,para.grow2
 
     
     if not para.byGroup then 
       local x=0
       local y=0
-      nmax=5 
       for i=1,40 do
         local unit=eF.raidLoop[i]
 

@@ -36,13 +36,8 @@ eF.units:RegisterEvent("PLAYER_ENTERING_WORLD")
 eF.units:RegisterEvent("PLAYER_REGEN_DISABLED")
 eF.units:RegisterEvent("UNIT_NAME_UPDATE")
 eF.units:SetScript("OnEvent",units.onEvent)
---apply all relevant non-table parameters
-for k,v in pairs(eF.para.units) do
-  if type(v)~="table" then eF.units[k]=v; end
-end 
-for k,v in pairs(eF.para.units) do
-  if type(v)~="table" then eF.units[k]=v end
-end 
+
+
 
 end
 eF.rep.initUnitsFrame=initUnitsFrame
@@ -75,9 +70,10 @@ eF.rep.unitHPUpdate=unitHPUpdate
 local function unitEnable(self)
   
   if self.enabled then return end
+  if InCombatLockdown() then return end
+
   self.enabled=true
   self:Show()
-  if InCombatLockdown() then return end
   RegisterUnitWatch(self)
   local unit=self.id
   for i=1,#self.events do
@@ -92,10 +88,10 @@ eF.rep.unitEnable=unitEnable
 local function unitDisable(self)
   
   if not self.enabled then return end
+  if InCombatLockdown() then return end
 
   self.enabled=false
   self:Hide()
-  if InCombatLockdown() then return end
   UnregisterUnitWatch(self)
   local unit=self.id
   for i=1,#self.events do
@@ -110,7 +106,7 @@ local function unitUpdateText(self)
   local name=UnitName(unit)
   if not name then return end
   local units
-  if self.group and eF.para.groupParas then units=eF.unitsGroup else units=eF.units end
+  if (not self.raid) and eF.para.groupParas then units=eF.para.unitsGroup else units=eF.para.units end
 
   if units.textLim then name=strsub(name,1,units.textLim) end
 
@@ -127,11 +123,11 @@ end
 eF.rep.unitUpdateText=unitUpdateText
 
 local function updateUnitBorders(self)
-  local size=eF.units.borderSize
+  local size=eF.para.units.borderSize
   local r=eF.para.units.borderR
   local g=eF.para.units.borderG
   local b=eF.para.units.borderB
-
+  self:ClearAllPoints()
 
   if not (size and self.borderRight) then return end 
   
@@ -214,7 +210,7 @@ local function createUnitFrame(self,unit)
   
   --if this unit frame exists already or unit is nil, fuck it
   if self[unit] or not unit then return end  
-  
+  local para=eF.para.units
 
   
   self[unit]=CreateFrame("Button",nil,self,"SecureUnitButtonTemplate")
@@ -230,7 +226,7 @@ local function createUnitFrame(self,unit)
   
   self[unit]:SetPoint("TOPLEFT",self,"TOPLEFT",0,0)
   
-  self[unit]:SetSize(self.width,self.height)
+  self[unit]:SetSize(para.width,para.height)
   self[unit]:SetFrameStrata("MEDIUM")
   self[unit]:Hide()
   self[unit].enabled=false
@@ -240,27 +236,27 @@ local function createUnitFrame(self,unit)
   self[unit].nA=eF.para.units.nA
   if eF.units.checkOOR then self[unit].updateRange=eF.rep.unitUpdateRange end
   
-  if self.bg then 
+  if para.bg then 
     self[unit].bg=self[unit]:CreateTexture()
     self[unit].bg:SetAllPoints()
-    if self.bgR then self[unit].bg:SetColorTexture(self.bgR,self.bgG,self.bgB)
+    if para.bgR then self[unit].bg:SetColorTexture(para.bgR,para.bgG,para.bgB)
     else self[unit].bg:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Background") end 
     
     self[unit].bg:SetDrawLayer("BACKGROUND",-4)
-  end --end of if self.bg
+  end --end of if para.bg
   
   --status bar health: https://us.battle.net/forums/en/wow/topic/8796680765
   
   do --create HP bar
   self[unit].hp=CreateFrame("StatusBar",nil,self[unit],"TextStatusBar") 
-  if self.healthGrow=="up" then 
-    self[unit].hp:SetPoint("BOTTOMLEFT"); self[unit].hp:SetPoint("BOTTOMRIGHT");  self[unit].hp:SetHeight(self.height); self[unit].hp:SetOrientation("VERTICAL"); self[unit].hp:SetReverseFill(false)
-  elseif self.healthGrow=="right" then
-    self[unit].hp:SetPoint("BOTTOMLEFT"); self[unit].hp:SetPoint("TOPLEFT"); self[unit].hp:SetWidth(self.width); self[unit].hp:SetOrientation("HORIZONTAL"); self[unit].hp:SetReverseFill(false)  
-  elseif self.healthGrow=="down" then
-    self[unit].hp:SetPoint("TOPRIGHT"); self[unit].hp:SetPoint("TOPLEFT"); self[unit].hp:SetHeight(self.height); self[unit].hp:SetOrientation("VERTICAL"); self[unit].hp:SetReverseFill(true)
-  elseif self.healthGrow=="left" then
-    self[unit].hp:SetPoint("TOPRIGHT"); self[unit].hp:SetPoint("BOTTOMRIGHT"); self[unit].hp:SetWidth(self.width); self[unit].hp:SetOrientation("HORIZONTAL"); self[unit].hp:SetReverseFill(true)
+  if para.healthGrow=="up" then 
+    self[unit].hp:SetPoint("BOTTOMLEFT"); self[unit].hp:SetPoint("BOTTOMRIGHT");  self[unit].hp:SetHeight(para.height); self[unit].hp:SetOrientation("VERTICAL"); self[unit].hp:SetReverseFill(false)
+  elseif para.healthGrow=="right" then
+    self[unit].hp:SetPoint("BOTTOMLEFT"); self[unit].hp:SetPoint("TOPLEFT"); self[unit].hp:SetWidth(para.width); self[unit].hp:SetOrientation("HORIZONTAL"); self[unit].hp:SetReverseFill(false)  
+  elseif para.healthGrow=="down" then
+    self[unit].hp:SetPoint("TOPRIGHT"); self[unit].hp:SetPoint("TOPLEFT"); self[unit].hp:SetHeight(para.height); self[unit].hp:SetOrientation("VERTICAL"); self[unit].hp:SetReverseFill(true)
+  elseif para.healthGrow=="left" then
+    self[unit].hp:SetPoint("TOPRIGHT"); self[unit].hp:SetPoint("BOTTOMRIGHT"); self[unit].hp:SetWidth(para.width); self[unit].hp:SetOrientation("HORIZONTAL"); self[unit].hp:SetReverseFill(true)
   end
   
   
@@ -269,17 +265,17 @@ local function createUnitFrame(self,unit)
     self[unit].hp:SetStatusBarTexture(r,g,b,alpha)
   end
   
-  if self.hpTexture then 
-    self[unit].hp:SetStatusBarTexture(self.hpTexture,0,0.8,0)
+  if para.hpTexture then 
+    self[unit].hp:SetStatusBarTexture(para.hpTexture,0,0.8,0)
    
-    if self.hpR then 
-      local alpha=self.hpA or 1 
-      self[unit].hp:SetStatusBarColor(self.hpR,self.hpG,self.hpB,alpha)    
+    if para.hpR then 
+      local alpha=para.hpA or 1 
+      self[unit].hp:SetStatusBarColor(para.hpR,para.hpG,para.hpB,alpha)    
     end   
   
   else 
-    local alpha=self.hpA or 1
-    self[unit].hp:SetStatusBarTexture(self.hpR,self.hpG,self.hpB,alpha)  
+    local alpha=para.hpA or 1
+    self[unit].hp:SetStatusBarTexture(para.hpR,para.hpG,para.hpB,alpha)  
   end
   
   self[unit].hp:SetMinMaxValues(0,1) 
@@ -287,8 +283,8 @@ local function createUnitFrame(self,unit)
   
   local hpTexture=self[unit].hp:GetStatusBarTexture()
   
-  if self.hpGrad then 
-    hpTexture:SetGradientAlpha(self.hpGradOrientation,self.hpGrad1R,self.hpGrad1G,self.hpGrad1B,self.hpGrad1A,self.hpGrad2R,self.hpGrad2G,self.hpGrad2B,self.hpGrad2A)
+  if para.hpGrad then 
+    hpTexture:SetGradientAlpha(para.hpGradOrientation,para.hpGrad1R,para.hpGrad1G,para.hpGrad1B,para.hpGrad1A,para.hpGrad2R,para.hpGrad2G,para.hpGrad2B,para.hpGrad2A)
   end
   
   self[unit].hpUpdate=eF.rep.unitHPUpdate
@@ -296,22 +292,22 @@ local function createUnitFrame(self,unit)
   
   do --create name string
   self[unit].text=self[unit]:CreateFontString(nil,"OVERLAY",-1)
-  self[unit].text:SetFont(self.textFont,self.textSize,self.textExtra)
-  self[unit].text:SetPoint(self.textPos,self[unit],self.textPos,self.textXOS,self.textYOS)
-  local r=self.textR or 1
-  local g=self.textG or 1
-  local b=self.textB or 1
-  local a=self.textA or 1
+  self[unit].text:SetFont(para.textFont,para.textSize,para.textExtra)
+  self[unit].text:SetPoint(para.textPos,self[unit],para.textPos,para.textXOS,para.textYOS)
+  local r=para.textR or 1
+  local g=para.textG or 1
+  local b=para.textB or 1
+  local a=para.textA or 1
   self[unit].text:SetTextColor(r,g,b,a)
   self[unit].updateText=eF.rep.unitUpdateText
   end
   
   --create border
   self[unit].updateBorders=eF.rep.updateUnitBorders
-  if self.borderSize then 
-    local r=self.borderR or 0
-    local g=self.borderG or 0
-    local b=self.borderB or 0
+  if para.borderSize then 
+    local r=para.borderR or 0
+    local g=para.borderG or 0
+    local b=para.borderB or 0
     for k,v in next,{"RIGHT","TOP","LEFT","BOTTOM"} do
       local bn=eF.borderInfo(v)      
       self[unit][bn]=self[unit]:CreateTexture("BACKGROUND",-4)
@@ -330,7 +326,7 @@ local function createUnitFrame(self,unit)
   self[unit].deadFrame.texture:SetAllPoints(true)
   self[unit].deadFrame.texture:SetColorTexture(0.5,0.5,0.5,0.2)
   self[unit].deadFrame.text=self[unit].deadFrame:CreateFontString(nil,"OVERLAY")
-  self[unit].deadFrame.text:SetFont(self.textFont,self.textSize,self.textExtra)
+  self[unit].deadFrame.text:SetFont(para.textFont,para.textSize,para.textExtra)
   self[unit].deadFrame.text:SetText("DEAD")
   self[unit].deadFrame.text:SetPoint("CENTER")
   self[unit].deadFrame:Hide()
@@ -343,7 +339,7 @@ local function createUnitFrame(self,unit)
   self[unit].offlineFrame.texture:SetAllPoints(true)
   self[unit].offlineFrame.texture:SetColorTexture(0.3,0.3,0.3,0.3)
   self[unit].offlineFrame.text=self[unit].offlineFrame:CreateFontString(nil,"OVERLAY")
-  self[unit].offlineFrame.text:SetFont(self.textFont,self.textSize,self.textExtra)
+  self[unit].offlineFrame.text:SetFont(para.textFont,para.textSize,para.textExtra)
   self[unit].offlineFrame.text:SetText("OFFLINE")
   self[unit].offlineFrame.text:SetPoint("CENTER")
   self[unit].offlineFrame:Hide()
@@ -440,7 +436,7 @@ local function updateAllUnitParas(self)
     
     local hpTexture=f.hp:GetStatusBarTexture()
     
-    if self.hpGrad then
+    if u.hpGrad then
       hpTexture:SetGradientAlpha(u.hpGradOrientation,u.hpGrad1R,u.hpGrad1G,u.hpGrad1B,u.hpGrad1A,u.hpGrad2R,u.hpGrad2G,u.hpGrad2B,u.hpGrad2A)
     end
     
@@ -452,22 +448,37 @@ local function updateAllUnitParas(self)
     f.deadFrame.text:SetFont(u.textFont,u.textSize,u.textExtra)
     f.offlineFrame.text:SetFont(u.textFont,u.textSize,u.textExtra)
     
-    f:updateTextColor()
+    if u.textColorByClass then
+      local r,g,b = 1,1,1
+      local _,CLASS=UnitClass(f.id)
+      if CLASS then r,g,b=GetClassColor(CLASS) end
+      f.text:SetTextColor(r,g,b,a)
+    else
+      local r,g,b = u.textR or 1, u.textG or 1, u.textB or 1
+      f.text:SetTextColor(r,g,b,a)
+    end
+    f.text:SetAlpha(u.textA or 1)
+    
     f:updateText()
+    
     
     if u.borderSize then
       local r=u.borderR or 0
       local g=u.borderG or 0
       local b=u.borderB or 0
-      for k,v in next,{"RIGHT","TOP","LEFT","BOTTOM"} do
-        local bn=eF.borderInfo(v)      
-        f[bn]:SetColorTexture(1,1,1)
+      local size=u.borderSize
+      
+      for k,v in next,{"RIGHT","TOP","LEFT","BOTTOM"} do 
+        local loc,p1,p2,w,f11,f12,f21,f22=eF.borderInfo(v)
+        f[loc]:ClearAllPoints()
+        f[loc]:SetVertexColor(r,g,b)
+        f[loc]:SetPoint(p1,f,p1,f11*(size),f12*(size))
+        f[loc]:SetPoint(p2,f,p2,f21*(size),f22*(size))
+        if w then f[loc]:SetWidth(size);
+        else f[loc]:SetHeight(size); end    
       end
     end
-    
-    
-    
-    
+
   end --end of for i=1,45
 end
 eF.rep.updateAllUnitParas=updateAllUnitParas
@@ -537,7 +548,7 @@ local function unitsOnGroupUpdate(self)
     if raid then lst=eF.raidLoop
     else lst=eF.partyLoop end  
      
-    if party and eF.para.groupParas then byCC=eF.para.unitsParty.byClassColor else byCC=eF.para.units.byClassColor end
+    if (not raid) and eF.para.groupParas then byCC=eF.para.unitsGroup.byClassColor else byCC=eF.para.units.byClassColor end
      
     for n=1,num do
       local unit=lst[n]  

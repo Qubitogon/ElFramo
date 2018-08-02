@@ -106,7 +106,14 @@ _eF_savVar.profiles={
                                borderR=0.35,
                                borderG=0.35,
                                borderB=0.35,
-                               borderA=1,},                         
+                               borderA=1,
+                               spacing=5,
+                               grow1="down",
+                               grow2="right",   
+                               byClassColor=true,
+                               byGroup=true,
+                               maxInLine=5,
+                               },                    
                        colors={
                                debuff={Disease={0.6,0.4,0},Poison={0,0.6,0},Curse={0.6,0,0.1},Magic={0.2,0.6,1}},
                               }, --end of colors

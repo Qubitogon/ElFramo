@@ -636,14 +636,17 @@ local function intSetInitValues()
   local fD=gF.frameDim
   local para=eF.para
   local units=para.units
+  local unitsGroup=para.unitsGroup
   local ff=int.familiesFrame
   local fL=ff.famList
   local sc=ff.famList.scrollChild
   local paraFam=eF.para.families
   local bil=eF.para.familyButtonsIndexList
+  local fDLazy=fD.fDLazy
   --eF.interface.familiesFrame.famList.scrollChild.families
   
-  --general frame
+  
+  --general RAID frame
   do
   fD.ebHeight:SetText(units.height)
   fD.ebWidth:SetText(units.width)
@@ -676,8 +679,64 @@ local function intSetInitValues()
 
   fD.bColor.thumb:SetVertexColor(units.borderR,units.borderG,units.borderB)
   fD.bWid:SetText(units.borderSize)
+  
+  UIDropDownMenu_SetSelectedName(fD.grow1,units.grow1)
+  UIDropDownMenu_SetText(fD.grow1,units.grow1)
+  UIDropDownMenu_SetSelectedName(fD.grow2,units.grow2)
+  UIDropDownMenu_SetText(fD.grow2,units.grow2)
+  fD.spacing:SetText(units.spacing)
+  fD.maxInLine:SetText(units.maxInLine)
+  fD.byGroup:SetChecked(units.byGroup)
   end
   
+  --general PARTY frame
+  do
+  fDLazy.groupParas:SetChecked(para.groupParas)
+  if not para.groupParas then fDLazy.iconBlocker:Show() else fDLazy.iconBlocker:Hide() end
+  
+  fDLazy.ebHeight:SetText(unitsGroup.height)
+  fDLazy.ebWidth:SetText(unitsGroup.width)
+  UIDropDownMenu_SetSelectedName(fDLazy.hDir,unitsGroup.healthGrow)
+  UIDropDownMenu_SetText(fDLazy.hDir,unitsGroup.healthGrow)
+  fDLazy.gradStart:SetText( eF.toDecimal(unitsGroup.hpGrad1R,2) or "nd")
+  fDLazy.gradFinal:SetText( eF.toDecimal(unitsGroup.hpGrad2R,2) or "nd")
+  fDLazy.nMax:SetText(unitsGroup.textLim)
+  fDLazy.nSize:SetText(unitsGroup.textSize)
+  
+  fDLazy.hClassColor:SetChecked(unitsGroup.byClassColor)
+  fDLazy.hColor.blocked=unitsGroup.byClassColor
+  if unitsGroup.byClassColor then fDLazy.hColor.blocker:Show() else fDLazy.hColor.blocker:Hide() end
+  fDLazy.hColor.thumb:SetVertexColor(unitsGroup.hpR,unitsGroup.hpG,unitsGroup.hpB)
+  
+  fDLazy.nClassColor:SetChecked(unitsGroup.textColorByClass)
+  fDLazy.nColor.blocked=unitsGroup.textColorByClass
+  if unitsGroup.textColorByClass then fDLazy.nColor.blocker:Show() else fDLazy.nColor.blocker:Hide() end
+  fDLazy.nColor.thumb:SetVertexColor(unitsGroup.textR,unitsGroup.textG,unitsGroup.textB)
+  
+  local font=ssub(unitsGroup.textFont,7,-5)
+  UIDropDownMenu_SetSelectedName(fDLazy.nFont,font)
+  UIDropDownMenu_SetText(fDLazy.nFont,font)
+  
+  fDLazy.nAlpha:SetText(eF.toDecimal(unitsGroup.textA,2) or "nd")
+  UIDropDownMenu_SetSelectedName(fDLazy.nPos,unitsGroup.textPos)
+  UIDropDownMenu_SetText(fDLazy.nPos,unitsGroup.textPos)
+  fDLazy.textXOS:SetText(unitsGroup.textXOS or 0)
+  fDLazy.textYOS:SetText(unitsGroup.textYOS or 0)
+
+  fDLazy.bColor.thumb:SetVertexColor(unitsGroup.borderR,unitsGroup.borderG,unitsGroup.borderB)
+  fDLazy.bWid:SetText(unitsGroup.borderSize)
+  
+  UIDropDownMenu_SetSelectedName(fDLazy.grow1,unitsGroup.grow1)
+  UIDropDownMenu_SetText(fDLazy.grow1,unitsGroup.grow1)
+  UIDropDownMenu_SetSelectedName(fDLazy.grow2,unitsGroup.grow2)
+  UIDropDownMenu_SetText(fDLazy.grow2,unitsGroup.grow2)
+  fDLazy.spacing:SetText(unitsGroup.spacing)
+  fDLazy.maxInLine:SetText(unitsGroup.maxInLine)
+  fDLazy.byGroup:SetChecked(unitsGroup.byGroup)
+  end
+   
+  eF.units:updateAllParas()
+   
   --family frame
   do 
   for i=1,#bil do
@@ -2091,7 +2150,7 @@ end
 
 end
 
---create titleframe
+--create titleframe + hide button
 do
 int.titleBox=CreateFrame("Frame","eFTitle",int)
 tb=int.titleBox
@@ -2110,6 +2169,26 @@ tb.bg=tb:CreateTexture(nil,"BACKGROUND")
 tb.bg:SetPoint("TOPLEFT",tb,"TOPLEFT",5,-5)
 tb.bg:SetPoint("BOTTOMRIGHT",tb,"BOTTOMRIGHT",-5,5)
 tb.bg:SetColorTexture(218/250*(1/3),165/250*(1/3),32/250*(1/3))
+
+tb.x=CreateFrame("Button","eFxbutton",int)
+tb.x:SetPoint("RIGHT",tb,"LEFT",-5,0)
+tb.x:SetSize(35,35)
+tb.x:SetBackdrop(bd)
+
+local t=tb.x:CreateTexture(nil,"BACKGROUND")
+t:SetPoint("CENTER")
+t:SetSize(40,40)
+t:SetTexture("Interface\\BUTTONS\\UI-Panel-MinimizeButton-Up")
+tb.x:SetNormalTexture(t)
+
+t=nil
+t=tb.x:CreateTexture(nil,"BACKGROUND")
+t:SetPoint("CENTER")
+t:SetSize(40,40)
+t:SetTexture("Interface\\BUTTONS\\UI-Panel-MinimizeButton-Down")
+tb.x:SetPushedTexture(t)
+
+tb.x:SetScript("OnClick",function() eF.interface:Hide()  end)
 end
 
 --create header1
@@ -2155,25 +2234,53 @@ gf=int.generalFrame
 gf:Hide()
 hd1b1.relatedFrame=gf
 gf:SetAllPoints()
+
+gf.test=gf:CreateFontString(nil,"OVERLAY")
+gf.test:SetFont(font,15)
+gf.test:SetText("????")
+gf.test:SetPoint("CENTER")
 end
 
 --UNIT FRAME
 do
-
-gf.frameDim=CreateFrame("Frame",nil,gf)
-local fD=gf.frameDim
-fD:SetPoint("TOPLEFT",gf,"TOPLEFT",gf:GetWidth()*0.04,-30)
-fD:SetHeight(350)
-fD:SetWidth(gf:GetWidth()*0.92 )
-fD:SetBackdrop(bd2)
-
+  gf.frameDimScrollFrame=CreateFrame("ScrollFrame","egframeDimScrollFrame",gf,"UIPanelScrollFrameTemplate")
+  local fdsf=gf.frameDimScrollFrame
+  fdsf:SetPoint("TOPLEFT",gf,"TOPLEFT",gf:GetWidth()*0.03,-30)
+  fdsf:SetPoint("BOTTOMRIGHT",gf,"BOTTOMRIGHT",-gf:GetWidth()*0.03,30)
+  fdsf:SetClipsChildren(true)
+  fdsf:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)
+  
+  fdsf.border=CreateFrame("Frame",nil,gf)
+  fdsf.border:SetPoint("TOPLEFT",fdsf,"TOPLEFT",-5,5)
+  fdsf.border:SetPoint("BOTTOMRIGHT",fdsf,"BOTTOMRIGHT",5,-5)
+  fdsf.border:SetBackdrop(bd2)
+  gf.frameDim=CreateFrame("Frame","eFframeDimChild",gf)
+  local fD=gf.frameDim
+  fD:SetPoint("TOP",fdsf,"TOP",0,-20)
+  fD:SetWidth(fdsf:GetWidth()*0.8)
+  fD:SetHeight(fdsf:GetHeight()*1.2)
+ 
+  fdsf.ScrollBar:ClearAllPoints()
+  fdsf.ScrollBar:SetPoint("TOPRIGHT",fdsf,"TOPRIGHT",-6,-18)
+  fdsf.ScrollBar:SetPoint("BOTTOMLEFT",fdsf,"BOTTOMRIGHT",-16,18)
+  fdsf.ScrollBar.bg=fdsf.ScrollBar:CreateTexture(nil,"BACKGROUND")
+  fdsf.ScrollBar.bg:SetAllPoints()
+  fdsf.ScrollBar.bg:SetColorTexture(0,0,0,0.5)
+  
+  fdsf:SetScrollChild(fD)
+  
+  fdsf.bg=fdsf:CreateTexture(nil,"BACKGROUND")
+  fdsf.bg:SetAllPoints()
+  fdsf.bg:SetColorTexture(0.07,0.07,0.07,1)
+  
+-------------------RAID FRAME
 --header/title
 do
 fD.mainTitle=fD:CreateFontString(nil,"OVERLAY")
 local t=fD.mainTitle
 t:SetFont(titleFont,15,titleFontExtra)
 t:SetTextColor(titleFontColor2[1],titleFontColor2[2],titleFontColor2[3])
-t:SetText("UNIT FRAME")
+t:SetText("RAID FRAME")
 t:SetPoint("TOPLEFT",fD,"TOPLEFT",8,-8)
 
 fD.mainTitleSpacer=fD:CreateTexture(nil,"BACKGROUND")
@@ -2231,7 +2338,7 @@ local t=fD.title2
 t:SetFont(titleFont,15,titleFontExtra)
 t:SetTextColor(1,1,1)
 t:SetText("Health Frame")
-t:SetPoint("LEFT",fD.title,"LEFT",155,0)
+t:SetPoint("LEFT",fD.title,"LEFT",145,0)
 
 fD.titleSpacer2=fD:CreateTexture(nil,"BACKGROUND")
 local tS=fD.titleSpacer2
@@ -2285,7 +2392,7 @@ hCB:SetHeight(22)
 hCB:SetWidth(120)
 hCB.texture=hCB:CreateTexture(nil,"OVERLAY")
 hCB.texture:SetAllPoints()
-hCB.texture:SetColorTexture(0.1,0.1,0.1,0.5)
+hCB.texture:SetColorTexture(0.07,0.07,0.07,0.4)
 
 
 createDD(fD,"hDir",fD)
@@ -2349,14 +2456,14 @@ local t=fD.title3
 t:SetFont(titleFont,15,titleFontExtra)
 t:SetTextColor(1,1,1)
 t:SetText("Name")
-t:SetPoint("LEFT",fD.title2,"LEFT",185,0)
+t:SetPoint("LEFT",fD.title2,"LEFT",180,0)
 
 fD.titleSpacer3=fD:CreateTexture(nil,"BACKGROUND")
 local tS=fD.titleSpacer3
 tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
 tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
-tS:SetWidth(280)
+tS:SetWidth(90)
 
 
 createCB(fD,"nClassColor",fD)
@@ -2405,7 +2512,7 @@ nCB:SetHeight(22)
 nCB:SetWidth(120)
 nCB.texture=nCB:CreateTexture(nil,"OVERLAY")
 nCB.texture:SetAllPoints()
-nCB.texture:SetColorTexture(0.1,0.1,0.1,0.5)
+nCB.texture:SetColorTexture(0.07,0.07,0.07,0.4)
 
 createNumberEB(fD,"nMax",fD)
 fD.nMax.text:SetPoint("RIGHT",fD.nColor.text,"RIGHT",0,-ySpacing)
@@ -2569,6 +2676,638 @@ end
 end)
 
 end--end of border
+
+--layout
+do 
+fD.title5=fD:CreateFontString(nil,"OVERLAY")
+local t=fD.title5
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("Layout")
+t:SetPoint("TOPLEFT",fD.title3,"TOPLEFT",200,0)
+
+fD.titleSpacer5=fD:CreateTexture(nil,"BACKGROUND")
+local tS=fD.titleSpacer5
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(110)
+
+createDD(fD,"grow1",fD)
+fD.grow1.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+fD.grow1.text:SetText("Grows:")
+fD.grow1.initialize=function(frame,level,menuList)
+ local info = UIDropDownMenu_CreateInfo()
+ for i=1,#eF.orientations do
+   local v=eF.orientations[i]
+   info.text, info.checked, info.arg1 = v,false,v
+   info.func=function(self,arg1,arg2,checked)
+     eF.para.units.grow1=arg1
+     eF.units:updateAllParas()
+     UIDropDownMenu_SetText(frame,v)
+     UIDropDownMenu_SetSelectedName(frame,v)
+     CloseDropDownMenus()
+     eF.units:updateAllParas()
+     eF.layout:update()
+   end
+   UIDropDownMenu_AddButton(info)
+ end
+end
+
+createDD(fD,"grow2",fD)
+fD.grow2.text:SetPoint("RIGHT",fD.grow1.text,"RIGHT",0,-ySpacing)
+fD.grow2.text:SetText("then:")
+fD.grow2.initialize=function(frame,level,menuList)
+ local info = UIDropDownMenu_CreateInfo()
+ for i=1,#eF.orientations do
+   local v=eF.orientations[i]
+   info.text, info.checked, info.arg1 = v,false,v
+   info.func=function(self,arg1,arg2,checked)
+     eF.para.units.grow2=arg1
+     eF.units:updateAllParas()
+     UIDropDownMenu_SetText(frame,v)
+     UIDropDownMenu_SetSelectedName(frame,v)
+     CloseDropDownMenus()
+     eF.units:updateAllParas()
+     eF.layout:update()
+   end
+   UIDropDownMenu_AddButton(info)
+ end
+end
+
+createNumberEB(fD,"spacing",fD)
+fD.spacing.text:SetPoint("RIGHT",fD.grow2.text,"RIGHT",0,-ySpacing)
+fD.spacing.text:SetText("Width:")
+fD.spacing:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+w=self:GetText()
+if (not w) or w=="" or not (tonumber(w)) then w=eF.para.units.spacing; self:SetText(w)
+else eF.para.units.spacing=w; eF.units:updateAllParas(); eF.layout:update() end
+end)
+
+
+createNumberEB(fD,"maxInLine",fD)
+fD.maxInLine.text:SetPoint("RIGHT",fD.spacing.text,"RIGHT",0,-ySpacing)
+fD.maxInLine.text:SetText("Max in line:")
+fD.maxInLine:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+w=self:GetNumber()
+if (not w) or w==0 then w=eF.para.units.maxInLine; self:SetText(w)
+else eF.para.units.maxInLine=math.floor(w); eF.units:updateAllParas(); eF.layout:update() end
+end)
+
+
+createCB(fD,"byGroup",fD)
+fD.byGroup.text:SetPoint("RIGHT",fD.maxInLine.text,"RIGHT",0,-ySpacing)
+fD.byGroup.text:SetText("Sort by group:")
+fD.byGroup:SetScript("OnClick",function(self)
+  local ch=self:GetChecked()
+  self:SetChecked(ch)
+  eF.para.units.byGroup=ch
+  eF.layout:update()
+  eF.units:updateAllParas()
+end)
+
+
+
+end--end of layout
+
+
+---------------NOW GROUP FRAME
+  
+--header/title
+local fDLazy
+do
+--I know it's gross and lazy but hey, bite me
+fD.fDLazy=CreateFrame("Frame",nil,fD)
+fDLazy=fD.fDLazy
+fDLazy:SetPoint("TOPLEFT",fD,"TOPLEFT",0,-300)
+fDLazy:SetPoint("BOTTOMRIGHT")
+
+fDLazy.mainTitle2=fDLazy:CreateFontString(nil,"OVERLAY")
+local t=fDLazy.mainTitle2
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(titleFontColor2[1],titleFontColor2[2],titleFontColor2[3])
+t:SetText("PARTY FRAME")
+t:SetPoint("TOPLEFT",fDLazy,"TOPLEFT",8,-8)
+
+fDLazy.mainTitleSpacer2=fDLazy:CreateTexture(nil,"BACKGROUND")
+local tS=fDLazy.mainTitleSpacer2
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(9)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(fDLazy:GetWidth()*0.95)
+tS:SetVertexColor(titleFontColor2[1],titleFontColor2[2],titleFontColor2[3])
+
+
+createCB(fDLazy,"groupParas",fDLazy)
+fDLazy.groupParas.text:SetPoint("TOPLEFT",tS,"TOPLEFT",0,-initSpacing*1.5)
+fDLazy.groupParas.text:SetText("Active:")
+fDLazy.groupParas:SetScript("OnClick",function(self)
+  local ch=self:GetChecked()
+  self:SetChecked(ch)
+  eF.para.groupParas=ch
+  if not ch then fDLazy.iconBlocker:Show() else fDLazy.iconBlocker:Hide() end 
+  eF.units:updateAllParas()
+  eF.layout:update() 
+end)
+
+fDLazy.groupParas.description=fDLazy.groupParas:CreateFontString(nil,"OVERLAY")
+local dp=fDLazy.groupParas.description
+dp:SetPoint("LEFT",fDLazy.groupParas,"RIGHT",-30,0)
+dp:SetSize(500,20)
+dp:SetFont(font,11)
+dp:SetText("When disabled, party frames will use the same parameters as the raid frames.")
+
+fDLazy.iconBlocker=CreateFrame("Button",nil,fDLazy)
+fDLazy.iconBlocker:SetPoint("TOPLEFT",fDLazy,"TOPLEFT",0,-initSpacing*4.5)
+fDLazy.iconBlocker:SetPoint("BOTTOMRIGHT",fDLazy,"BOTTOMRIGHT",110,0)
+fDLazy.iconBlocker.bg=fDLazy.iconBlocker:CreateTexture(nil,"BACKGROUDND")
+fDLazy.iconBlocker.bg:SetAllPoints()
+fDLazy.iconBlocker.bg:SetColorTexture(0.07,0.07,0.07,0.4)
+fDLazy.iconBlocker:SetFrameLevel(fDLazy:GetFrameLevel()+3)
+
+
+end 
+
+--Dimensions
+do 
+fDLazy.title=fDLazy:CreateFontString(nil,"OVERLAY")
+local t=fDLazy.title
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("Dimensions")
+t:SetPoint("TOPLEFT",fDLazy,"TOPLEFT",8,-70)
+
+fDLazy.titleSpacer=fDLazy:CreateTexture(nil,"BACKGROUND")
+local tS=fDLazy.titleSpacer
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(110)
+
+createNumberEB(fDLazy,"ebHeight",fDLazy)
+fDLazy.ebHeight.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+fDLazy.ebHeight.text:SetText("Height:")
+fDLazy.ebHeight:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+h=self:GetNumber()
+if h==0 then h=eF.para.unitsGroup.height; self:SetText(h)
+else eF.para.unitsGroup.height=h; eF.units:updateAllParas(); eF.layout:update() end
+end)
+
+createNumberEB(fDLazy,"ebWidth",fDLazy)
+fDLazy.ebWidth.text:SetPoint("RIGHT",fDLazy.ebHeight.text,"RIGHT",0,-ySpacing)
+--fDLazy.ebWidth:SetText(eF.para.unitsGroup.width) ebWidth:SetText(eF.para.unitsGroup.width)
+fDLazy.ebWidth.text:SetText("Width:")
+fDLazy.ebWidth:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+w=self:GetNumber()
+if w==0 then w=eF.para.unitsGroup.width; self:SetText(w)
+else eF.para.unitsGroup.width=w; eF.units:updateAllParas(); eF.layout:update() end
+end)
+
+end
+
+--Health Frame
+do
+fDLazy.title2=fDLazy:CreateFontString(nil,"OVERLAY")
+local t=fDLazy.title2
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("Health Frame")
+t:SetPoint("LEFT",fDLazy.title,"LEFT",145,0)
+
+fDLazy.titleSpacer2=fDLazy:CreateTexture(nil,"BACKGROUND")
+local tS=fDLazy.titleSpacer2
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(130)
+
+createCB(fDLazy,"hClassColor",fDLazy)
+fDLazy.hClassColor.text:SetPoint("TOPLEFT",tS,"TOPLEFT",30,-initSpacing)
+--fDLazy.hColor:SetText("byClass")
+fDLazy.hClassColor.text:SetText("Class color:")
+fDLazy.hClassColor:SetScript("OnClick",function(self)
+  local ch=self:GetChecked()
+  self:SetChecked(ch)
+  fDLazy.hColor.blocked=ch
+  eF.para.unitsGroup.byClassColor=ch
+  if ch then fDLazy.hColor.blocker:Show() else fDLazy.hColor.blocker:Hide() end 
+  eF.units.byClassColor=ch
+  eF.units:updateAllParas()
+end)
+
+createCS(fDLazy,"hColor",fDLazy)
+fDLazy.hColor.text:SetPoint("RIGHT",fDLazy.hClassColor.text,"RIGHT",0,-ySpacing)
+fDLazy.hColor.text:SetText("Color:")
+fDLazy.hColor.getOldRGBA=function(self)
+  local r=eF.para.unitsGroup.hpR
+  local g=eF.para.unitsGroup.hpG
+  local b=eF.para.unitsGroup.hpB
+  return r,g,b
+end
+
+fDLazy.hColor.opacityFunc=function()
+  local r,g,b=ColorPickerFrame:GetColorRGB()
+  local a=OpacitySliderFrame:GetValue()
+  fDLazy.hColor.thumb:SetVertexColor(r,g,b)
+  eF.para.unitsGroup.hpR=r
+  eF.para.unitsGroup.hpG=g
+  eF.para.unitsGroup.hpB=b
+  eF.units.hpR=r
+  eF.units.hpG=g
+  eF.units.hpB=b
+  eF.units:updateAllParas()
+end
+
+fDLazy.hColor.blocker=CreateFrame("Frame",nil,fDLazy)
+local hCB=fDLazy.hColor.blocker
+hCB:SetFrameLevel(fDLazy.hColor:GetFrameLevel()+1)
+hCB:SetPoint("TOPRIGHT",fDLazy.hColor,"TOPRIGHT",2,2)
+hCB:SetHeight(22)
+hCB:SetWidth(120)
+hCB.texture=hCB:CreateTexture(nil,"OVERLAY")
+hCB.texture:SetAllPoints()
+hCB.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+
+
+createDD(fDLazy,"hDir",fDLazy)
+fDLazy.hDir.text:SetPoint("RIGHT",fDLazy.hColor.text,"RIGHT",0,-ySpacing)
+--fDLazy.hDir:SetText(eF.para.unitsGroup.healthGrow) --SETTING INIT VAL
+fDLazy.hDir.text:SetText("Orientation:")
+fDLazy.hDir.initialize=function(frame,level,menuList)
+ local info = UIDropDownMenu_CreateInfo()
+ for i=1,#eF.orientations do
+   local v=eF.orientations[i]
+   info.text, info.checked, info.arg1 = v,false,v
+   info.func=function(self,arg1,arg2,checked)
+     eF.para.unitsGroup.healthGrow=arg1
+     eF.units.healthGrow=arg1
+     eF.units:updateAllParas()
+     UIDropDownMenu_SetText(frame,v)
+     UIDropDownMenu_SetSelectedName(frame,v)
+     CloseDropDownMenus()
+   end
+   UIDropDownMenu_AddButton(info)
+ end
+end
+UIDropDownMenu_SetWidth(fDLazy.hDir,55)
+
+createNumberEB(fDLazy,"gradStart",fDLazy)
+fDLazy.gradStart.text:SetPoint("RIGHT",fDLazy.hDir.text,"RIGHT",0,-ySpacing)
+fDLazy.gradStart.text:SetText("Start grad.:")
+fDLazy.gradStart:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+n=self:GetNumber()
+eF.para.unitsGroup.hpGrad1R=n;
+eF.para.unitsGroup.hpGrad1G=n;
+eF.para.unitsGroup.hpGrad1B=n;
+eF.units.hpGrad1R=n;
+eF.units.hpGrad1G=n;
+eF.units.hpGrad1B=n;
+eF.units:updateAllParas()
+end)
+
+createNumberEB(fDLazy,"gradFinal",fDLazy)
+fDLazy.gradFinal.text:SetPoint("RIGHT",fDLazy.gradStart.text,"RIGHT",0,-ySpacing)
+fDLazy.gradFinal.text:SetText("Final grad.:")
+fDLazy.gradFinal:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+n=self:GetNumber()
+eF.para.unitsGroup.hpGrad2R=n;
+eF.para.unitsGroup.hpGrad2G=n;
+eF.para.unitsGroup.hpGrad2B=n;
+eF.units.hpGrad2R=n;
+eF.units.hpGrad2G=n;
+eF.units.hpGrad2B=n;
+eF.units:updateAllParas()
+end)
+
+end--end of Health Frame
+
+--Name
+do
+fDLazy.title3=fDLazy:CreateFontString(nil,"OVERLAY")
+local t=fDLazy.title3
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("Name")
+t:SetPoint("LEFT",fDLazy.title2,"LEFT",180,0)
+
+fDLazy.titleSpacer3=fDLazy:CreateTexture(nil,"BACKGROUND")
+local tS=fDLazy.titleSpacer3
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(90)
+
+
+createCB(fDLazy,"nClassColor",fDLazy)
+fDLazy.nClassColor.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+--fDLazy.nColor:SetText("byClass")
+fDLazy.nClassColor.text:SetText("Class color:")
+fDLazy.nClassColor:SetScript("OnClick",function(self)
+  local ch=self:GetChecked()
+  self:SetChecked(ch)
+  fDLazy.nColor.blocked=ch
+  eF.para.unitsGroup.textColorByClass=ch
+  eF.units.textColorByClass=ch
+  if ch then fDLazy.nColor.blocker:Show() else fDLazy.nColor.blocker:Hide() end 
+  eF.units:updateAllParas()
+end)
+
+
+createCS(fDLazy,"nColor",fDLazy)
+fDLazy.nColor.text:SetPoint("RIGHT",fDLazy.nClassColor.text,"RIGHT",0,-ySpacing)
+fDLazy.nColor.text:SetText("Color:")
+fDLazy.nColor.getOldRGBA=function(self)
+  local r=eF.para.unitsGroup.textR
+  local g=eF.para.unitsGroup.textG
+  local b=eF.para.unitsGroup.textB
+  return r,g,b
+end
+
+fDLazy.nColor.opacityFunc=function()
+  local r,g,b=ColorPickerFrame:GetColorRGB()
+  local a=OpacitySliderFrame:GetValue()
+  fDLazy.nColor.thumb:SetVertexColor(r,g,b)
+  eF.para.unitsGroup.textR=r
+  eF.para.unitsGroup.textG=g
+  eF.para.unitsGroup.textB=b
+  eF.units.textR=r
+  eF.units.textG=g
+  eF.units.textB=b
+  eF.units:updateAllParas()
+end
+
+fDLazy.nColor.blocker=CreateFrame("Frame",nil,fDLazy)
+local nCB=fDLazy.nColor.blocker
+nCB:SetFrameLevel(fDLazy.nColor:GetFrameLevel()+1)
+nCB:SetPoint("TOPRIGHT",fDLazy.nColor,"TOPRIGHT",2,2)
+nCB:SetHeight(22)
+nCB:SetWidth(120)
+nCB.texture=nCB:CreateTexture(nil,"OVERLAY")
+nCB.texture:SetAllPoints()
+nCB.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+
+createNumberEB(fDLazy,"nMax",fDLazy)
+fDLazy.nMax.text:SetPoint("RIGHT",fDLazy.nColor.text,"RIGHT",0,-ySpacing)
+fDLazy.nMax.text:SetText("Characters:")
+fDLazy.nMax:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+n=self:GetNumber()
+if n==0 then n=eF.para.unitsGroup.textLim; self:SetText(n)
+else eF.para.unitsGroup.textLim=n; eF.units.textLim=n; eF.units:updateAllParas() end
+end)
+
+createNumberEB(fDLazy,"nSize",fDLazy)
+fDLazy.nSize.text:SetPoint("RIGHT",fDLazy.nMax.text,"RIGHT",0,-ySpacing)
+fDLazy.nSize.text:SetText("Font size:")
+fDLazy.nSize:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+n=self:GetNumber()
+if n==0 then n=eF.para.unitsGroup.textSize; self:SetText(n)
+else eF.para.unitsGroup.textSize=n; eF.units.textSize=n; eF.units:updateAllParas() end
+end)
+
+
+createNumberEB(fDLazy,"nAlpha",fDLazy)
+fDLazy.nAlpha.text:SetPoint("RIGHT",fDLazy.nSize.text,"RIGHT",0,-ySpacing)
+fDLazy.nAlpha.text:SetText("Alpha:")
+fDLazy.nAlpha:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+a=self:GetNumber()
+eF.para.unitsGroup.textA=a; eF.units.textA=a; eF.units:updateAllParas()
+end)
+
+
+createDD(fDLazy,"nFont",fDLazy)
+fDLazy.nFont.text:SetPoint("RIGHT",fDLazy.nAlpha.text,"RIGHT",0,-ySpacing)
+fDLazy.nFont.text:SetText("Font:")
+fDLazy.nFont.initialize=function(frame,level,menuList)
+ local info = UIDropDownMenu_CreateInfo()
+ for i=1,#eF.fonts do
+   local v=eF.fonts[i]
+   info.text, info.checked, info.arg1 = v,false,v
+   info.func=function(self,arg1,arg2,checked)
+     eF.para.unitsGroup.textFont="Fonts\\"..arg1..".ttf"
+     eF.units.textFont="Fonts\\"..arg1..".ttf"
+     eF.units:updateAllParas()
+     UIDropDownMenu_SetText(frame,v)
+     UIDropDownMenu_SetSelectedName(frame,v)
+     CloseDropDownMenus()
+     eF.units:updateAllParas()
+   end
+   
+   UIDropDownMenu_AddButton(info)
+ end
+end
+
+createDD(fDLazy,"nPos",fDLazy)
+fDLazy.nPos.text:SetPoint("RIGHT",fDLazy.nFont.text,0,-ySpacing)
+fDLazy.nPos.text:SetText("Position:")
+fDLazy.nPos.initialize=function(frame,level,menuList)
+ local info = UIDropDownMenu_CreateInfo()
+ for i=1,#eF.positions do
+   local v=eF.positions[i]
+   info.text, info.checked, info.arg1 = v,false,v
+   info.func=function(self,arg1,arg2,checked)
+     eF.para.unitsGroup.textPos=arg1
+     eF.units.textPos=arg1
+     eF.units:updateAllParas()
+     UIDropDownMenu_SetText(frame,v)
+     UIDropDownMenu_SetSelectedName(frame,v)
+     CloseDropDownMenus()
+   end
+   UIDropDownMenu_AddButton(info)
+ end
+end
+
+createNumberEB(fDLazy,"textXOS",fDLazy)
+fDLazy.textXOS.text:SetPoint("RIGHT",fDLazy.nPos.text,"RIGHT",0,-ySpacing)
+fDLazy.textXOS.text:SetText("X Offset:")
+fDLazy.textXOS:SetWidth(30)
+fDLazy.textXOS:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+x=self:GetText()
+x=tonumber(x)
+if not x then x=eF.activePara.textXOS; self:SetText(x); 
+else 
+  eF.para.unitsGroup.textXOS=x;
+end
+  eF.units:updateAllParas()
+end)
+
+createNumberEB(fDLazy,"textYOS",fDLazy)
+fDLazy.textYOS.text:SetPoint("RIGHT",fDLazy.textXOS.text,"RIGHT",0,-ySpacing)
+fDLazy.textYOS.text:SetText("Y Offset:")
+fDLazy.textYOS:SetWidth(30)
+fDLazy.textYOS:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+x=self:GetText()
+x=tonumber(x)
+if not x  then x=eF.activePara.textYOS; self:SetText(x)
+else 
+  eF.para.unitsGroup.textYOS=x;
+end
+  eF.units:updateAllParas()
+end)
+
+end--end of Name
+
+--Border
+do
+fDLazy.title4=fDLazy:CreateFontString(nil,"OVERLAY")
+local t=fDLazy.title4
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("Border")
+t:SetPoint("LEFT",fDLazy.title,"LEFT",0,-85)
+
+fDLazy.titleSpacer4=fDLazy:CreateTexture(nil,"BACKGROUND")
+local tS=fDLazy.titleSpacer4
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(fDLazy.titleSpacer:GetWidth())
+
+createCS(fDLazy,"bColor",fDLazy)
+fDLazy.bColor.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+fDLazy.bColor.text:SetText("Color:")
+fDLazy.bColor.getOldRGBA=function(self)
+  local r=eF.para.unitsGroup.borderR
+  local g=eF.para.unitsGroup.borderG
+  local b=eF.para.unitsGroup.borderB
+  return r,g,b
+end
+
+fDLazy.bColor.opacityFunc=function()
+  local r,g,b=ColorPickerFrame:GetColorRGB()
+  local a=OpacitySliderFrame:GetValue()
+  fDLazy.bColor.thumb:SetVertexColor(r,g,b)
+  eF.para.unitsGroup.borderR=r
+  eF.para.unitsGroup.borderG=g
+  eF.para.unitsGroup.borderB=b
+  for i=1,45 do
+    local id
+    if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
+    eF.units[id]:updateBorders();
+  end
+end
+
+
+createNumberEB(fDLazy,"bWid",fDLazy)
+fDLazy.bWid.text:SetPoint("RIGHT",fDLazy.bColor.text,"RIGHT",0,-ySpacing)
+fDLazy.bWid.text:SetText("Width:")
+fDLazy.bWid:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+w=self:GetNumber()
+eF.para.unitsGroup.borderSize=w
+eF.units.borderSize=w
+for i=1,45 do
+  local id
+  if i<6 then id=eF.partyLoop[i] else id=eF.raidLoop[i-5] end
+  eF.units[id]:updateBorders();
+end
+end)
+
+end--end of border
+
+--layout
+do 
+fDLazy.title5=fDLazy:CreateFontString(nil,"OVERLAY")
+local t=fDLazy.title5
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("Layout")
+t:SetPoint("TOPLEFT",fDLazy.title3,"TOPLEFT",200,0)
+
+fDLazy.titleSpacer5=fDLazy:CreateTexture(nil,"BACKGROUND")
+local tS=fDLazy.titleSpacer5
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(110)
+
+createDD(fDLazy,"grow1",fDLazy)
+fDLazy.grow1.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+fDLazy.grow1.text:SetText("Grows:")
+fDLazy.grow1.initialize=function(frame,level,menuList)
+ local info = UIDropDownMenu_CreateInfo()
+ for i=1,#eF.orientations do
+   local v=eF.orientations[i]
+   info.text, info.checked, info.arg1 = v,false,v
+   info.func=function(self,arg1,arg2,checked)
+     eF.para.unitsGroup.grow1=arg1
+     eF.units:updateAllParas()
+     UIDropDownMenu_SetText(frame,v)
+     UIDropDownMenu_SetSelectedName(frame,v)
+     CloseDropDownMenus()
+     eF.units:updateAllParas()
+     eF.layout:update()
+   end
+   UIDropDownMenu_AddButton(info)
+ end
+end
+
+createDD(fDLazy,"grow2",fDLazy)
+fDLazy.grow2.text:SetPoint("RIGHT",fDLazy.grow1.text,"RIGHT",0,-ySpacing)
+fDLazy.grow2.text:SetText("then:")
+fDLazy.grow2.initialize=function(frame,level,menuList)
+ local info = UIDropDownMenu_CreateInfo()
+ for i=1,#eF.orientations do
+   local v=eF.orientations[i]
+   info.text, info.checked, info.arg1 = v,false,v
+   info.func=function(self,arg1,arg2,checked)
+     eF.para.unitsGroup.grow2=arg1
+     eF.units:updateAllParas()
+     UIDropDownMenu_SetText(frame,v)
+     UIDropDownMenu_SetSelectedName(frame,v)
+     CloseDropDownMenus()
+     eF.units:updateAllParas()
+     eF.layout:update()
+   end
+   UIDropDownMenu_AddButton(info)
+ end
+end
+
+createNumberEB(fDLazy,"spacing",fDLazy)
+fDLazy.spacing.text:SetPoint("RIGHT",fDLazy.grow2.text,"RIGHT",0,-ySpacing)
+fDLazy.spacing.text:SetText("Spacing:")
+fDLazy.spacing:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+w=self:GetText()
+if (not w) or w=="" or not (tonumber(w)) then w=eF.para.unitsGroup.spacing; self:SetText(w)
+else eF.para.unitsGroup.spacing=w; eF.units:updateAllParas(); eF.layout:update() end
+end)
+
+
+createNumberEB(fDLazy,"maxInLine",fDLazy)
+fDLazy.maxInLine.text:SetPoint("RIGHT",fDLazy.spacing.text,"RIGHT",0,-ySpacing)
+fDLazy.maxInLine.text:SetText("Max in line:")
+fDLazy.maxInLine:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+w=self:GetNumber()
+if (not w) or w==0 then w=eF.para.unitsGroup.maxInLine; self:SetText(w)
+else eF.para.unitsGroup.maxInLine=math.floor(w); eF.units:updateAllParas(); eF.layout:update() end
+end)
+
+
+createCB(fDLazy,"byGroup",fDLazy)
+fDLazy.byGroup.text:SetPoint("RIGHT",fDLazy.maxInLine.text,"RIGHT",0,-ySpacing)
+fDLazy.byGroup.text:SetText("Sort by group:")
+fDLazy.byGroup:SetScript("OnClick",function(self)
+  local ch=self:GetChecked()
+  self:SetChecked(ch)
+  eF.para.unitsGroup.byGroup=ch
+  eF.layout:update()
+  eF.units:updateAllParas()
+end)
+
+
+end--end of layout
 
 end
 
@@ -4125,6 +4864,7 @@ do
     local ch=self:GetChecked()
     self:SetChecked(ch)
     eF.activePara.ownOnly=ch
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
   
   cif.iconBlocker6=CreateFrame("Button",nil,cif)
@@ -5019,6 +5759,7 @@ do
     local ch=self:GetChecked()
     self:SetChecked(ch)
     eF.activePara.ownOnly=ch
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
   
   cbof.iconBlocker1=CreateFrame("Button",nil,cbof)
