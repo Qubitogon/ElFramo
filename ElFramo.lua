@@ -245,7 +245,7 @@ local function createUnitFrame(self,unit)
   self[unit].oor=false
   self[unit].oorA=eF.para.units.oorA
   self[unit].nA=eF.para.units.nA
-  if eF.units.checkOOR then self[unit].updateRange=eF.rep.unitUpdateRange end
+  if eF.para.units.checkOOR then self[unit].updateRange=eF.rep.unitUpdateRange end
   
   if para.bg then 
     self[unit].bg=self[unit]:CreateTexture()
