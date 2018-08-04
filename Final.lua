@@ -36,3 +36,66 @@ end
 local initFrame=CreateFrame("Frame")
 initFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 initFrame:SetScript("OnEvent",initialise)
+
+
+--performance
+--[[
+
+some benchmarking vs grid 2 (same features as far as I can tell / could parametrise)
+https://i.imgur.com/R9KxF1K.jpg
+https://i.imgur.com/Y7wucYk.jpg
+older screenshots not included due to me being shit and not saving them
+
+INCLUDING OLDER RUNS, SEEMS TO PERFORM 20-25% BETTER OVERALL THAN GRID2 USING "Addons CPU Usage" SINCE THE -BIG UPDATE-
+
+Would require SIGNFICANTLY more testing, with medium/large/insane amount of elements to compare scaling
+Furthermore it's kinda unfair since grid2 has more features as *options* which could tax performance (although shouldnt most of the time if not selected)
+
+]]
+
+--notes on frame layout / updating (macro)
+--[[
+2 LFR tests of a total of 5 bosses since the RegisterUnitWatch / Show / Hide restructuring:
+No lua errors, thank god
+No late updating of offline/dead etc
+No duplicating of "player" and "party*" frames
+No range updating issues
+]]
+
+--notes on elements (micro)
+--[[
+Nothing relevant to say atm
+]]
+
+--TBA 1!!!
+--[[
+
+--!!!Unlock/lock raid frames
+
+]]
+
+--TBA 2 !
+--[[
+
+--HEAL ABSORB/ABSORB option for bars
+--"Other stuff" frame to include things in TBA3 whenever needed
+
+]]
+
+--TBA 3
+--[[
+
+--Tooltip option for raid frames
+--option to hide when solo
+--MAYBE tooltips to explain wtf some parameters do
+
+]]
+
+
+
+
+
+
+
+
+
