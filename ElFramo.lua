@@ -45,9 +45,8 @@ end
 eF.rep.initUnitsFrame=initUnitsFrame
 
 local function unitsEventHandler(self,event,...)
-  
   if event=="GROUP_ROSTER_UPDATE" then
-    self:onGroupUpdate()    
+    self:onGroupUpdate()
   elseif event=="PLAYER_ENTERING_WORLD" then  
     self:onGroupUpdate()
     afterDo(3,function() self:onGroupUpdate() end)
@@ -59,7 +58,7 @@ local function unitsEventHandler(self,event,...)
     if eF.OOCActions.layoutUpdate then eF.layout:update(); eF.OOCActions.layoutUpdate=false end
     if eF.OOCActions.groupUpdate then self:onGroupUpdate(); eF.OOCActions.groupUpdate=false end
     eF.info.encounterID=nil
-    self:checkLoad()    
+    self:checkLoad()  
   elseif event=="ENCOUNTER_START" then
     eF.info.encounterID=...
     self:checkLoad()
@@ -69,42 +68,30 @@ end
 eF.rep.unitsEventHandler=unitsEventHandler
 
 local function unitHPUpdate(self)
-  if not (self.hp and self.enabled) then return end --WARN: MIGHT BE UNNECESSARY
   local unit=self.id
   self.hp:SetValue( UnitHealth(unit)/UnitHealthMax(unit))
 end
 eF.rep.unitHPUpdate=unitHPUpdate
 
 local function unitEnable(self)
-  
   if self.enabled then return end
   if InCombatLockdown() then return end
-
+  
   self.enabled=true
-  self:Show()
   RegisterUnitWatch(self)
   local unit=self.id
-  for i=1,#self.events do
-    self:RegisterUnitEvent(self.events[i],unit)
-    --self:RegisterEvent(self.events[i])
-  end
-
+  self:Show()
 
 end
 eF.rep.unitEnable=unitEnable
 
 local function unitDisable(self)
-  
   if not self.enabled then return end
   if InCombatLockdown() then return end
-
   self.enabled=false
-  self:Hide()
   UnregisterUnitWatch(self)
   local unit=self.id
-  for i=1,#self.events do
-    self:UnregisterEvent(self.events[i])
-  end
+  self:Hide()
   
 end
 eF.rep.unitDisable=unitDisable
@@ -154,7 +141,6 @@ end
 eF.rep.updateUnitBorders=updateUnitBorders
 
 local function unitEventHandler(self,event)
-  if not self.enabled then return end
   if event=="UNIT_HEALTH_FREQUENT" or event=="UNIT_MAXHEALTH" or event=="UNIT_CONNECTION" or event=="UNIT_FACTION" then
     self:hpUpdate()
     
@@ -226,8 +212,8 @@ local function createUnitFrame(self,unit)
   
   self[unit]=CreateFrame("Button",nil,self,"SecureUnitButtonTemplate")
   self[unit].id=unit
-  self[unit].events={"UNIT_HEALTH_FREQUENT","UNIT_MAXHEALTH","UNIT_CONNECTION","UNIT_FACTION","UNIT_AURA","UNIT_POWER_UPDATE","UNIT_FLAGS"}
 
+  
   if unit=="player" or unit=="party1" or unit=="party2" or unit=="party3" or unit=="party4" then
     self[unit].updateTextColor=eF.rep.updateTextColorGroupFrame; self.group=true else self[unit].updateTextColor=eF.rep.updateTextColorRaidFrame; self.group=false 
   end
@@ -239,12 +225,15 @@ local function createUnitFrame(self,unit)
   
   self[unit]:SetSize(para.width,para.height)
   self[unit]:SetFrameStrata("MEDIUM")
-  self[unit]:Hide()
-  self[unit].enabled=false
+  RegisterUnitWatch(self[unit])
+  self[unit].enabled=true
   
   self[unit].oor=false
   self[unit].oorA=eF.para.units.oorA
   self[unit].nA=eF.para.units.nA
+  
+
+  
   if eF.para.units.checkOOR then self[unit].updateRange=eF.rep.unitUpdateRange end
   
   if para.bg then 
@@ -360,6 +349,16 @@ local function createUnitFrame(self,unit)
   self[unit].eventHandler=eF.rep.unitEventHandler
   self[unit].checkLoad=eF.rep.unitLoad
   self[unit].updateHPbyClass=eF.rep.updateHPbyClass
+  
+  self[unit].onAuraList={}
+  self[unit].onBuffList={}
+  self[unit].onDebuffList={}
+  self[unit].onPowerList={}
+  self[unit].onPostAuraList={}
+  
+  
+  self[unit].events={"UNIT_HEALTH_FREQUENT","UNIT_MAXHEALTH","UNIT_CONNECTION","UNIT_FACTION","UNIT_AURA","UNIT_POWER_UPDATE","UNIT_FLAGS"}
+  for i=1,#self[unit].events do self[unit]:RegisterUnitEvent(self[unit].events[i],unit) end
   self[unit]:SetScript("OnEvent",self[unit].eventHandler)
   
 end --end of CreateUnitFrame()
@@ -536,6 +535,7 @@ end
 eF.rep.unitsFrameOnUpdate=unitsFrameOnUpdate
 
 local function unitsOnGroupUpdate(self)
+    if InCombatLockdown() then eF.OOCActions.groupUpdate=true end
     local byCC
     local raid=IsInRaid()
     self.raid=IsInRaid() --is used for the updatefunction
@@ -568,7 +568,6 @@ local function unitsOnGroupUpdate(self)
         self[unit]:updateHPbyClass()
       end--end of byClassColor
         
-      self[unit]:enable()
       self[unit]:updateText()
       self[unit]:eventHandler("UNIT_FLAGS")
       
@@ -582,24 +581,17 @@ local function unitsOnGroupUpdate(self)
     end --end of for n=1,num
       
     --Hide all others
-    if not raid then     
-      for i=num+1,5 do
-        local unit=eF.partyLoop[i]; if self[unit].enabled then self[unit]:disable();  else break end
-      end    
-      for i=1,40 do
-        local unit=eF.raidLoop[i]; if self[unit].enabled then self[unit]:disable(); else break end
-      end
-     
-    else  
     
+    if raid then     
       for i=1,5 do
-        local unit=eF.partyLoop[i]; if self[unit].enabled then self[unit]:disable(); else break end
-      end
-    
-      for i=num+1,40 do
-        local unit=eF.raidLoop[i]; if self[unit].enabled then self[unit]:disable() ; else break end
-      end
+        local unit=eF.partyLoop[i]; self[unit]:disable(); 
+      end        
+    else
+      for i=1,5 do
+        local unit=eF.partyLoop[i]; self[unit]:enable(); 
+      end  
     end
+
 end
 eF.rep.unitsOnGroupUpdate=unitsOnGroupUpdate
 

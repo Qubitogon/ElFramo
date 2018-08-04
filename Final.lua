@@ -3,7 +3,7 @@ local _,eF=...
 function initialise(self)
   if _eF_savVar then eF.profiles=_eF_savVar.profiles end
   local set=_eF_initProfile or "default" 
-  if not eF.rep.setProfile(set) then print("elFramo: Profile",set," not found, set to 'default' instead"); eF.rep.setProfile("default") end
+  if not eF.rep.setProfile(set) then print("elFramo: Profile'",set,"'not found, set to 'default' instead"); eF.rep.setProfile("default") end
   
   --eLFramo.lua
   eF.rep.initUnitsFrame()
