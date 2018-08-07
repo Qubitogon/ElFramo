@@ -11,6 +11,23 @@ eF.OOCActions={layoutUpdate=false,groupUpdate=false}
 eF.info={}
 eF.info.playerClass=UnitClass("player")
 
+eF.characterframes={
+                    "Interface\\CHARACTERFRAME\\TemporaryPortrait-Vehicle-Organic",
+                    "Interface\\CHARACTERFRAME\\TEMPORARYPORTRAIT-PET",
+                    "Interface\\CHARACTERFRAME\\TemporaryPortrait-Monster",
+                    "Interface\\CHARACTERFRAME\\TemporaryPortrait",
+                    "Interface\\CHARACTERFRAME\\TEMPORARYPORTRAIT-FEMALE-BLOODELF",
+                    "Interface\\CHARACTERFRAME\\TempPortrait",
+                    "Interface\\CHARACTERFRAME\\TEMPORARYPORTRAIT-MALE-DRAENEI",
+                    "Interface\\CHARACTERFRAME\\TEMPORARYPORTRAIT-MALE-ORC",
+                    "Interface\\CHARACTERFRAME\\TEMPORARYPORTRAIT-FEMALE-TROLL",
+                    "Interface\\CHARACTERFRAME\\TEMPORARYPORTRAIT-FEMALE-SCOURGE",
+                    "Interface\\CHARACTERFRAME\\TEMPORARYPORTRAIT-MALE-GNOME",
+                    "Interface\\CHARACTERFRAME\\TEMPORARYPORTRAIT-MALE-TAUREN",
+                    "Interface\\CHARACTERFRAME\\TEMPORARYPORTRAIT-MALE-DWARF",
+
+                    }
+
 for i=1,40 do
   local s="raid"..tostring(i)
   table.insert(eF.raidLoop,s)

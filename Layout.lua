@@ -31,14 +31,20 @@ local function layoutUpdate(self)
   local num=GetNumGroupMembers() --for some reason gives 0 when solo
   if num==0 then num=1 end
   eF.units.num=num
-    
+   
   local units=eF.units
   --r,g,b = GetClassColor
+  
+  
   
   if not raid then
     if eF.para.groupParas then para=eF.para.unitsGroup else para=eF.para.units end
     local width,height,spacing,grow1,grow2=para.width,para.height,para.spacing,para.grow1,para.grow2
-
+    
+    
+    units:ClearAllPoints()
+    units:SetPoint("CENTER",UIParent,"BOTTOMLEFT",para.xPos,para.yPos)
+    
     local line=1
     local n
     local nmax=para.maxInLine or 5 
@@ -82,7 +88,8 @@ local function layoutUpdate(self)
     para=eF.para.units
     local nmax=para.maxInLine or 5 
     local width,height,spacing,grow1,grow2=para.width,para.height,para.spacing,para.grow1,para.grow2
-
+    units:ClearAllPoints()
+    units:SetPoint("CENTER",UIParent,"BOTTOMLEFT",para.xPos,para.yPos)
     
     if not para.byGroup then 
       local x=0

@@ -644,7 +644,7 @@ local function intSetInitValues()
   local bil=eF.para.familyButtonsIndexList
   local fDLazy=fD.fDLazy
   --eF.interface.familiesFrame.famList.scrollChild.families
-  
+  --eF.interface.generalFrame.frameDim
   
   --general RAID frame
   do
@@ -687,6 +687,8 @@ local function intSetInitValues()
   fD.spacing:SetText(units.spacing)
   fD.maxInLine:SetText(units.maxInLine)
   fD.byGroup:SetChecked(units.byGroup)
+  fD.xPos:SetText(math.floor(units.xPos))
+  fD.yPos:SetText(math.floor(units.yPos))
   end
   
   --general PARTY frame
@@ -733,6 +735,8 @@ local function intSetInitValues()
   fDLazy.spacing:SetText(unitsGroup.spacing)
   fDLazy.maxInLine:SetText(unitsGroup.maxInLine)
   fDLazy.byGroup:SetChecked(unitsGroup.byGroup)
+  fDLazy.xPos:SetText(math.floor(unitsGroup.xPos))
+  fDLazy.yPos:SetText(math.floor(unitsGroup.yPos))
   end
    
   eF.units:updateAllParas()
@@ -2123,6 +2127,26 @@ local function setDFFActiveValues(self)
   
 end
 
+local function unitsSaveRaidPosition(self)
+  local x,y=self:GetCenter()
+  local para=eF.para.units
+  local fD=eF.interface.generalFrame.frameDim
+  para.xPos=x
+  para.yPos=y
+  fD.xPos:SetText(math.floor(x))
+  fD.yPos:SetText(math.floor(y))
+end
+
+local function unitsSavePartyPosition(self)
+  local x,y=self:GetCenter()
+  local para=eF.para.unitsGroup
+  local f=eF.interface.generalFrame.frameDim.fDLazy
+  para.xPos=x
+  para.yPos=y
+  f.xPos:SetText(math.floor(x))
+  f.yPos:SetText(math.floor(y))
+end
+
 --create main frame
 do
 eF.interface=CreateFrame("Frame","eFInterface",UIParent)
@@ -2768,7 +2792,45 @@ fD.byGroup:SetScript("OnClick",function(self)
   eF.units:updateAllParas()
 end)
 
+createNumberEB(fD,"xPos",fD)
+fD.xPos.text:SetPoint("RIGHT",fD.byGroup.text,"RIGHT",0,-ySpacing)
+fD.xPos.text:SetText("X Offset:")
+fD.xPos:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+w=self:GetNumber()
+if (not w) then w=eF.para.units.xPos; self:SetText(w)
+else eF.para.units.xPos=w; eF.units:updateAllParas(); eF.layout:update() end
+end)
 
+createNumberEB(fD,"yPos",fD)
+fD.yPos.text:SetPoint("RIGHT",fD.xPos.text,"RIGHT",0,-ySpacing)
+fD.yPos.text:SetText("Y Offset:")
+fD.yPos:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+w=self:GetNumber()
+if (not w) then w=eF.para.units.yPos; self:SetText(w)
+else eF.para.units.yPos=w; eF.units:updateAllParas(); eF.layout:update() end
+end)
+
+
+fD.unlockUnitsButton=CreateFrame("Button",nil,fD,"UIPanelButtonTemplate")
+local uub=fD.unlockUnitsButton
+uub:SetText("(Un)lock")
+uub:SetPoint("LEFT",fD.yPos,"RIGHT",10,10)
+uub:SetWidth(80)
+uub:SetScript("OnClick",function() 
+  local u=eF.units
+  local x,y=eF.para.units.xPos or 0, eF.para.units.yPos or 0
+  u.savePosition=unitsSaveRaidPosition
+  if u.dragger:IsShown() then u.dragger:Hide(); eF.layout:update() else 
+    local rand=math.random()
+    local tx=eF.characterframes[1+math.floor(rand*#eF.characterframes)]
+    u.dragger.texture:SetTexture(tx)
+    u.dragger:Show() 
+    u:ClearAllPoints() 
+    u:SetPoint("CENTER",UIParent,"BOTTOMLEFT",x,y) 
+  end
+  end)
 
 end--end of layout
 
@@ -3306,10 +3368,145 @@ fDLazy.byGroup:SetScript("OnClick",function(self)
   eF.units:updateAllParas()
 end)
 
+createNumberEB(fDLazy,"xPos",fDLazy)
+fDLazy.xPos.text:SetPoint("RIGHT",fDLazy.byGroup.text,"RIGHT",0,-ySpacing)
+fDLazy.xPos.text:SetText("X Offset:")
+fDLazy.xPos:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+w=self:GetNumber()
+if (not w) then w=eF.para.unitsGroup.xPos; self:SetText(w)
+else eF.para.unitsGroup.xPos=w; eF.units:updateAllParas(); eF.layout:update() end
+end)
 
+createNumberEB(fDLazy,"yPos",fDLazy)
+fDLazy.yPos.text:SetPoint("RIGHT",fDLazy.xPos.text,"RIGHT",0,-ySpacing)
+fDLazy.yPos.text:SetText("Y Offset:")
+fDLazy.yPos:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+w=self:GetNumber()
+if (not w) then w=eF.para.unitsGroup.yPos; self:SetText(w)
+else eF.para.unitsGroup.yPos=w; eF.units:updateAllParas(); eF.layout:update() end
+end)
 end--end of layout
 
+fDLazy.unlockUnitsButton=CreateFrame("Button",nil,fDLazy,"UIPanelButtonTemplate")
+local uub=fDLazy.unlockUnitsButton
+uub:SetText("(Un)lock")
+uub:SetPoint("LEFT",fDLazy.yPos,"RIGHT",10,10)
+uub:SetWidth(80)
+uub:SetScript("OnClick",function() 
+  local u=eF.units
+  local x,y=eF.para.unitsGroup.xPos or 0, eF.para.unitsGroup.yPos or 0
+
+  u.savePosition=unitsSavePartyPosition
+  if u.dragger:IsShown() then u.dragger:Hide(); eF.layout:update() else 
+    local rand=math.random()
+    local tx=eF.characterframes[1+math.floor(rand*#eF.characterframes)]
+    u.dragger.texture:SetTexture(tx)
+    u.dragger:Show() 
+    u:ClearAllPoints() 
+    u:SetPoint("CENTER",UIParent,"BOTTOMLEFT",x,y) 
+  end
+  end)
+
+
 end
+
+
+--[[
+--OTHER STUFF
+do
+
+  gf.frameDimScrollFrame=CreateFrame("ScrollFrame","egframeDimScrollFrame",gf,"UIPanelScrollFrameTemplate")
+  local fdsf=gf.frameDimScrollFrame
+  fdsf:SetPoint("TOPLEFT",gf,"TOPLEFT",gf:GetWidth()*0.03,-30)
+  fdsf:SetPoint("BOTTOMRIGHT",gf,"BOTTOMRIGHT",-gf:GetWidth()*0.03,30)
+  fdsf:SetClipsChildren(true)
+  fdsf:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)
+  
+  fdsf.border=CreateFrame("Frame",nil,gf)
+  fdsf.border:SetPoint("TOPLEFT",fdsf,"TOPLEFT",-5,5)
+  fdsf.border:SetPoint("BOTTOMRIGHT",fdsf,"BOTTOMRIGHT",5,-5)
+  fdsf.border:SetBackdrop(bd2)
+  gf.frameDim=CreateFrame("Frame","eFframeDimChild",gf)
+  local fD=gf.frameDim
+  fD:SetPoint("TOP",fdsf,"TOP",0,-20)
+  fD:SetWidth(fdsf:GetWidth()*0.8)
+  fD:SetHeight(fdsf:GetHeight()*1.2)
+ 
+  fdsf.ScrollBar:ClearAllPoints()
+  fdsf.ScrollBar:SetPoint("TOPRIGHT",fdsf,"TOPRIGHT",-6,-18)
+  fdsf.ScrollBar:SetPoint("BOTTOMLEFT",fdsf,"BOTTOMRIGHT",-16,18)
+  fdsf.ScrollBar.bg=fdsf.ScrollBar:CreateTexture(nil,"BACKGROUND")
+  fdsf.ScrollBar.bg:SetAllPoints()
+  fdsf.ScrollBar.bg:SetColorTexture(0,0,0,0.5)
+  
+  fdsf:SetScrollChild(fD)
+  
+  fdsf.bg=fdsf:CreateTexture(nil,"BACKGROUND")
+  fdsf.bg:SetAllPoints()
+  fdsf.bg:SetColorTexture(0.07,0.07,0.07,1)
+  
+--header/title
+do
+fD.mainTitle=fD:CreateFontString(nil,"OVERLAY")
+local t=fD.mainTitle
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(titleFontColor2[1],titleFontColor2[2],titleFontColor2[3])
+t:SetText("RAID FRAME")
+t:SetPoint("TOPLEFT",fD,"TOPLEFT",8,-8)
+
+fD.mainTitleSpacer=fD:CreateTexture(nil,"BACKGROUND")
+local tS=fD.mainTitleSpacer
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(9)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(fD:GetWidth()*0.95)
+tS:SetVertexColor(titleFontColor2[1],titleFontColor2[2],titleFontColor2[3])
+end 
+
+--Misc
+do 
+fD.title=fD:CreateFontString(nil,"OVERLAY")
+local t=fD.title
+t:SetFont(titleFont,15,titleFontExtra)
+t:SetTextColor(1,1,1)
+t:SetText("Dimensions")
+t:SetPoint("TOPLEFT",fD,"TOPLEFT",8,-48)
+
+fD.titleSpacer=fD:CreateTexture(nil,"BACKGROUND")
+local tS=fD.titleSpacer
+tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+tS:SetHeight(8)
+tS:SetTexture(titleSpacer)
+tS:SetWidth(110)
+
+createNumberEB(fD,"ebHeight",fD)
+fD.ebHeight.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+fD.ebHeight.text:SetText("Height:")
+fD.ebHeight:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+h=self:GetNumber()
+if h==0 then h=eF.para.units.height; self:SetText(h)
+else eF.para.units.height=h; eF.units:updateAllParas(); eF.layout:update() end
+end)
+
+createNumberEB(fD,"ebWidth",fD)
+fD.ebWidth.text:SetPoint("RIGHT",fD.ebHeight.text,"RIGHT",0,-ySpacing)
+--fD.ebWidth:SetText(eF.para.units.width) ebWidth:SetText(eF.para.units.width)
+fD.ebWidth.text:SetText("Width:")
+fD.ebWidth:SetScript("OnEnterPressed", function(self)
+self:ClearFocus()
+w=self:GetNumber()
+if w==0 then w=eF.para.units.width; self:SetText(w)
+else eF.para.units.width=w; eF.units:updateAllParas(); eF.layout:update() end
+end)
+
+end
+
+end
+]]
+
 
 --FAMILIES FRAME
 do

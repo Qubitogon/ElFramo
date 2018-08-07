@@ -2,19 +2,36 @@ local _,eF=...
 local afterDo=C_Timer.After
 
 local function initUnitsFrame()
-eF.units=CreateFrame("Frame","units",UIParent)
+eF.units=CreateFrame("Frame","eFunits",UIParent)
 eF.units:EnableMouse(true)
-eF.units:SetPoint("CENTER",UIParent,"CENTER",-300,0)
-eF.units:SetHeight(270)
-eF.units:SetWidth(70)
+eF.units:SetPoint("CENTER",UIParent,"BOTTOMLEFT",0,0)
+eF.units:SetHeight(50)
+eF.units:SetWidth(50)
 eF.units:Show()
+eF.units:SetMovable(true)
 
-MakeMovable(eF.units)
-
+--[[MakeMovable(eF.units)
 eF.units.texture=eF.units:CreateTexture()
 eF.units.texture:SetAllPoints()
 eF.units.texture:SetDrawLayer("BACKGROUND",-6)
-eF.units.texture:SetColorTexture(0,0,0,0.5)
+eF.units.texture:SetColorTexture(0,0,0,0.5)]]
+
+eF.units.dragger=CreateFrame("Frame","eFunitsDragger",eF.units)
+local d=eF.units.dragger
+d:SetFrameLevel(eF.units:GetFrameLevel()+10)
+d:SetPoint("TOPLEFT",eF.units,"TOPLEFT")
+d:SetSize(50,50)
+d:RegisterForDrag("LeftButton")
+d:SetScript("OnMouseDown",function(self) self:GetParent():StartMoving(); self:GetParent():savePosition() end)
+d:SetScript("OnMouseUp",function(self)  self:GetParent():StopMovingOrSizing(); self:GetParent():savePosition()  end)
+d:Hide()
+
+local randTexture
+d.texture=d:CreateTexture(nil,"BACKGROUND")
+d.texture:SetPoint("CENTER")
+d.texture:SetTexture("Interface\\CHARACTERFRAME\\TemporaryPortrait-Vehicle-Organic")
+d.texture:SetScale(0.7)
+
 
 eF.units.checkLoad=eF.rep.unitsLoad
 
@@ -30,14 +47,14 @@ eF.units.updateTextLim=eF.rep.updateUnitFrameTextLim
 eF.units.updateTextPos=eF.rep.updateUnitFrameTextPos
 eF.units.updateGrad=eF.rep.updateUnitFrameGrad
 eF.units.updateAllParas=eF.rep.updateAllUnitParas
-eF.units:SetScript("OnUpdate",units.onUpdate)
+eF.units:SetScript("OnUpdate",eF.units.onUpdate)
 eF.units:RegisterEvent("GROUP_ROSTER_UPDATE")
 eF.units:RegisterEvent("PLAYER_ENTERING_WORLD")
 eF.units:RegisterEvent("PLAYER_REGEN_DISABLED")
 eF.units:RegisterEvent("PLAYER_REGEN_ENABLED")
 eF.units:RegisterEvent("UNIT_NAME_UPDATE")
 eF.units:RegisterEvent("ENCOUNTER_START")
-eF.units:SetScript("OnEvent",units.onEvent)
+eF.units:SetScript("OnEvent",eF.units.onEvent)
 
 
 
