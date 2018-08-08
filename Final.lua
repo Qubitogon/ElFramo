@@ -70,14 +70,15 @@ Nothing relevant to say atm
 --TBA 1!!!
 --[[
 
-
 ]]
 
 --TBA 2 !
 --[[
 
+--changing frame level
 --Cast tracking
 --HEAL ABSORB/ABSORB option for bars
+--Groups can set loading conditions to children
 --"Other stuff" frame to include things in TBA3 whenever needed
 
 ]]

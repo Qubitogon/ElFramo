@@ -5020,7 +5020,7 @@ do
   cif.trackBy.text:SetText("Track by:")
   cif.trackBy.initialize=function(frame,level,menuList)
    local info = UIDropDownMenu_CreateInfo()
-   local lst={"Name"}
+   local lst={"Name","Spell ID"}
    for i=1,#lst do
      local v=lst[i]
      info.text, info.checked, info.arg1 = v,false,v
@@ -5037,7 +5037,6 @@ do
   end
   UIDropDownMenu_SetWidth(cif.trackType,80)
 
-
   
   createNumberEB(cif,"spell",cif)
   cif.spell.text:SetPoint("RIGHT",cif.trackBy.text,"RIGHT",0,-ySpacing)
@@ -5046,6 +5045,7 @@ do
   cif.spell:SetScript("OnEnterPressed", function(self)
   self:ClearFocus()
   spell=self:GetText()
+  if (tonumber(spell)) then spell=tonumber(spell) end
   if not spell or spell=="" then spell=eF.activePara.arg1; self:SetText(spell)
   else 
     eF.activePara.arg1=spell;
@@ -5918,7 +5918,7 @@ do
   cbof.trackBy.text:SetText("Track by:")
   cbof.trackBy.initialize=function(frame,level,menuList)
    local info = UIDropDownMenu_CreateInfo()
-   local lst={"Name"}
+   local lst={"Name","Spell ID"}
    for i=1,#lst do
      local v=lst[i]
      info.text, info.checked, info.arg1 = v,false,v
@@ -5942,6 +5942,7 @@ do
   cbof.spell:SetScript("OnEnterPressed", function(self)
   self:ClearFocus()
   spell=self:GetText()
+  if (tonumber(spell)) then spell=tonumber(spell) end
   if not spell or spell=="" then spell=eF.activePara.arg1; self:SetText(spell)
   else 
     eF.activePara.arg1=spell;

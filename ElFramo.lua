@@ -66,7 +66,6 @@ local function unitsEventHandler(self,event,...)
     self:onGroupUpdate()
   elseif event=="PLAYER_ENTERING_WORLD" then  
     self:onGroupUpdate()
-    afterDo(3,function() self:onGroupUpdate() end)
   elseif event=="UNIT_NAME_UPDATE" then
     self:onGroupUpdate()
   elseif event=="PLAYER_REGEN_DISABLED" then

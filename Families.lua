@@ -54,6 +54,28 @@ local function iconAdoptAuraByName(self,name,icon,count,debuffType,duration,expi
 end
 eF.rep.iconAdoptAuraByName=iconAdoptAuraByName
 
+local function iconAdoptAuraBySpellID(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellID,isBoss)
+  if self.filled then return  end
+  if spellID==self.para.arg1 then
+    if self.para.ownOnly and not (unitCaster=="player") then return end    
+    
+    self.name=name
+    self.icon=icon
+    self.count=count
+    self.debuffType=debuffType
+    self.duration=duration
+    self.expirationTime=expirationTime
+    self.unitCaster=unitCaster
+    self.canSteal=canSteal
+    self.spellId=spellId
+    self.isBoss=isBoss
+    self.filled=true
+    self:enable()
+    return true
+  end
+end
+eF.rep.iconAdoptAuraBySpellID=iconAdoptAuraBySpellID
+
 local function iconUnconditionalAdopt(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
 
   if self.filled then return  end
@@ -78,7 +100,9 @@ end
 eF.rep.iconUnconditionalAdopt=iconUnconditionalAdopt
 
 local function blacklistFamilyAdopt(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
-  if self.full or eF.isInList(name,self.para.arg1) then return end
+  if self.full or eF.isInList(name,self.para.arg1)  then return end
+  local sid=tostring(spellId)
+  if eF.isInList(sid,self.para.arg1) then return end
   if self.para.ignorePermanents and duration==0 then return end
   if self.para.ownOnly and not (unitCaster=="player") then return end
   local iDA=self.para.ignoreDurationAbove
@@ -92,7 +116,11 @@ end
 eF.rep.blacklistFamilyAdopt=blacklistFamilyAdopt
 
 local function whitelistFamilyAdopt(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
-  if self.full or not eF.isInList(name,self.para.arg1) then return end
+  if self.full or not eF.isInList(name,self.para.arg1) then
+    local sid=tostring(spellId)
+    if not eF.isInList(sid,self.para.arg1) then return end
+  end
+    
   if self.para.ignorePermanents and duration==0 then return end
   if self.para.ownOnly and not (unitCaster=="player") then return end
   local iDA=self.para.ignoreDurationAbove
@@ -497,12 +525,18 @@ function applyChildParas(self,j,k)
       if c.para.trackBy=="Name" then 
         insert(c.onBuffList,{eF.rep.iconAdoptAuraByName,c})
       end
+      if c.para.trackBy=="Spell ID" then 
+        insert(c.onBuffList,{eF.rep.iconAdoptAuraBySpellID,c})
+      end
     end
 
     if c.para.trackType=="Debuffs" then
       insert(c.onAuraList,{eF.rep.iconFrameDisable,c})
       if c.para.trackBy=="Name" then 
         insert(c.onDebuffList,{eF.rep.iconAdoptAuraByName,c})
+      end
+      if c.para.trackBy=="Spell ID" then 
+        insert(c.onDebuffList,{eF.rep.iconAdoptAuraBySpellID,c})
       end
     end
     
@@ -640,12 +674,18 @@ function applyChildParas(self,j,k)
       if c.para.trackBy=="Name" then 
         insert(c.onBuffList,{eF.rep.iconAdoptAuraByName,c})
       end
+      if c.para.trackBy=="Spell ID" then 
+        insert(c.onBuffList,{eF.rep.iconAdoptAuraBySpellID,c})
+      end
     end
 
     if c.para.trackType=="Debuffs" then
       insert(c.onAuraList,{eF.rep.iconFrameDisable,c})
       if c.para.trackBy=="Name" then 
         insert(c.onDebuffList,{eF.rep.iconAdoptAuraByName,c})
+      end
+      if c.para.trackBy=="Spell ID" then 
+        insert(c.onDebuffList,{eF.rep.iconAdoptAuraBySpellID,c})
       end
     end
     
