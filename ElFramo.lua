@@ -679,7 +679,7 @@ local function unitLoad(self)
           local onUpdate=self[j][k].onUpdateList
           local onPostAura=self[j][k].onPostAuraList
           
-          if self.Static then self:enable() end
+          if self[j][k].static then self[j][k]:enable() end
           
           for l=1,#onAura do
             insert(self.onAuraList,onAura[l])
@@ -701,7 +701,9 @@ local function unitLoad(self)
             insert(self.onPostAuraList,onPostAura[l])
           end
               
-        end --end of if selfjk.checkLoad
+        else--else of if selfjk.checkLoad
+          if self[j][k].static then self[j][k]:disable() end
+        end
         
       end --end of for k=1,nk
       

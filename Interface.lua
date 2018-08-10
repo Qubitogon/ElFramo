@@ -4468,6 +4468,7 @@ do
       if lpf["unit"..Classes[i]]:GetChecked() then insert(lst,Classes[i]) end
     end
     eF.activePara.loadUnitClassList=lst
+    eF.units:checkLoad()
   end
   
   lpf.title1=lpf:CreateFontString(nil,"OVERLAY")
@@ -4533,6 +4534,7 @@ do
       if lpf["player"..Classes[i]]:GetChecked() then insert(lst,Classes[i]) end
     end
     eF.activePara.loadPlayerClassList=lst
+    eF.units:checkLoad()
   end
   
   lpf.title2=lpf:CreateFontString(nil,"OVERLAY")
@@ -4598,6 +4600,7 @@ do
       if lpf["player"..ROLES[i]]:GetChecked() then insert(lst,ROLES[i]) end
     end
     eF.activePara.loadPlayerRoleList=lst
+    eF.units:checkLoad()
   end
   
   lpf.title3=lpf:CreateFontString(nil,"OVERLAY")
@@ -4663,6 +4666,7 @@ do
       if lpf["unit"..ROLES[i]]:GetChecked() then insert(lst,ROLES[i]) end
     end
     eF.activePara.loadUnitRoleList=lst
+    eF.units:checkLoad()
   end
   
   lpf.title4=lpf:CreateFontString(nil,"OVERLAY")
