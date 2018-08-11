@@ -49,11 +49,13 @@ eF.units.updateGrad=eF.rep.updateUnitFrameGrad
 eF.units.updateAllParas=eF.rep.updateAllUnitParas
 eF.units:SetScript("OnUpdate",eF.units.onUpdate)
 eF.units:RegisterEvent("GROUP_ROSTER_UPDATE")
+eF.units:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 eF.units:RegisterEvent("PLAYER_ENTERING_WORLD")
 eF.units:RegisterEvent("PLAYER_REGEN_DISABLED")
 eF.units:RegisterEvent("PLAYER_REGEN_ENABLED")
 eF.units:RegisterEvent("UNIT_NAME_UPDATE")
 eF.units:RegisterEvent("ENCOUNTER_START")
+eF.units:RegisterEvent("PLAYER_FLAGS_CHANGED")
 eF.units:SetScript("OnEvent",eF.units.onEvent)
 
 
@@ -78,7 +80,13 @@ local function unitsEventHandler(self,event,...)
   elseif event=="ENCOUNTER_START" then
     eF.info.encounterID=...
     self:checkLoad()
+  elseif event=="ACTIVE_TALENT_GROUP_CHANGED" then
+    self:onGroupUpdate()
+  elseif event=="PLAYER_FLAGS_CHANGED" then
+    local unit=...
+    self[unit]:eventHandler("UNIT_FLAGS")
   end
+
     
 end
 eF.rep.unitsEventHandler=unitsEventHandler
@@ -434,7 +442,6 @@ local function updateAllUnitParas(self)
       u=eF.para.units 
     end
     local f=self[unit]
-    
     
     ---HP
     f:SetSize(u.width or 50,u.height or 70)
