@@ -605,6 +605,7 @@ local function unitsOnGroupUpdate(self)
       
     --Hide all others
     
+    if InCombatLockdown() then return end
     if raid then     
       for i=1,5 do
         local unit=eF.partyLoop[i]; self[unit]:disable(); 

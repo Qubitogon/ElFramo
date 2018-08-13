@@ -169,17 +169,53 @@ eF.rep.smartFamilyUpdateTexts=smartFamilyUpdateTexts
 local function iconUpdateTextTypeT(self)
   local t=GetTime()
   local s
-  local iDA=self.textIgnoreDurationAbove
+  --local iDA=self.textIgnoreDurationAbove
 
   s=self.expirationTime-t
   
-  --if s<0 or (iDA and s>iDA ) then s='';
-  if (iDA and s>iDA ) then s='';
-  else local dec=self.para.textDecimals or 1; s=eF.toDecimal(s,dec) end
+  --if (iDA and s>iDA ) then s='';else 
+  local dec=self.para.textDecimals or 1; s=eF.toDecimal(s,dec) --end
 
   self.text:SetText(s)
 end
 eF.rep.iconUpdateTextTypeT=iconUpdateTextTypeT
+
+local function iconUpdateText2TypeT(self)
+  local t=GetTime()
+  local s
+  --local iDA=self.text2IgnoreDurationAbove
+
+  s=self.expirationTime-t
+  
+  --if (iDA and s>iDA ) then s='';else 
+  local dec=self.para.text2Decimals or 1; s=eF.toDecimal(s,dec) --end
+
+  self.text2:SetText(s)
+end
+eF.rep.iconUpdateText2TypeT=iconUpdateText2TypeT
+
+local function iconUpdateText2TypeS(self)
+
+  local t=GetTime()
+  local s
+
+  s=self.count or ""
+  
+  self.text2:SetText(s)
+end
+eF.rep.iconUpdateText2TypeS=iconUpdateText2TypeS
+
+local function iconUpdateTextTypeS(self)
+
+  local t=GetTime()
+  local s
+
+  s=self.count or ""
+  if s==0 then s="" end
+  
+  self.text:SetText(s)
+end
+eF.rep.iconUpdateTextTypeS=iconUpdateTextTypeS
 
 local function iconApplySmartIcon(self)
   if not self.filled then return end
@@ -362,6 +398,23 @@ local function createFamilyFrame(self,j)
       if iDA then c.textIgnoreDurationAbove=iDA end
       if c.para.textType=="t" then insert(c.onUpdateList,eF.rep.iconUpdateTextTypeT) end 
     
+      --text2
+      c.text2=c:CreateFontString()
+      local font=f.para.text2Font or "Fonts\\FRIZQT__.ttf"
+      local size=f.para.text2Size or 20
+      local xOS=f.para.text2XOS or 0
+      local yOS=f.para.text2YOS or 0
+      local r=f.para.text2R or 1
+      local g=f.para.text2G or 1
+      local b=f.para.text2B or 1
+      local a=f.para.text2A or 1
+      local extra=f.para.text2Extra or "OUTLINE"
+      local iDA=c.para.text2IgnoreDurationAbove
+      c.text2:SetFont(font,size,extra)    
+      c.text2:SetPoint(f.para.text2Anchor or "CENTER",c,f.para.text2AnchorTo or "CENTER",xOS,yOS)
+      c.text2:SetTextColor(r,g,b,a)
+      if iDA then c.text2IgnoreDurationAbove=iDA end
+    
       --give the OnUpdate function to the frame
       c.onUpdateFunc=eF.rep.frameOnUpdateFunction
       if #c.onUpdateList>0 then c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction) end
@@ -454,7 +507,7 @@ local function applyFamilyParas(self,j)
               
 
       if f.para.cdWheel then
-        if f.para.cdReverse then c.cdFrame:SetReverse(true) end
+        if f.para.cdReverse then c.cdFrame:SetReverse(true) else c.cdFrame:SetReverse(false) end
         c.cdFrame:Show()
       else
         c.cdFrame:Hide()
@@ -477,10 +530,34 @@ local function applyFamilyParas(self,j)
         c.text:SetPoint(c.para.textAnchor,c,c.para.textAnchorTo,xOS,yOS)
         c.text:SetTextColor(r,g,b,a)
         if c.para.textType=="Time left" then insert(c.onUpdateList,eF.rep.iconUpdateTextTypeT) end
+        if c.para.textType=="Stacks" then insert(f.onPostAuraList,{eF.rep.iconUpdateTextTypeS,c}) end
         c.text:Show()
       else
         c.text:Hide()
       end--end of if frame.hasText
+      
+       if f.para.hasText2 then
+        local iDA=c.para.text2IgnoreDurationAbove
+        if iDA then c.text2IgnoreDurationAbove=iDA end
+        local font=c.para.text2Font or "Fonts\\FRIZQT__.ttf"
+        local size=c.para.text2Size or 20
+        local xOS=c.para.text2XOS or 0
+        local yOS=c.para.text2YOS or 0
+        local r=c.para.text2R or 1
+        local g=c.para.text2G or 1
+        local b=c.para.text2B or 1
+        local a=c.para.text2A or 1
+        local extra=c.para.text2Extra or "OUTLINE"
+        c.text2:SetFont(font,size,extra)  
+        c.text2:ClearAllPoints()
+        c.text2:SetPoint(c.para.text2Anchor or "CENTER",c,c.para.text2AnchorTo or "CENTER",xOS,yOS)
+        c.text2:SetTextColor(r,g,b,a)
+        if c.para.text2Type=="Time left" then insert(c.onUpdateList,eF.rep.iconUpdateText2TypeT) end
+        if c.para.text2Type=="Stacks" then insert(f.onPostAuraList,{eF.rep.iconUpdateText2TypeS,c}) end
+        c.text2:Show()
+      else
+        c.text2:Hide()
+      end--end of if frame.hastext2
       
       if #c.onUpdateList>0 then 
         c.throttle=(0.1^math.floor(f.para.textDecimals))*0.15 or 0.1
@@ -593,10 +670,10 @@ function applyChildParas(self,j,k)
       local size=c.para.textSize or 20
       local xOS=c.para.textXOS or 0
       local yOS=c.para.textYOS or 0
-      local r=c.para.textR
-      local g=c.para.textG
-      local b=c.para.textB
-      local a=c.para.textA
+      local r=c.para.textR or 1
+      local g=c.para.textG or 1
+      local b=c.para.textB or 1
+      local a=c.para.textA or 1
       local extra=c.para.textExtra or "OUTLINE"
       c.text:SetFont(font,size,extra)  
       c.text:ClearAllPoints()
@@ -604,10 +681,36 @@ function applyChildParas(self,j,k)
       c.text:SetTextColor(r,g,b,a)
       if c.para.textType=="Time left" then
         insert(c.onUpdateList,eF.rep.iconUpdateTextTypeT)
+      elseif c.para.textType=="Stacks" then
+        insert(c.onPostAuraList,{eF.rep.iconUpdateTextTypeS,c})
       end
     else
       c.text:Hide()
     end--end of if frame.hasText
+    
+    if c.para.hasText2 then
+      c.text2:Show()
+      local font=c.para.text2Font or "Fonts\\FRIZQT__.ttf"
+      local size=c.para.text2Size or 20
+      local xOS=c.para.text2XOS or 0
+      local yOS=c.para.text2YOS or 0
+      local r=c.para.text2R or 1
+      local g=c.para.text2G or 1
+      local b=c.para.text2B or 1
+      local a=c.para.text2A or 1
+      local extra=c.para.text2Extra or "OUTLINE"
+      c.text2:SetFont(font,size,extra)  
+      c.text2:ClearAllPoints()
+      c.text2:SetPoint(c.para.text2Anchor or "CENTER",c,c.para.text2AnchorTo or "CENTER",xOS,yOS)
+      c.text2:SetTextColor(r,g,b,a)
+      if c.para.text2Type=="Time left" then
+        insert(c.onUpdateList,eF.rep.iconUpdateText2TypeT)
+      elseif c.para.text2Type=="Stacks" then
+        insert(c.onPostAuraList,{eF.rep.iconUpdateText2TypeS,c})
+      end
+    else
+      c.text2:Hide()
+    end--end of if frame.hastext2
     
     --give the OnUdpate function to the frame
     c.onUpdateFunc=eF.rep.frameOnUpdateFunction
@@ -822,7 +925,6 @@ function createFamilyChild(self,k)
       end            
         
     c.cdFrame=CreateFrame("Cooldown",nil,c,"CooldownFrameTemplate")
-    if c.para.cdReverse then c.cdFrame:SetReverse(true) end
     c.cdFrame:SetAllPoints()
     c.cdFrame:SetFrameLevel( c:GetFrameLevel())
     
@@ -840,6 +942,21 @@ function createFamilyChild(self,k)
     c.text:SetFont(font,size,extra)    
     c.text:SetPoint(c.para.textAnchor or "CENTER",c,c.para.textAnchorTo or "CENTER",xOS,yOS)
     c.text:SetTextColor(r,g,b,a)
+    
+    --text2
+    c.text2=c:CreateFontString()
+    local font=c.para.text2Font or "Fonts\\FRIZQT__.ttf"
+    local size=c.para.text2Size or 20
+    local xOS=c.para.text2XOS or 0
+    local yOS=c.para.text2YOS or 0
+    local r=c.para.text2R or 1
+    local g=c.para.text2G or 1
+    local b=c.para.text2B or 1
+    local a=c.para.text2A or 1
+    local extra=c.para.text2Extra or "OUTLINE"
+    c.text2:SetFont(font,size,extra)    
+    c.text2:SetPoint(c.para.text2Anchor or "CENTER",c,c.para.text2AnchorTo or "CENTER",xOS,yOS)
+    c.text2:SetTextColor(r,g,b,a)
       
   end --end of if type=="icon"
             

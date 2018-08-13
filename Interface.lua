@@ -1886,8 +1886,34 @@ local function setSFFActiveValues(self)
   self.textXOS1:SetText(para.textXOS or 0)
   self.textYOS1:SetText(para.textYOS or 0)
   
-  
   end --end of text1
+  
+  --text2
+  do
+  self.hasText2:SetChecked(para.hasText2)
+  if not para.hasText2 then self.iconBlocker6:Show() else self.iconBlocker6:Hide() end
+  UIDropDownMenu_SetSelectedName(self.text2Type,para.text2Type)
+  UIDropDownMenu_SetText(self.text2Type,para.text2Type)
+  
+  self.text2Color.thumb:SetVertexColor(para.text2R or 1,para.text2G or 1,para.text2B or 1)
+  self.text2Decimals:SetText(para.text2Decimals or 0)
+
+  self.fontSize2:SetText(para.text2Size or 12)
+  self.text2A:SetText(para.text2A or 1)
+  
+  local font=ssub(para.text2Font or "Fonts\\FRIZQT__.ttf",7,-5)
+  UIDropDownMenu_SetSelectedName(self.text2Font,font)
+  UIDropDownMenu_SetText(self.text2Font,font)
+  
+  UIDropDownMenu_SetSelectedName(self.text2Anchor or "CENTER",para.text2Anchor or "CENTER")
+  UIDropDownMenu_SetText(self.text2Anchor or "CENTER",para.text2Anchor or "CENTER")
+  
+  self.text2XOS:SetText(para.text2XOS or 0)
+  self.text2YOS:SetText(para.text2YOS or 0)
+  
+  
+  end --end of text2
+  
   
 end --end of setSFFActiveValues func  
 
@@ -1979,6 +2005,32 @@ local function setCIFActiveValues(self)
   
   
   end --end of text1
+  
+  --text2
+  do
+  self.hasText2:SetChecked(para.hasText2)
+  if not para.hasText2 then self.iconBlocker7:Show() else self.iconBlocker7:Hide()  end
+  UIDropDownMenu_SetSelectedName(self.text2Type,para.text2Type)
+  UIDropDownMenu_SetText(self.text2Type,para.text2Type)
+  
+  self.text2Color.thumb:SetVertexColor(para.text2R or 1,para.text2G or 1,para.text2B or 1)
+  self.text2Decimals:SetText(para.text2Decimals or 0)
+
+  self.fontSize2:SetText(para.text2Size or 12)
+  self.text2A:SetText(para.text2A or 1)
+  
+  local font=ssub(para.text2Font or "Fonts\\FRIZQT__.ttf",7,-5)
+  UIDropDownMenu_SetSelectedName(self.text2Font,font)
+  UIDropDownMenu_SetText(self.text2Font,font)
+  
+  UIDropDownMenu_SetSelectedName(self.text2Anchor,para.text2Anchor)
+  UIDropDownMenu_SetText(self.text2Anchor,para.text2Anchor)
+  
+  self.text2XOS:SetText(para.text2XOS or 0)
+  self.text2YOS:SetText(para.text2YOS or 0)
+
+  end --end of text2
+  
   
 end --end of setCIFActiveValues func 
 
@@ -4157,7 +4209,7 @@ do
   sff.textType1.text:SetText("Text type:")
   sff.textType1.initialize=function(frame,level,menuList)
    local info = UIDropDownMenu_CreateInfo()
-   local lst={"Time left"}
+   local lst={"Time left","Stacks"}
    for i=1,#lst do
      local v=lst[i]
      info.text, info.checked, info.arg1 = v,false,v
@@ -4308,6 +4360,192 @@ do
   iB5.texture=iB5:CreateTexture(nil,"OVERLAY")
   iB5.texture:SetAllPoints()
   iB5.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+
+  end --end of text settings
+  
+  --create text2 settings
+  do
+  sff.title9=sff:CreateFontString(nil,"OVERLAY")
+  local t=sff.title9
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Text 2")
+  t:SetPoint("TOPLEFT",sff.title8,"TOPLEFT",250,0)
+
+  sff.title9Spacer=sff:CreateTexture(nil,"OVERLAY")
+  local tS=sff.title9Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createCB(sff,"hasText2",sff)
+  sff.hasText2.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  sff.hasText2.text:SetText("Text 2:")
+  sff.hasText2:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.hasText2=ch
+    if not ch then sff.iconBlocker6:Show() else sff.iconBlocker6:Hide() end
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end)
+  
+  createDD(sff,"text2Type",sff)
+  sff.text2Type.text:SetPoint("RIGHT",sff.hasText2.text,"RIGHT",0,-ySpacing)
+  sff.text2Type.text:SetText("Text type:")
+  sff.text2Type.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst={"Time left","Stacks"}
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.text2Type=v
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus() 
+       updateAllFramesFamilyParas(eF.activeFamilyIndex)
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+  UIDropDownMenu_SetWidth(sff.text2Type,60)
+
+  
+  createCS(sff,"text2Color",sff)
+  sff.text2Color.text:SetPoint("RIGHT",sff.text2Type.text,"RIGHT",0,-ySpacing)
+  sff.text2Color.text:SetText("Color:")
+  sff.text2Color.getOldRGBA=function(self)
+    local r=eF.activePara.textR
+    local g=eF.activePara.textG
+    local b=eF.activePara.textB
+    return r,g,b
+  end
+
+  sff.text2Color.opacityFunc=function()
+    local r,g,b=ColorPickerFrame:GetColorRGB()
+    local a=OpacitySliderFrame:GetValue()
+    sff.text2Color.thumb:SetVertexColor(r,g,b)
+    eF.activePara.textR=r
+    eF.activePara.textG=g
+    eF.activePara.textB=b
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end
+
+
+  createNumberEB(sff,"text2Decimals",sff)
+  sff.text2Decimals.text:SetPoint("RIGHT",sff.text2Color.text,"RIGHT",0,-ySpacing)
+  sff.text2Decimals.text:SetText("Decimals:")
+  sff.text2Decimals:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  n=self:GetNumber()
+  if not n then n=eF.activePara.text2Decimals; self:SetText(n)
+  else eF.activePara.text2Decimals=n end
+  end)
+
+  createNumberEB(sff,"fontSize2",sff)
+  sff.fontSize2.text:SetPoint("RIGHT",sff.text2Decimals.text,"RIGHT",0,-ySpacing)
+  sff.fontSize2.text:SetText("Font size:")
+  sff.fontSize2:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  n=self:GetNumber()
+  if n==0 then n=eF.activePara.text2Size; self:SetText(n)
+  else eF.activePara.text2Size=n; updateAllFramesFamilyParas(eF.activeFamilyIndex) end
+  end)
+
+
+  createNumberEB(sff,"text2A",sff)
+  sff.text2A.text:SetPoint("RIGHT",sff.fontSize2.text,"RIGHT",0,-ySpacing)
+  sff.text2A.text:SetText("Alpha:")
+  sff.text2A:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  a=self:GetNumber()
+  eF.activePara.text2A=a
+  updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end)
+
+
+  createDD(sff,"text2Font",sff)
+  sff.text2Font.text:SetPoint("RIGHT",sff.text2A.text,"RIGHT",0,-ySpacing)
+  sff.text2Font.text:SetText("Font:")
+  sff.text2Font.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   for i=1,#eF.fonts do
+     local v=eF.fonts[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.text2Font="Fonts\\"..arg1..".ttf"
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+       updateAllFramesFamilyParas(eF.activeFamilyIndex)
+     end
+     
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+
+  createDD(sff,"text2Anchor",sff)
+  sff.text2Anchor.text:SetPoint("RIGHT",sff.text2Font.text,"RIGHT",0,-ySpacing)
+  sff.text2Anchor.text:SetText("Position:")
+  sff.text2Anchor.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   for i=1,#eF.positions do
+     local v=eF.positions[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.text2Anchor=arg1
+       eF.activePara.text2AnchorTo=arg1
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+       updateAllFramesFamilyParas(eF.activeFamilyIndex)
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+
+  
+  createNumberEB(sff,"text2XOS",sff)
+  sff.text2XOS.text:SetPoint("RIGHT",sff.text2Anchor.text,"RIGHT",0,-ySpacing)
+  sff.text2XOS.text:SetText("X Offset:")
+  sff.text2XOS:SetWidth(30)
+  sff.text2XOS:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  x=self:GetText()
+  x=tonumber(x)
+  if not x then x=eF.activePara.text2XOS; self:SetText(x); 
+  else 
+    eF.activePara.text2XOS=x;
+  end
+  updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end)
+
+  createNumberEB(sff,"text2YOS",sff)
+  sff.text2YOS.text:SetPoint("RIGHT",sff.text2XOS.text,"RIGHT",0,-ySpacing)
+  sff.text2YOS.text:SetText("Y Offset:")
+  sff.text2YOS:SetWidth(30)
+  sff.text2YOS:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  x=self:GetText()
+  x=tonumber(x)
+  if not x  then x=eF.activePara.text2YOS; self:SetText(x)
+  else 
+    eF.activePara.text2YOS=x;
+  end
+  updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end)
+
+  
+  sff.iconBlocker6=CreateFrame("Button",nil,sff)
+  local iB6=sff.iconBlocker6
+  iB6:SetFrameLevel(sff:GetFrameLevel()+3)
+  iB6:SetPoint("TOPLEFT",sff.text2Type.text,"TOPLEFT",-2,12)
+  iB6:SetPoint("BOTTOMRIGHT",sff.text2YOS,"BOTTOMRIGHT",58,-3)
+  iB6:SetWidth(200)
+  iB6.texture=iB6:CreateTexture(nil,"OVERLAY")
+  iB6.texture:SetAllPoints()
+  iB6.texture:SetColorTexture(0.07,0.07,0.07,0.4)
 
   end --end of text settings
   
@@ -4949,7 +5187,7 @@ do
   cif=ff.childIconFrame
   cif:SetPoint("TOP",cisf,"TOP",0,-20)
   cif:SetWidth(cisf:GetWidth()*0.8)
-  cif:SetHeight(cisf:GetHeight()*1.2)
+  cif:SetHeight(cisf:GetHeight()*1.4)
  
   cisf.ScrollBar:ClearAllPoints()
   cisf.ScrollBar:SetPoint("TOPRIGHT",cisf,"TOPRIGHT",-6,-18)
@@ -5396,15 +5634,15 @@ do
 
   --create text1 settings
   do
-  cif.title5=cif:CreateFontString(nil,"OVERLAY")
-  local t=cif.title5
+  cif.title6=cif:CreateFontString(nil,"OVERLAY")
+  local t=cif.title6
   t:SetFont(titleFont,15,titleFontExtra)
   t:SetTextColor(1,1,1)
   t:SetText("Text 1")
   t:SetPoint("TOPLEFT",cif.title3,"TOPLEFT",0,-115)
 
-  cif.title5Spacer=cif:CreateTexture(nil,"OVERLAY")
-  local tS=cif.title5Spacer
+  cif.title6Spacer=cif:CreateTexture(nil,"OVERLAY")
+  local tS=cif.title6Spacer
   tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
   tS:SetHeight(8)
   tS:SetTexture(titleSpacer)
@@ -5427,7 +5665,7 @@ do
   cif.textType1.text:SetText("Text type:")
   cif.textType1.initialize=function(frame,level,menuList)
    local info = UIDropDownMenu_CreateInfo()
-   local lst={"Time left"}
+   local lst={"Time left","Stacks"}
    for i=1,#lst do
      local v=lst[i]
      info.text, info.checked, info.arg1 = v,false,v
@@ -5581,6 +5819,192 @@ do
 
   end --end of text settings
 
+  --create text2 settings
+  do
+  cif.title7=cif:CreateFontString(nil,"OVERLAY")
+  local t=cif.title7
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Text 2")
+  t:SetPoint("TOPLEFT",cif.title6,"TOPLEFT",250,-50)
+
+  cif.title7Spacer=cif:CreateTexture(nil,"OVERLAY")
+  local tS=cif.title7Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+
+  createCB(cif,"hasText2",cif)
+  cif.hasText2.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
+  cif.hasText2.text:SetText("Text2:")
+  cif.hasText2:SetScript("OnClick",function(self)
+    local ch=self:GetChecked()
+    self:SetChecked(ch)
+    eF.activePara.hasText2=ch
+    if not ch then cif.iconBlocker7:Show() else cif.iconBlocker7:Hide() end
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end)
+  --NYI not hiding border
+  
+  createDD(cif,"text2Type",cif)
+  cif.text2Type.text:SetPoint("RIGHT",cif.hasText2.text,"RIGHT",0,-ySpacing)
+  cif.text2Type.text:SetText("Text type:")
+  cif.text2Type.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   local lst={"Time left","Stacks"}
+   for i=1,#lst do
+     local v=lst[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.text2Type=v
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus() 
+       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+  UIDropDownMenu_SetWidth(cif.text2Type,60)
+
+  
+  createCS(cif,"text2Color",cif)
+  cif.text2Color.text:SetPoint("RIGHT",cif.text2Type.text,"RIGHT",0,-ySpacing)
+  cif.text2Color.text:SetText("Color:")
+  cif.text2Color.getOldRGBA=function(self)
+    local r=eF.activePara.text2R
+    local g=eF.activePara.text2G
+    local b=eF.activePara.text2B
+    return r,g,b
+  end
+
+  cif.text2Color.opacityFunc=function()
+    local r,g,b=ColorPickerFrame:GetColorRGB()
+    local a=OpacitySliderFrame:GetValue()
+    cif.text2Color.thumb:SetVertexColor(r,g,b)
+    eF.activePara.text2R=r
+    eF.activePara.text2G=g
+    eF.activePara.text2B=b
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end
+
+
+  createNumberEB(cif,"text2Decimals",cif)
+  cif.text2Decimals.text:SetPoint("RIGHT",cif.text2Color.text,"RIGHT",0,-ySpacing)
+  cif.text2Decimals.text:SetText("Decimals:")
+  cif.text2Decimals:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  n=self:GetNumber()
+  if not n then n=eF.activePara.text2Decimals; self:SetText(n)
+  else eF.activePara.text2Decimals=n end
+  end)
+
+  createNumberEB(cif,"fontSize2",cif)
+  cif.fontSize2.text:SetPoint("RIGHT",cif.text2Decimals.text,"RIGHT",0,-ySpacing)
+  cif.fontSize2.text:SetText("Font size:")
+  cif.fontSize2:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  n=self:GetNumber()
+  if n==0 then n=eF.activePara.text2Size; self:SetText(n)
+  else eF.activePara.text2Size=n; updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex) end
+  end)
+
+
+  createNumberEB(cif,"text2A",cif)
+  cif.text2A.text:SetPoint("RIGHT",cif.fontSize2.text,"RIGHT",0,-ySpacing)
+  cif.text2A.text:SetText("Alpha:")
+  cif.text2A:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  a=self:GetNumber()
+  eF.activePara.text2A=a
+  updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end)
+
+
+  createDD(cif,"text2Font",cif)
+  cif.text2Font.text:SetPoint("RIGHT",cif.text2A.text,"RIGHT",0,-ySpacing)
+  cif.text2Font.text:SetText("Font:")
+  cif.text2Font.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   for i=1,#eF.fonts do
+     local v=eF.fonts[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.text2Font="Fonts\\"..arg1..".ttf"
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+     end
+     
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+
+  createDD(cif,"text2Anchor",cif)
+  cif.text2Anchor.text:SetPoint("RIGHT",cif.text2Font.text,"RIGHT",0,-ySpacing)
+  cif.text2Anchor.text:SetText("Position:")
+  cif.text2Anchor.initialize=function(frame,level,menuList)
+   local info = UIDropDownMenu_CreateInfo()
+   for i=1,#eF.positions do
+     local v=eF.positions[i]
+     info.text, info.checked, info.arg1 = v,false,v
+     info.func=function(self,arg1,arg2,checked)
+       eF.activePara.text2Anchor=arg1
+       eF.activePara.text2AnchorTo=arg1
+       UIDropDownMenu_SetText(frame,v)
+       UIDropDownMenu_SetSelectedName(frame,v)
+       CloseDropDownMenus()
+       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+     end
+     UIDropDownMenu_AddButton(info)
+   end
+  end
+
+  
+  createNumberEB(cif,"text2XOS",cif)
+  cif.text2XOS.text:SetPoint("RIGHT",cif.text2Anchor.text,"RIGHT",0,-ySpacing)
+  cif.text2XOS.text:SetText("X Offset:")
+  cif.text2XOS:SetWidth(30)
+  cif.text2XOS:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  x=self:GetText()
+  x=tonumber(x)
+  if not x then x=eF.activePara.text2XOS; self:SetText(x); 
+  else 
+    eF.activePara.text2XOS=x;
+  end
+  updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end)
+
+  createNumberEB(cif,"text2YOS",cif)
+  cif.text2YOS.text:SetPoint("RIGHT",cif.text2XOS.text,"RIGHT",0,-ySpacing)
+  cif.text2YOS.text:SetText("Y Offset:")
+  cif.text2YOS:SetWidth(30)
+  cif.text2YOS:SetScript("OnEnterPressed", function(self)
+  self:ClearFocus()
+  x=self:GetText()
+  x=tonumber(x)
+  if not x  then x=eF.activePara.text2YOS; self:SetText(x)
+  else 
+    eF.activePara.text2YOS=x;
+  end
+  updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end)
+
+  
+  cif.iconBlocker7=CreateFrame("Button",nil,cif)
+  local iB7=cif.iconBlocker7
+  iB7:SetFrameLevel(cif:GetFrameLevel()+3)
+  iB7:SetPoint("TOPLEFT",cif.text2Type.text,"TOPLEFT",-2,12)
+  iB7:SetPoint("BOTTOMRIGHT",cif.text2YOS,"BOTTOMRIGHT",58,-3)
+  iB7:SetWidth(200)
+  iB7.texture=iB7:CreateTexture(nil,"OVERLAY")
+  iB7.texture:SetAllPoints()
+  iB7.texture:SetColorTexture(0.07,0.07,0.07,0.4)
+
+  end --end of text2 settings
   
 end --end of create child icon frame
 
