@@ -492,6 +492,7 @@ end
 
 local function frameToggle(self) 
   if not self then return end
+  if InCombatLockdown() then return end
   if self:IsShown() then self:Hide() else self:Show()end
 end
 
@@ -2221,6 +2222,7 @@ int.tgl=frameToggle
 int:SetFrameLevel(15)
 SLASH_ELFRAMO1="/eF"
 SlashCmdList["ELFRAMO"]= function(arg)
+  if InCombatLockdown() then return end
   int:tgl()
 end
 
