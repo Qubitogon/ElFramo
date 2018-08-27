@@ -2,11 +2,13 @@ local _,eF=...
 
 eFGlob=eF
 
+
 local function layoutEventHandler(self,event,...)
   local ic=InCombatLockdown()
   if ic then eF.OOCActions.layoutUpdate=true else self:update() end
 end
 eF.rep.layoutEventHandler=layoutEventHandler
+
 
 local function initLayoutFrame()
   eF.layout=CreateFrame("Frame",nil,UIParent)
@@ -25,6 +27,7 @@ end
 eF.rep.initLayoutFrame=initLayoutFrame
 
 local function layoutUpdate(self)
+  if InCombatLockdown() then eF.OOCActions.layoutUpdate=true; return end
   local para
   local raid=IsInRaid()
   eF.units.raid=IsInRaid() --is used for the updatefunction
@@ -34,7 +37,6 @@ local function layoutUpdate(self)
    
   local units=eF.units
   --r,g,b = GetClassColor
-  
   
   
   if not raid then
@@ -204,7 +206,6 @@ local function layoutUpdate(self)
    end--end  of if self.byGroup else
   
     
-  
   end-- end of if not raid else
     
   eF.units:onGroupUpdate()
@@ -213,3 +214,30 @@ end
 eF.rep.layoutUpdate=layoutUpdate
 
 --initLayoutFrame()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

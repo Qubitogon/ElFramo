@@ -64,6 +64,7 @@ end
 eF.rep.initUnitsFrame=initUnitsFrame
 
 local function unitsEventHandler(self,event,...)
+  local ic=InCombatLockdown()
   if event=="GROUP_ROSTER_UPDATE" then
     self:onGroupUpdate()
   elseif event=="PLAYER_ENTERING_WORLD" then  
@@ -84,10 +85,10 @@ local function unitsEventHandler(self,event,...)
     self:onGroupUpdate()
   elseif event=="PLAYER_FLAGS_CHANGED" then
     local unit=...
+    if not self[unit] then return end
     self[unit]:eventHandler("UNIT_FLAGS")
   end
 
-    
 end
 eF.rep.unitsEventHandler=unitsEventHandler
 
@@ -105,7 +106,6 @@ local function unitEnable(self)
   RegisterUnitWatch(self)
   local unit=self.id
   self:Show()
-
 end
 eF.rep.unitEnable=unitEnable
 
@@ -116,7 +116,6 @@ local function unitDisable(self)
   UnregisterUnitWatch(self)
   local unit=self.id
   self:Hide()
-  
 end
 eF.rep.unitDisable=unitDisable
 
@@ -125,10 +124,9 @@ local function unitUpdateText(self)
   local name=UnitName(unit)
   if not name then return end
   local units
-  if (not self.raid) and eF.para.groupParas then units=eF.para.unitsGroup else units=eF.para.units end
+  if (not eF.units.raid) and eF.para.groupParas then units=eF.para.unitsGroup else units=eF.para.units end
 
   if units.textLim then name=strsub(name,1,units.textLim) end
-
   self.text:SetText(name)
   
   if units.textColorByClass then
@@ -213,7 +211,7 @@ local function unitEventHandler(self,event)
       local v=c[j]
       v[1](v[2])
     end
-  
+    
   elseif event=="UNIT_FLAGS" then
     local id=self.id
     local dead,connected=UnitIsDeadOrGhost(id),UnitIsConnected(id)
@@ -224,6 +222,7 @@ local function unitEventHandler(self,event)
     end
     
   end 
+  
 end
 eF.rep.unitEventHandler=unitEventHandler
 
@@ -233,19 +232,22 @@ local function createUnitFrame(self,unit)
   if self[unit] or not unit then return end  
   local para=eF.para.units
 
-  
-  self[unit]=CreateFrame("Button",nil,self,"SecureUnitButtonTemplate")
+  local s="elFramoUnit"..unit
+  self[unit]=CreateFrame("Button",s,UIParent,"SecureUnitButtonTemplate")
   self[unit].id=unit
-
   
-  if unit=="player" or unit=="party1" or unit=="party2" or unit=="party3" or unit=="party4" then
-    self[unit].updateTextColor=eF.rep.updateTextColorGroupFrame; self.group=true else self[unit].updateTextColor=eF.rep.updateTextColorRaidFrame; self.group=false 
-  end
+
   
   self[unit]:SetAttribute("unit",unit)
   self[unit]:SetAttribute("type1","target")
-  
   self[unit]:SetPoint("TOPLEFT",self,"TOPLEFT",0,0)
+
+  self[unit]:SetAttribute("allowVehicleTarget",false)
+  self[unit]:SetAttribute("toggleForVehicle",false)
+
+  if unit=="player" or unit=="party1" or unit=="party2" or unit=="party3" or unit=="party4" then
+    self[unit].updateTextColor=eF.rep.updateTextColorGroupFrame; self.group=true else self[unit].updateTextColor=eF.rep.updateTextColorRaidFrame; self.group=false 
+  end
   
   self[unit]:SetSize(para.width,para.height)
   self[unit]:SetFrameStrata("MEDIUM")
@@ -255,8 +257,6 @@ local function createUnitFrame(self,unit)
   self[unit].oor=false
   self[unit].oorA=eF.para.units.oorA
   self[unit].nA=eF.para.units.nA
-  
-
   
   if eF.para.units.checkOOR then self[unit].updateRange=eF.rep.unitUpdateRange end
   
@@ -384,6 +384,7 @@ local function createUnitFrame(self,unit)
   self[unit].events={"UNIT_HEALTH_FREQUENT","UNIT_MAXHEALTH","UNIT_CONNECTION","UNIT_FACTION","UNIT_AURA","UNIT_POWER_UPDATE","UNIT_FLAGS"}
   for i=1,#self[unit].events do self[unit]:RegisterUnitEvent(self[unit].events[i],unit) end
   self[unit]:SetScript("OnEvent",self[unit].eventHandler)
+  
   
 end --end of CreateUnitFrame()
 eF.rep.createUnitFrame=createUnitFrame
@@ -549,16 +550,18 @@ local function unitsFrameOnUpdate(self,elapsed)
   local tbl
   if self.raid then tbl=eF.raidLoop else tbl=eF.partyLoop end
   
+  if not (self.num>1) then return end --if youre alone in the group it's fucked  
   for i=1,self.num do
     local frame=self[tbl[i]]
-    if frame.updateRange and self.num>1 then frame:updateRange() end   --if youre alone in the group it's fucked  
+    frame:updateRange()  
     
   end--end of for i=1,self.num
 end
 eF.rep.unitsFrameOnUpdate=unitsFrameOnUpdate
 
 local function unitsOnGroupUpdate(self)
-    if InCombatLockdown() then eF.OOCActions.groupUpdate=true end
+    local icl=InCombatLockdown()
+    if icl then eF.OOCActions.groupUpdate=true end
     local byCC
     local raid=IsInRaid()
     self.raid=IsInRaid() --is used for the updatefunction
@@ -605,7 +608,7 @@ local function unitsOnGroupUpdate(self)
       
     --Hide all others
     
-    if InCombatLockdown() then return end
+    if icl then return end
     if raid then     
       for i=1,5 do
         local unit=eF.partyLoop[i]; self[unit]:disable(); 

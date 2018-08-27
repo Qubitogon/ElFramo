@@ -470,7 +470,7 @@ local function updateAllFramesFamilyLayout(j)
   for i=1,45 do
     local frame
     if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
-    frame:updateFamilyLayout(j)
+    frame:applyFamilyParas(j)
     frame:checkLoad()
   end--end of for i=1,45
 end
@@ -651,8 +651,7 @@ local function intSetInitValues()
   do
   fD.ebHeight:SetText(units.height)
   fD.ebWidth:SetText(units.width)
-  UIDropDownMenu_SetSelectedName(fD.hDir,units.healthGrow)
-  UIDropDownMenu_SetText(fD.hDir,units.healthGrow)
+  UIDropDownMenu_Initialize(fD.hDir,fD.hDir.initialize)
   fD.gradStart:SetText( eF.toDecimal(units.hpGrad1R,2) or "nd")
   fD.gradFinal:SetText( eF.toDecimal(units.hpGrad2R,2) or "nd")
   fD.nMax:SetText(units.textLim)
@@ -664,32 +663,28 @@ local function intSetInitValues()
   fD.hColor.thumb:SetVertexColor(units.hpR,units.hpG,units.hpB)
   
   fD.nClassColor:SetChecked(units.textColorByClass)
-  fD.nColor.blocked=units.textColorByClass
+  fD.nColor.blocked=units.textColorByClass 
   if units.textColorByClass then fD.nColor.blocker:Show() else fD.nColor.blocker:Hide() end
   fD.nColor.thumb:SetVertexColor(units.textR,units.textG,units.textB)
   
   local font=ssub(units.textFont,7,-5)
-  UIDropDownMenu_SetSelectedName(fD.nFont,font)
-  UIDropDownMenu_SetText(fD.nFont,font)
+  UIDropDownMenu_Initialize(fD.nFont,fD.nFont.initialize)
   
   fD.nAlpha:SetText(eF.toDecimal(units.textA,2) or "nd")
-  UIDropDownMenu_SetSelectedName(fD.nPos,units.textPos)
-  UIDropDownMenu_SetText(fD.nPos,units.textPos)
+  UIDropDownMenu_Initialize(fD.nPos,fD.nPos.initialize)
   fD.textXOS:SetText(units.textXOS or 0)
   fD.textYOS:SetText(units.textYOS or 0)
 
   fD.bColor.thumb:SetVertexColor(units.borderR,units.borderG,units.borderB)
   fD.bWid:SetText(units.borderSize)
   
-  UIDropDownMenu_SetSelectedName(fD.grow1,units.grow1)
-  UIDropDownMenu_SetText(fD.grow1,units.grow1)
-  UIDropDownMenu_SetSelectedName(fD.grow2,units.grow2)
-  UIDropDownMenu_SetText(fD.grow2,units.grow2)
+  UIDropDownMenu_Initialize(fD.grow1,fD.grow1.initialize)
+  UIDropDownMenu_Initialize(fD.grow2,fD.grow2.initialize)
   fD.spacing:SetText(units.spacing)
   fD.maxInLine:SetText(units.maxInLine)
   fD.byGroup:SetChecked(units.byGroup)
-  fD.xPos:SetText(math.floor(units.xPos))
-  fD.yPos:SetText(math.floor(units.yPos))
+  fD.xPos:SetText(math.floor(units.xPos or 0))
+  fD.yPos:SetText(math.floor(units.yPos or 0))
   end
   
   --general PARTY frame
@@ -699,8 +694,7 @@ local function intSetInitValues()
   
   fDLazy.ebHeight:SetText(unitsGroup.height)
   fDLazy.ebWidth:SetText(unitsGroup.width)
-  UIDropDownMenu_SetSelectedName(fDLazy.hDir,unitsGroup.healthGrow)
-  UIDropDownMenu_SetText(fDLazy.hDir,unitsGroup.healthGrow)
+  UIDropDownMenu_Initialize(fDLazy.hDir,fDLazy.hDir.initialize)
   fDLazy.gradStart:SetText( eF.toDecimal(unitsGroup.hpGrad1R,2) or "nd")
   fDLazy.gradFinal:SetText( eF.toDecimal(unitsGroup.hpGrad2R,2) or "nd")
   fDLazy.nMax:SetText(unitsGroup.textLim)
@@ -717,27 +711,23 @@ local function intSetInitValues()
   fDLazy.nColor.thumb:SetVertexColor(unitsGroup.textR,unitsGroup.textG,unitsGroup.textB)
   
   local font=ssub(unitsGroup.textFont,7,-5)
-  UIDropDownMenu_SetSelectedName(fDLazy.nFont,font)
-  UIDropDownMenu_SetText(fDLazy.nFont,font)
+  UIDropDownMenu_Initialize(fDLazy.nFont,fDLazy.nFont.initialize)
   
   fDLazy.nAlpha:SetText(eF.toDecimal(unitsGroup.textA,2) or "nd")
-  UIDropDownMenu_SetSelectedName(fDLazy.nPos,unitsGroup.textPos)
-  UIDropDownMenu_SetText(fDLazy.nPos,unitsGroup.textPos)
+  UIDropDownMenu_Initialize(fDLazy.nPos,fDLazy.nPos.initialize)
   fDLazy.textXOS:SetText(unitsGroup.textXOS or 0)
   fDLazy.textYOS:SetText(unitsGroup.textYOS or 0)
 
   fDLazy.bColor.thumb:SetVertexColor(unitsGroup.borderR,unitsGroup.borderG,unitsGroup.borderB)
   fDLazy.bWid:SetText(unitsGroup.borderSize)
   
-  UIDropDownMenu_SetSelectedName(fDLazy.grow1,unitsGroup.grow1)
-  UIDropDownMenu_SetText(fDLazy.grow1,unitsGroup.grow1)
-  UIDropDownMenu_SetSelectedName(fDLazy.grow2,unitsGroup.grow2)
-  UIDropDownMenu_SetText(fDLazy.grow2,unitsGroup.grow2)
+  UIDropDownMenu_Initialize(fDLazy.grow1,fDLazy.grow1.initialize)
+  UIDropDownMenu_Initialize(fDLazy.grow2,fDLazy.grow2.initialize)
   fDLazy.spacing:SetText(unitsGroup.spacing)
   fDLazy.maxInLine:SetText(unitsGroup.maxInLine)
   fDLazy.byGroup:SetChecked(unitsGroup.byGroup)
-  fDLazy.xPos:SetText(math.floor(unitsGroup.xPos))
-  fDLazy.yPos:SetText(math.floor(unitsGroup.yPos))
+  fDLazy.xPos:SetText(math.floor(unitsGroup.xPos or 0))
+  fDLazy.yPos:SetText(math.floor(unitsGroup.yPos or 0))
   end
    
   eF.units:updateAllParas()
@@ -1790,11 +1780,9 @@ local function setSFFActiveValues(self)
   self.name:SetText(para.displayName)
   local typ=para.type
   if typ=="b" then typ="Blacklist" elseif typ=="w" then typ="Whitelist" end
-  UIDropDownMenu_SetSelectedName(self.type,typ)
-  UIDropDownMenu_SetText(self.type,typ)
+  UIDropDownMenu_Initialize(self.type,self.type.initialize)
   
-  UIDropDownMenu_SetSelectedName(self.trackType,para.trackType)
-  UIDropDownMenu_SetText(self.trackType,para.trackType)
+  UIDropDownMenu_Initialize(self.trackType,self.trackType.initialize)
 
   self.ignorePermanents:SetChecked(para.ignorePermanents)
   if para.ignoreDurationAbove then self.ignoreDurationAbove:SetText(para.ignoreDurationAbove) else self.ignoreDurationAbove:SetText("nil") end
@@ -1805,8 +1793,7 @@ local function setSFFActiveValues(self)
   --layout
   do 
   self.count:SetText(para.count)
-  UIDropDownMenu_SetSelectedName(self.grow,para.grow)
-  UIDropDownMenu_SetText(self.grow,para.grow)
+  UIDropDownMenu_Initialize(self.grow,self.grow.initialize)
   self.width:SetText(para.width)
   self.height:SetText(para.height)
   self.spacing:SetText(para.spacing)
@@ -1816,8 +1803,7 @@ local function setSFFActiveValues(self)
   do
   self.xPos:SetText(para.xPos)
   self.yPos:SetText(para.yPos)
-  UIDropDownMenu_SetSelectedName(self.anchor,para.anchor)
-  UIDropDownMenu_SetText(self.anchor,para.anchor)
+  UIDropDownMenu_Initialize(self.anchor,self.anchor.initialize)
   end
   
   --icon
@@ -1860,16 +1846,14 @@ local function setSFFActiveValues(self)
   do
   self.hasBorder:SetChecked(para.hasBorder)
   if not para.hasBorder then self.iconBlocker4:Show() else self.iconBlocker4:Hide() end
-  UIDropDownMenu_SetSelectedName(self.borderType,para.borderType)
-  UIDropDownMenu_SetText(self.borderType,para.borderType)
+  UIDropDownMenu_Initialize(self.borderType,self.borderType.initialize)
   end --end of border
 
   --text1
   do
   self.hasText1:SetChecked(para.hasText)
   if not para.hasText then self.iconBlocker5:Show() else self.iconBlocker5:Hide() end
-  UIDropDownMenu_SetSelectedName(self.textType1,para.textType)
-  UIDropDownMenu_SetText(self.textType1,para.textType)
+  UIDropDownMenu_Initialize(self.textType1,self.textType1.initialize)
   
   self.textColor1.thumb:SetVertexColor(para.textR,para.textG,para.textB)
   self.textDecimals1:SetText(para.textDecimals or 0)
@@ -1878,11 +1862,9 @@ local function setSFFActiveValues(self)
   self.textA1:SetText(para.textA or 1)
   
   local font=ssub(para.textFont or "Fonts\\FRIZQT__.ttf",7,-5)
-  UIDropDownMenu_SetSelectedName(self.textFont1,font)
-  UIDropDownMenu_SetText(self.textFont1,font)
+  UIDropDownMenu_Initialize(self.textFont1,self.textFont1.initialize)
   
-  UIDropDownMenu_SetSelectedName(self.textAnchor1,para.textAnchor)
-  UIDropDownMenu_SetText(self.textAnchor1,para.textAnchor)
+  UIDropDownMenu_Initialize(self.textAnchor1,self.textAnchor1.initialize)
   
   self.textXOS1:SetText(para.textXOS or 0)
   self.textYOS1:SetText(para.textYOS or 0)
@@ -1893,8 +1875,8 @@ local function setSFFActiveValues(self)
   do
   self.hasText2:SetChecked(para.hasText2)
   if not para.hasText2 then self.iconBlocker6:Show() else self.iconBlocker6:Hide() end
-  UIDropDownMenu_SetSelectedName(self.text2Type,para.text2Type)
-  UIDropDownMenu_SetText(self.text2Type,para.text2Type)
+  UIDropDownMenu_Initialize(self.text2Type,self.text2Type.initialize)
+
   
   self.text2Color.thumb:SetVertexColor(para.text2R or 1,para.text2G or 1,para.text2B or 1)
   self.text2Decimals:SetText(para.text2Decimals or 0)
@@ -1903,11 +1885,9 @@ local function setSFFActiveValues(self)
   self.text2A:SetText(para.text2A or 1)
   
   local font=ssub(para.text2Font or "Fonts\\FRIZQT__.ttf",7,-5)
-  UIDropDownMenu_SetSelectedName(self.text2Font,font)
-  UIDropDownMenu_SetText(self.text2Font,font)
+  UIDropDownMenu_Sinitialize(self.text2Font,self.text2Font.initialize)
   
-  UIDropDownMenu_SetSelectedName(self.text2Anchor or "CENTER",para.text2Anchor or "CENTER")
-  UIDropDownMenu_SetText(self.text2Anchor or "CENTER",para.text2Anchor or "CENTER")
+  UIDropDownMenu_Initialize(self.text2Anchor,self.text2Anchor.initialize)
   
   self.text2XOS:SetText(para.text2XOS or 0)
   self.text2YOS:SetText(para.text2YOS or 0)
@@ -1925,14 +1905,12 @@ local function setCIFActiveValues(self)
   do
   self.name:SetText(para.displayName)
   
-  UIDropDownMenu_SetSelectedName(self.trackType,para.trackType)
-  UIDropDownMenu_SetText(self.trackType,para.trackType)
+  UIDropDownMenu_Initialize(self.trackType,self.trackType.initialize)
 
   if para.trackType=="Static" then self.iconBlocker6:Show() else self.iconBlocker6:Hide() end
 
   
-  UIDropDownMenu_SetSelectedName(self.trackBy,para.trackBy)
-  UIDropDownMenu_SetText(self.trackBy,para.trackBy)
+  UIDropDownMenu_Initialize(self.trackBy,self.trackBy.initialize)
   
   if para.arg1 then self.spell:SetText(para.arg1) else self.spell:SetText("") end
   
@@ -1946,8 +1924,7 @@ local function setCIFActiveValues(self)
   self.height:SetText(para.height)
   self.xPos:SetText(para.xPos)
   self.yPos:SetText(para.yPos)
-  UIDropDownMenu_SetSelectedName(self.anchor,para.anchor)
-  UIDropDownMenu_SetText(self.anchor,para.anchor)
+  UIDropDownMenu_Initialize(self.anchor,self.anchor.initialize)
   
   end
   
@@ -1977,16 +1954,14 @@ local function setCIFActiveValues(self)
   do
   self.hasBorder:SetChecked(para.hasBorder)
   if not para.hasBorder then self.iconBlocker4:Show() else self.iconBlocker4:Hide() end
-  UIDropDownMenu_SetSelectedName(self.borderType,para.borderType)
-  UIDropDownMenu_SetText(self.borderType,para.borderType)
+  UIDropDownMenu_Initialize(self.borderType,self.borderType.initialize)
   end --end of border
 
   --text1
   do
   self.hasText1:SetChecked(para.hasText)
   if not para.hasText then self.iconBlocker5:Show() else self.iconBlocker5:Hide()  end
-  UIDropDownMenu_SetSelectedName(self.textType1,para.textType)
-  UIDropDownMenu_SetText(self.textType1,para.textType)
+  UIDropDownMenu_Initialize(self.textType1,self.textType1.initialize)
   
   self.textColor1.thumb:SetVertexColor(para.textR,para.textG,para.textB)
   self.textDecimals1:SetText(para.textDecimals or 0)
@@ -1995,11 +1970,9 @@ local function setCIFActiveValues(self)
   self.textA1:SetText(para.textA or 1)
   
   local font=ssub(para.textFont or "Fonts\\FRIZQT__.ttf",7,-5)
-  UIDropDownMenu_SetSelectedName(self.textFont1,font)
-  UIDropDownMenu_SetText(self.textFont1,font)
+  UIDropDownMenu_Initialize(self.textFont1,self.textFont1.initialize)
   
-  UIDropDownMenu_SetSelectedName(self.textAnchor1,para.textAnchor)
-  UIDropDownMenu_SetText(self.textAnchor1,para.textAnchor)
+  UIDropDownMenu_Initialize(self.textAnchor1,self.textAnchor1.initialize)
   
   self.textXOS1:SetText(para.textXOS or 0)
   self.textYOS1:SetText(para.textYOS or 0)
@@ -2011,8 +1984,7 @@ local function setCIFActiveValues(self)
   do
   self.hasText2:SetChecked(para.hasText2)
   if not para.hasText2 then self.iconBlocker7:Show() else self.iconBlocker7:Hide()  end
-  UIDropDownMenu_SetSelectedName(self.text2Type,para.text2Type)
-  UIDropDownMenu_SetText(self.text2Type,para.text2Type)
+  UIDropDownMenu_Initialize(self.text2Type,self.text2Type.initialize)
   
   self.text2Color.thumb:SetVertexColor(para.text2R or 1,para.text2G or 1,para.text2B or 1)
   self.text2Decimals:SetText(para.text2Decimals or 0)
@@ -2021,11 +1993,9 @@ local function setCIFActiveValues(self)
   self.text2A:SetText(para.text2A or 1)
   
   local font=ssub(para.text2Font or "Fonts\\FRIZQT__.ttf",7,-5)
-  UIDropDownMenu_SetSelectedName(self.text2Font,font)
-  UIDropDownMenu_SetText(self.text2Font,font)
+  UIDropDownMenu_Initialize(self.text2Font,self.text2Font.initialize)
   
-  UIDropDownMenu_SetSelectedName(self.text2Anchor,para.text2Anchor)
-  UIDropDownMenu_SetText(self.text2Anchor,para.text2Anchor)
+  UIDropDownMenu_Initialize(self.text2Anchor,self.text2Anchor.initialize)
   
   self.text2XOS:SetText(para.text2XOS or 0)
   self.text2YOS:SetText(para.text2YOS or 0)
@@ -2043,14 +2013,12 @@ local function setCBOFActiveValues(self)
   do
   self.name:SetText(para.displayName)
   
-  UIDropDownMenu_SetSelectedName(self.trackType,para.trackType)
-  UIDropDownMenu_SetText(self.trackType,para.trackType)
+  UIDropDownMenu_Initialize(self.trackType,self.trackType.initialize)
 
   if para.trackType=="Static" then self.iconBlocker1:Show() else self.iconBlocker1:Hide() end
 
   
-  UIDropDownMenu_SetSelectedName(self.trackBy,para.trackBy)
-  UIDropDownMenu_SetText(self.trackBy,para.trackBy)
+  UIDropDownMenu_Initialize(self.trackBy,self.trackBy.initialize)
   
   if para.arg1 then self.spell:SetText(para.arg1) else self.spell:SetText("") end
   
@@ -2147,8 +2115,7 @@ local function setCBFActiveValues(self)
   do
   self.name:SetText(para.displayName)
   
-  UIDropDownMenu_SetSelectedName(self.trackType,para.trackType)
-  UIDropDownMenu_SetText(self.trackType,para.trackType)
+  UIDropDownMenu_Initialize(self.trackType,self.trackType.initialize)
   
     
   self.lFix:SetText(para.lFix or 10)
@@ -2159,14 +2126,10 @@ local function setCBFActiveValues(self)
   self.xPos:SetText(para.xPos)
   self.yPos:SetText(para.yPos)
   
-  UIDropDownMenu_SetSelectedName(self.anchor,para.anchor)
-  UIDropDownMenu_SetText(self.anchor,para.anchor)
+  UIDropDownMenu_Initialize(self.anchor,self.anchor.initialize)
   
-  UIDropDownMenu_SetSelectedName(self.grow,para.grow)
-  UIDropDownMenu_SetText(self.grow,para.grow)
-  
-  
-  
+  UIDropDownMenu_Initialize(self.grow,self.grow.initialize)
+
   end
   
   
@@ -2492,6 +2455,10 @@ fD.hDir.initialize=function(frame,level,menuList)
    end
    UIDropDownMenu_AddButton(info)
  end
+ 
+ UIDropDownMenu_SetSelectedName(frame,eF.para.units.healthGrow)
+ UIDropDownMenu_SetText(frame,eF.para.units.healthGrow)
+
 end
 UIDropDownMenu_SetWidth(fD.hDir,55)
 
@@ -2643,6 +2610,8 @@ fD.nFont.initialize=function(frame,level,menuList)
    
    UIDropDownMenu_AddButton(info)
  end
+ UIDropDownMenu_SetSelectedName(frame,eF.para.units.textFont)
+ UIDropDownMenu_SetText(frame,eF.para.units.textFont)
 end
 
 createDD(fD,"nPos",fD)
@@ -2662,7 +2631,10 @@ fD.nPos.initialize=function(frame,level,menuList)
      CloseDropDownMenus()
    end
    UIDropDownMenu_AddButton(info)
+
  end
+ UIDropDownMenu_SetSelectedName(frame,eF.para.units.textPos)
+ UIDropDownMenu_SetText(frame,eF.para.units.textPos)
 end
 
 createNumberEB(fD,"textXOS",fD)
@@ -2790,6 +2762,8 @@ fD.grow1.initialize=function(frame,level,menuList)
    end
    UIDropDownMenu_AddButton(info)
  end
+   UIDropDownMenu_SetSelectedName(frame,eF.para.units.grow1)
+   UIDropDownMenu_SetText(frame,eF.para.units.grow1)
 end
 
 createDD(fD,"grow2",fD)
@@ -2810,7 +2784,10 @@ fD.grow2.initialize=function(frame,level,menuList)
      eF.layout:update()
    end
    UIDropDownMenu_AddButton(info)
+
  end
+   UIDropDownMenu_SetSelectedName(frame,eF.para.units.grow2)
+   UIDropDownMenu_SetText(frame,eF.para.units.grow2)
 end
 
 createNumberEB(fD,"spacing",fD)
@@ -3067,7 +3044,10 @@ fDLazy.hDir.initialize=function(frame,level,menuList)
      CloseDropDownMenus()
    end
    UIDropDownMenu_AddButton(info)
+
  end
+   UIDropDownMenu_SetSelectedName(frame,eF.para.unitsGroup.healthGrow)
+   UIDropDownMenu_SetText(frame,eF.para.unitsGroup.healthGrow)
 end
 UIDropDownMenu_SetWidth(fDLazy.hDir,55)
 
@@ -3216,9 +3196,11 @@ fDLazy.nFont.initialize=function(frame,level,menuList)
      CloseDropDownMenus()
      eF.units:updateAllParas()
    end
-   
    UIDropDownMenu_AddButton(info)
+
  end
+   UIDropDownMenu_SetSelectedName(frame,eF.para.unitsGroup.textFont)
+   UIDropDownMenu_SetText(frame,eF.para.unitsGroup.textFont)
 end
 
 createDD(fDLazy,"nPos",fDLazy)
@@ -3238,7 +3220,10 @@ fDLazy.nPos.initialize=function(frame,level,menuList)
      CloseDropDownMenus()
    end
    UIDropDownMenu_AddButton(info)
+
  end
+    UIDropDownMenu_SetSelectedName(frame,eF.para.unitsGroup.textPos)
+   UIDropDownMenu_SetText(frame,eF.para.unitsGroup.textPos)
 end
 
 createNumberEB(fDLazy,"textXOS",fDLazy)
@@ -3365,7 +3350,10 @@ fDLazy.grow1.initialize=function(frame,level,menuList)
      eF.layout:update()
    end
    UIDropDownMenu_AddButton(info)
+
  end
+   UIDropDownMenu_SetSelectedName(frame,eF.para.unitsGroup.grow1)
+   UIDropDownMenu_SetText(frame,eF.para.unitsGroup.grow1)
 end
 
 createDD(fDLazy,"grow2",fDLazy)
@@ -3386,7 +3374,10 @@ fDLazy.grow2.initialize=function(frame,level,menuList)
      eF.layout:update()
    end
    UIDropDownMenu_AddButton(info)
+
  end
+   UIDropDownMenu_SetSelectedName(frame,eF.para.unitsGroup.grow2)
+   UIDropDownMenu_SetText(frame,eF.para.unitsGroup.grow2)
 end
 
 createNumberEB(fDLazy,"spacing",fDLazy)
@@ -3707,6 +3698,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.type)
+   UIDropDownMenu_SetText(frame,eF.activePara.type)
   end
   UIDropDownMenu_SetWidth(sff.type,80)
 
@@ -3729,6 +3722,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.trackType)
+   UIDropDownMenu_SetText(frame,eF.activePara.trackType.value)
   end
   UIDropDownMenu_SetWidth(sff.trackType,80)
   
@@ -3825,6 +3820,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+  UIDropDownMenu_SetSelectedName(frame,eF.activePara.grow)
+  UIDropDownMenu_SetText(frame,eF.activePara.grow)
   end
   UIDropDownMenu_SetWidth(sff.grow,60)
 
@@ -3937,6 +3934,9 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.anchor)
+   UIDropDownMenu_SetText(frame,eF.activePara.anchorTo)
   end
   UIDropDownMenu_SetWidth(sff.anchor,60)
 
@@ -4163,6 +4163,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.borderType)
+   UIDropDownMenu_SetText(frame,eF.activePara.borderType)
   end
   UIDropDownMenu_SetWidth(sff.borderType,60)
 
@@ -4224,6 +4226,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.textType)
+   UIDropDownMenu_SetText(frame,eF.activePara.textType)
   end
   UIDropDownMenu_SetWidth(sff.textType1,60)
 
@@ -4299,6 +4303,8 @@ do
      
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.textFont)
+   UIDropDownMenu_SetText(frame,eF.activePara.textFont)
   end
 
   createDD(sff,"textAnchor1",sff)
@@ -4319,6 +4325,9 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   
+  UIDropDownMenu_SetSelectedName(frame,eF.activePara.textAnchor)
+  UIDropDownMenu_SetText(frame,eF.activePara.textAnchor)
   end
 
   
@@ -4410,6 +4419,9 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   
+  UIDropDownMenu_SetSelectedName(frame,eF.activePara.text2Type)
+  UIDropDownMenu_SetText(frame,eF.activePara.text2Type)
   end
   UIDropDownMenu_SetWidth(sff.text2Type,60)
 
@@ -4428,9 +4440,9 @@ do
     local r,g,b=ColorPickerFrame:GetColorRGB()
     local a=OpacitySliderFrame:GetValue()
     sff.text2Color.thumb:SetVertexColor(r,g,b)
-    eF.activePara.textR=r
-    eF.activePara.textG=g
-    eF.activePara.textB=b
+    eF.activePara.text2R=r
+    eF.activePara.text2G=g
+    eF.activePara.text2B=b
     updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end
 
@@ -4485,6 +4497,8 @@ do
      
      UIDropDownMenu_AddButton(info)
    end
+    UIDropDownMenu_SetSelectedName(frame,eF.activePara.text2Font)
+   UIDropDownMenu_SetText(frame,eF.activePara.text2Font)
   end
 
   createDD(sff,"text2Anchor",sff)
@@ -4505,6 +4519,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.text2Anchor)
+   UIDropDownMenu_SetText(frame,eF.activePara.text2Anchor)
   end
 
   
@@ -5256,6 +5272,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+    UIDropDownMenu_SetSelectedName(frame,eF.activePara.trackType)
+   UIDropDownMenu_SetText(frame,eF.activePara.trackType)
   end
   UIDropDownMenu_SetWidth(cif.trackType,80)
   
@@ -5278,6 +5296,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.trackBy)
+   UIDropDownMenu_SetText(frame,eF.activePara.trackBy)
   end
   UIDropDownMenu_SetWidth(cif.trackType,80)
 
@@ -5412,6 +5432,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.anchor)
+   UIDropDownMenu_SetText(frame,eF.activePara.anchor)
   end
   UIDropDownMenu_SetWidth(cif.anchor,60)
 
@@ -5618,6 +5640,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.borderType)
+   UIDropDownMenu_SetText(frame,eF.activePara.borderType)
   end
   UIDropDownMenu_SetWidth(cif.borderType,60)
 
@@ -5680,6 +5704,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.textType)
+   UIDropDownMenu_SetText(frame,eF.activePara.textType)
   end
   UIDropDownMenu_SetWidth(cif.textType1,60)
 
@@ -5755,6 +5781,8 @@ do
      
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.textFont)
+   UIDropDownMenu_SetText(frame,eF.activePara.textFont)
   end
 
   createDD(cif,"textAnchor1",cif)
@@ -5775,6 +5803,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.textAnchor)
+   UIDropDownMenu_SetText(frame,eF.activePara.textAnchor)
   end
 
   
@@ -5867,7 +5897,9 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
-  end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.text2Type)
+   UIDropDownMenu_SetText(frame,eF.activePara.text2Type)
+ end
   UIDropDownMenu_SetWidth(cif.text2Type,60)
 
   
@@ -5942,6 +5974,8 @@ do
      
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.text2Font)
+   UIDropDownMenu_SetText(frame,eF.activePara.text2Font)
   end
 
   createDD(cif,"text2Anchor",cif)
@@ -5962,6 +5996,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.text2Anchor)
+   UIDropDownMenu_SetText(frame,eF.activePara.text2Anchor)
   end
 
   
@@ -6102,6 +6138,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.trackType)
+   UIDropDownMenu_SetText(frame,eF.activePara.trackType)
   end
   UIDropDownMenu_SetWidth(cbf.trackType,80)
   
@@ -6217,6 +6255,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.anchor)
+   UIDropDownMenu_SetText(frame,eF.activePara.anchor)
   end
   UIDropDownMenu_SetWidth(cbf.anchor,60)
   
@@ -6238,6 +6278,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.grow)
+   UIDropDownMenu_SetText(frame,eF.activePara.grow)
   end
   UIDropDownMenu_SetWidth(cbf.grow,60)
   
@@ -6340,6 +6382,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.trackType)
+   UIDropDownMenu_SetText(frame,eF.activePara.trackType)
   end
   UIDropDownMenu_SetWidth(cbof.trackType,80)
   
@@ -6362,6 +6406,8 @@ do
      end
      UIDropDownMenu_AddButton(info)
    end
+   UIDropDownMenu_SetSelectedName(frame,eF.activePara.trackBy)
+   UIDropDownMenu_SetText(frame,eF.activePara.trackBy)
   end
   UIDropDownMenu_SetWidth(cbof.trackType,80)
   

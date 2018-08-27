@@ -30,6 +30,7 @@ function initialise(self)
   self=nil
   
   eF.rep.intSetInitValues()
+  
 end
 
 
@@ -56,7 +57,10 @@ Furthermore it's kinda unfair since grid2 has more features as *options* which c
 --notes on frame layout / updating (macro)
 --[[
 2 LFR tests of a total of 5 bosses since the RegisterUnitWatch / Show / Hide restructuring:
-No lua errors, thank god
+No lua errors, thank god <--- needed 4 more fixes because fuck me
+ ^---nvm they're back! Might be related to when pets spawn (for some FUCKING REASON??)
+  ---really need to fix it eventually
+  ---SHOULD BE FIXED NOW! UI_DropDownMenu is a piece of SHIT!!?!
 No late updating of offline/dead etc
 No duplicating of "player" and "party*" frames
 No range updating issues
@@ -78,7 +82,7 @@ Nothing relevant to say atm
 --changing frame level
 --Cast tracking
 --HEAL ABSORB/ABSORB option for bars
---Groups can set loading conditions to children
+--Groups can set loading conditions to children 
 --"Other stuff" frame to include things in TBA3 whenever needed
 
 ]]

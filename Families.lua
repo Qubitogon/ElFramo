@@ -200,6 +200,7 @@ local function iconUpdateText2TypeS(self)
   local s
 
   s=self.count or ""
+  if (s==0) or (s==1) then s="" end
   
   self.text2:SetText(s)
 end
@@ -211,7 +212,7 @@ local function iconUpdateTextTypeS(self)
   local s
 
   s=self.count or ""
-  if s==0 then s="" end
+  if (s==0) or (s==1) then s="" end
   
   self.text:SetText(s)
 end
@@ -234,7 +235,7 @@ eF.rep.smartFamilyApplySmartIcons=smartFamilyApplySmartIcons
 local function updateBorderColorDebuffType(self)
   if not self.filled then return end
   local c=self.borderColor[self.debuffType] 
-  if c then self.border:SetVertexColor(c[1],c[2],c[3])
+  if c then self.border:Show(); self.border:SetVertexColor(c[1],c[2],c[3])
   else self.border:Hide() end 
 end
 eF.rep.updateBorderColorDebuffType=updateBorderColorDebuffType
@@ -484,6 +485,8 @@ local function applyFamilyParas(self,j)
       c:SetWidth(f.para.width)
       c:SetHeight(f.para.height)
       c:ClearAllPoints()
+      xOS=xOS+f.para.xPos
+      yOS=yOS+f.para.yPos
       c:SetPoint(f.para.anchor,self,f.para.anchorTo,xOS,yOS)
       
       c.onUpdateList={}
@@ -816,33 +819,6 @@ function applyChildParas(self,j,k)
   
 end
 eF.rep.applyChildParas=applyChildParas
-
-local function updateFamilyLayout(self,j)
-  local f=self[j]
-  f.para=self.families[j]
-  f:ClearAllPoints()
-  f:SetPoint(f.para.anchor or "CENTER", self, f.para.anchorTo or "CENTER", f.para.xPos or 0, f.para.yPos or 0)
-  
-  if f.para.smart then  
-    for k=1,f.para.count do
-      local xOS=0
-      local yOS=0
-      if f.para.grow=="down" then yOS=(1-k)*(f.para.spacing+f.para.height)
-      elseif f.para.grow=="up" then yOS=(k-1)*(f.para.spacing+f.para.height)
-      elseif f.para.grow=="right" then xOS=(k-1)*(f.para.spacing+f.para.width)
-      elseif f.para.grow=="left" then xOS=(1-k)*(f.para.spacing+f.para.width) end
-        
-      local c=f[k]
-      c:ClearAllPoints()
-      c:SetPoint(f.para.growAnchor,f,"CENTER",xOS,yOS)
-      c:SetSize(f.para.width,f.para.height)
-    end--end of for j=1,f.para.count
-    
-  else --else of if f.para.smart
-  end  --if else end of if f.para.smart
-  
-end
-eF.rep.updateFamilyLayout=updateFamilyLayout
 
 function createFamilyChild(self,k)
   local insert=table.insert
