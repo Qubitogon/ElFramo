@@ -2419,7 +2419,7 @@ do
   local fD=gf.frameDim
   fD:SetPoint("TOP",fdsf,"TOP",0,-20)
   fD:SetWidth(fdsf:GetWidth()*0.8)
-  fD:SetHeight(fdsf:GetHeight()*1.2)
+  fD:SetHeight(fdsf:GetHeight()*1.5)
  
   fdsf.ScrollBar:ClearAllPoints()
   fdsf.ScrollBar:SetPoint("TOPRIGHT",fdsf,"TOPRIGHT",-6,-18)
@@ -2699,7 +2699,7 @@ eF.para.units.textA=a; eF.units.textA=a; eF.units:updateAllParas()
 end)
 
 
-createNewDD(fD,"nFont",fD,50)
+createNewDD(fD,"nFont",fD)
 fD.nFont.text:SetPoint("RIGHT",fD.nAlpha.text,"RIGHT",0,-ySpacing)
 fD.nFont.text:SetText("Font:")
 
@@ -2715,7 +2715,7 @@ for i=1,#eF.fonts do
 end
 
 
-createNewDD(fD,"nPos",fD,50)
+createNewDD(fD,"nPos",fD)
 fD.nPos.text:SetPoint("RIGHT",fD.nFont.text,0,-ySpacing)
 fD.nPos.text:SetText("Position:")
 local lf=function(self)
@@ -3097,7 +3097,7 @@ hCB.texture:SetAllPoints()
 hCB.texture:SetColorTexture(0.07,0.07,0.07,0.4)
 
 
-createNewDD(fDLazy,"hDir",fDLazy)
+createNewDD(fDLazy,"hDir",fDLazy,50)
 fDLazy.hDir.text:SetPoint("RIGHT",fDLazy.hColor.text,"RIGHT",0,-ySpacing)
 fDLazy.hDir.text:SetText("Orientation:")
 local lf=function(self)
@@ -3369,7 +3369,7 @@ tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
 tS:SetWidth(110)
 
-createNewDD(fDLazy,"grow1",fDLazy)
+createNewDD(fDLazy,"grow1",fDLazy,50)
 fDLazy.grow1.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
 fDLazy.grow1.text:SetText("Grows:")
 local lf=function(self)
@@ -3382,7 +3382,7 @@ for i=1,#eF.orientations do
 end
 
 
-createNewDD(fDLazy,"grow2",fDLazy)
+createNewDD(fDLazy,"grow2",fDLazy,50)
 fDLazy.grow2.text:SetPoint("RIGHT",fDLazy.grow1.text,"RIGHT",0,-ySpacing)
 fDLazy.grow2.text:SetText("then:")
 local lf=function(self)
@@ -3643,7 +3643,7 @@ do
   sff=ff.smartFamilyFrame
   sff:SetPoint("TOP",sfsf,"TOP",0,-20)
   sff:SetWidth(sfsf:GetWidth()*0.8)
-  sff:SetHeight(sfsf:GetHeight()*1.2)
+  sff:SetHeight(sfsf:GetHeight()*2)
  
   sfsf.ScrollBar:ClearAllPoints()
   sfsf.ScrollBar:SetPoint("TOPRIGHT",sfsf,"TOPRIGHT",-6,-18)
@@ -3691,7 +3691,7 @@ do
   end
   end)
 
-  createNewDD(sff,"type",sff,80)
+  createNewDD(sff,"type",sff,75)
   sff.type.text:SetPoint("RIGHT",sff.name.text,"RIGHT",0,-ySpacing)
   sff.type.text:SetText("Type:")
   local lf=function(self)
@@ -3707,7 +3707,7 @@ do
   end
   
 
-  createNewDD(sff,"trackType",sff)
+  createNewDD(sff,"trackType",sff,75)
   sff.trackType.text:SetPoint("RIGHT",sff.type.text,"RIGHT",0,-ySpacing)
   sff.trackType.text:SetText("Tracks:")
   local lf=function(self)
@@ -3788,7 +3788,7 @@ do
   end)
   --NYI: update without reload
 
-  createNewDD(sff,"grow",sff)
+  createNewDD(sff,"grow",sff,50)
   sff.grow.text:SetPoint("RIGHT",sff.count.text,"RIGHT",0,-ySpacing)
   sff.grow.text:SetText("Grows:")
   local lf=function(self)
@@ -3897,7 +3897,7 @@ do
   updateAllFramesFamilyLayout(eF.activeFamilyIndex)
   end)
 
-  createNewDD(sff,"anchor",sff)
+  createNewDD(sff,"anchor",sff,85)
   sff.anchor.text:SetPoint("RIGHT",sff.yPos.text,"RIGHT",0,-ySpacing)
   sff.anchor.text:SetText("Position:")
   local lf=function(self)
@@ -4115,7 +4115,7 @@ do
   end)
   --NYI not hiding border
   
-  createNewDD(sff,"borderType",sff,60)
+  createNewDD(sff,"borderType",sff,70)
   sff.borderType.text:SetPoint("RIGHT",sff.hasBorder.text,"RIGHT",0,-ySpacing)
   sff.borderType.text:SetText("Border type:")
   local lf=function(self)
@@ -4168,7 +4168,7 @@ do
     updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end)
   
-  createNewDD(sff,"textType1",sff,60)
+  createNewDD(sff,"textType1",sff)
   sff.textType1.text:SetPoint("RIGHT",sff.hasText1.text,"RIGHT",0,-ySpacing)
   sff.textType1.text:SetText("Text type:")
   local lf=function(self)
@@ -4332,7 +4332,7 @@ do
     updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end)
   
-  createNewDD(sff,"text2Type",sff,60)
+  createNewDD(sff,"text2Type",sff)
   sff.text2Type.text:SetPoint("RIGHT",sff.hasText2.text,"RIGHT",0,-ySpacing)
   sff.text2Type.text:SetText("Text type:")
   local lf=function(self)
@@ -5112,7 +5112,7 @@ do
   cif=ff.childIconFrame
   cif:SetPoint("TOP",cisf,"TOP",0,-20)
   cif:SetWidth(cisf:GetWidth()*0.8)
-  cif:SetHeight(cisf:GetHeight()*1.4)
+  cif:SetHeight(cisf:GetHeight()*1.65)
  
   cisf.ScrollBar:ClearAllPoints()
   cisf.ScrollBar:SetPoint("TOPRIGHT",cisf,"TOPRIGHT",-6,-18)
@@ -5160,7 +5160,7 @@ do
   end
   end)
 
-  createNewDD(cif,"trackType",cif,80)
+  createNewDD(cif,"trackType",cif,75)
   cif.trackType.text:SetPoint("RIGHT",cif.name.text,"RIGHT",0,-ySpacing)
   cif.trackType.text:SetText("Tracks:")
   
@@ -5177,7 +5177,7 @@ do
   
 
   
-  createNewDD(cif,"trackBy",cif,80)
+  createNewDD(cif,"trackBy",cif,75)
   cif.trackBy.text:SetPoint("RIGHT",cif.trackType.text,"RIGHT",0,-ySpacing)
   cif.trackBy.text:SetText("Track by:")
   local lf=function(self)
@@ -5220,7 +5220,7 @@ do
   cif.iconBlocker6=CreateFrame("Button",nil,cif)
   local iB1=cif.iconBlocker6
   iB1:SetFrameLevel(cif:GetFrameLevel()+3)
-  iB1:SetPoint("TOPRIGHT",cif.trackBy,"TOPRIGHT",2,2)
+  iB1:SetPoint("TOPRIGHT",cif.trackBy,"TOPRIGHT",35,2)
   iB1:SetPoint("BOTTOMLEFT",cif.ownOnly.text,"BOTTOMLEFT",-2,-2)
   iB1.texture=iB1:CreateTexture(nil,"OVERLAY")
   iB1.texture:SetAllPoints()
@@ -5302,7 +5302,7 @@ do
   updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
 
-  createNewDD(cif,"anchor",cif,60)
+  createNewDD(cif,"anchor",cif,85)
   cif.anchor.text:SetPoint("RIGHT",cif.yPos.text,"RIGHT",0,-ySpacing)
   cif.anchor.text:SetText("Position:")
   
@@ -5502,7 +5502,7 @@ do
   end)
   --NYI not hiding border
   
-  createNewDD(cif,"borderType",cif,60)
+  createNewDD(cif,"borderType",cif,75)
   cif.borderType.text:SetPoint("RIGHT",cif.hasBorder.text,"RIGHT",0,-ySpacing)
   cif.borderType.text:SetText("Border type:")
   
@@ -5556,7 +5556,7 @@ do
   end)
   --NYI not hiding border
   
-  createNewDD(cif,"textType1",cif,60)
+  createNewDD(cif,"textType1",cif)
   cif.textType1.text:SetPoint("RIGHT",cif.hasText1.text,"RIGHT",0,-ySpacing)
   cif.textType1.text:SetText("Text type:")
   
@@ -5725,7 +5725,7 @@ do
   end)
   --NYI not hiding border
   
-  createNewDD(cif,"text2Type",cif,60)
+  createNewDD(cif,"text2Type",cif)
   cif.text2Type.text:SetPoint("RIGHT",cif.hasText2.text,"RIGHT",0,-ySpacing)
   cif.text2Type.text:SetText("Text type:")
   
@@ -5942,7 +5942,7 @@ do
   end
   end)
 
-  createNewDD(cbf,"trackType",cbf,80)
+  createNewDD(cbf,"trackType",cbf,75)
   cbf.trackType.text:SetPoint("RIGHT",cbf.name.text,"RIGHT",0,-ySpacing)
   cbf.trackType.text:SetText("Tracks:")
   local lf=function(self)
@@ -6048,7 +6048,7 @@ do
   updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
 
-  createNewDD(cbf,"anchor",cbf,60)
+  createNewDD(cbf,"anchor",cbf,75)
   cbf.anchor.text:SetPoint("RIGHT",cbf.yPos.text,"RIGHT",0,-ySpacing)
   cbf.anchor.text:SetText("Position:")
   
@@ -6064,7 +6064,7 @@ do
   end
 
   
-  createNewDD(cbf,"grow",cbf,60)
+  createNewDD(cbf,"grow",cbf,75)
   cbf.grow.text:SetPoint("RIGHT",cbf.anchor.text,"RIGHT",0,-ySpacing)
   cbf.grow.text:SetText("Grows:")
   
@@ -6159,7 +6159,7 @@ do
   end
   end)
 
-  createNewDD(cbof,"trackType",cbof,80)
+  createNewDD(cbof,"trackType",cbof,75)
   cbof.trackType.text:SetPoint("RIGHT",cbof.name.text,"RIGHT",0,-ySpacing)
   cbof.trackType.text:SetText("Tracks:")
   
@@ -6176,7 +6176,7 @@ do
   end
 
   
-  createNewDD(cbof,"trackBy",cbof,80)
+  createNewDD(cbof,"trackBy",cbof,75)
   cbof.trackBy.text:SetPoint("RIGHT",cbof.trackType.text,"RIGHT",0,-ySpacing)
   cbof.trackBy.text:SetText("Track by:")
   
