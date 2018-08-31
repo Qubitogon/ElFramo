@@ -191,18 +191,148 @@ local function createListCB(self,name,tab)
 
 end
 
-local function createDD(self,name,tab)
-  self[name]=CreateFrame("Frame","eFDropDown"..name,tab,"UIDropDownMenuTemplate")
+local function createNewDD(self,name,tab,width)
+  local width=width
+  if not width then width=70 end
+  
+  self[name]=CreateFrame("Frame",nil,tab)
   local dd=self[name]
-  UIDropDownMenu_SetWidth(dd,70)
-
-
   dd.text=dd:CreateFontString()
   local tx=dd.text
   tx:SetFont(font,12,fontExtra)
   tx:SetTextColor(1,1,1)
+  dd:SetPoint("LEFT",tx,"BOTTOMRIGHT",-12,11)
+  dd.nButtons=0
+  dd:SetHeight(20)
+  dd:SetWidth(width)
+  
+  --visual main button
+  do
+  dd.backgroundTextureLeft=dd:CreateTexture(nil,"BACKGROUND")
+  dd.backgroundTextureLeft:SetTexture("Interface\\Glues\\CharacterCreate\\CharacterCreate-LabelFrame")
+  dd.backgroundTextureLeft:SetTexCoord(0,0.1953125,0,1)
+  dd.backgroundTextureLeft:SetPoint("TOPLEFT",dd,"TOPLEFT",0,17)
+  dd.backgroundTextureLeft:SetSize(25,64)
+  
+  dd.backgroundTextureMiddle=dd:CreateTexture(nil,"BACKGROUND")
+  dd.backgroundTextureMiddle:SetTexture("Interface\\Glues\\CharacterCreate\\CharacterCreate-LabelFrame")
+  dd.backgroundTextureMiddle:SetTexCoord(0.1953125,0.8046875,0,1)
+  dd.backgroundTextureMiddle:SetPoint("LEFT",dd.backgroundTextureLeft,"RIGHT")
+  dd.backgroundTextureMiddle:SetSize(width,64)
+  
+  dd.backgroundTextureRight=dd:CreateTexture(nil,"BACKGROUND")
+  dd.backgroundTextureRight:SetTexture("Interface\\Glues\\CharacterCreate\\CharacterCreate-LabelFrame")
+  dd.backgroundTextureRight:SetTexCoord(0.8046875,1,0,1)
+  dd.backgroundTextureRight:SetPoint("LEFT",dd.backgroundTextureMiddle,"RIGHT")
+  dd.backgroundTextureRight:SetSize(25,64)
+  
+  dd.expandButton=CreateFrame("Button",nil,dd)
+  dd.expandButton:SetSize(24,24)
+  dd.expandButton:SetPoint("RIGHT",dd.backgroundTextureRight,"RIGHT",-16,1)
+  
+  local temp
+  temp=dd.expandButton:CreateTexture(nil,"BACKGROUND")
+  temp:SetSize(24,24)
+  temp:SetPoint("RIGHT")
+  temp:SetTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
+  dd.expandButton:SetNormalTexture(temp)
+  
+  temp=nil
+  temp=dd.expandButton:CreateTexture(nil,"BACKGROUND")
+  temp:SetSize(24,24)
+  temp:SetPoint("RIGHT")
+  temp:SetTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Down")
+  dd.expandButton:SetPushedTexture(temp)
+  
+  temp=nil
+  temp=dd.expandButton:CreateTexture(nil,"BACKGROUND")
+  temp:SetSize(24,24)
+  temp:SetPoint("RIGHT")
+  temp:SetTexture("Interface\\Buttons\\UI-Common-MouseHilight")
+  dd.expandButton:SetHighlightTexture(temp)
+  dd.expandButton:SetScript("OnClick",function(self) if self.parentList:IsShown() then self.parentList:Hide() else self.parentList:Show() end end)
+  
+  
+  dd.buttonText=dd:CreateFontString(nil,"OVERLAY")
+  dd.buttonText:SetFont("Fonts\\FRIZQT__.ttf",10)
+  dd.buttonText:SetPoint("LEFT",dd.backgroundTextureLeft,"LEFT",27,2)
+  dd.buttonText:SetPoint("RIGHT",dd.expandButton,"LEFT")
+  dd.buttonText:SetText("NA")
+  dd.buttonText:SetNonSpaceWrap(true)
+  dd.buttonText:SetHeight(10)
+  
+  
+ end--end of visual main button
+ 
+  --dd list visual
+  do
+  
+  dd.dropDownList=CreateFrame("Frame",nil,dd)
+  local ddl=dd.dropDownList
+  ddl:SetBackdrop( {bgFile="Interface\\DialogFrame\\UI-DialogBox-Background-Dark",edgeFile="Interface\\DialogFrame\\UI-DialogBox-Border",tile="true",
+                    edgeSize=32,tileSize=32, insets={left=11,right=12,top=12,bottom=9} } )
+  ddl:SetSize(100,100)
+  ddl:SetPoint("TOPLEFT",dd,"BOTTOMLEFT",8,0)
+  ddl:SetFrameLevel(dd:GetFrameLevel()+3)
+  ddl:Hide()
+  
+  dd.expandButton.parentList=ddl
 
-  dd:SetPoint("LEFT",tx,"RIGHT",-10,0)
+  end
+  
+  dd.setButtonText=function(self,text)
+    self.buttonText:SetText(text)
+  end
+  
+  dd.setListWidth=function(self,width)
+    if not width then return end
+    self.dropDownList:SetWidth(width) 
+  end
+  
+  dd.buttonList={}
+  dd.addButton=function(self,name,func,arg)
+    if not name then return end
+    local arg=arg
+    if not arg then arg=name end
+    self.buttonList[arg]=CreateFrame("Button",nil,self.dropDownList)
+    local b=self.buttonList[arg]
+    
+    b.name=name
+    local func=func
+    if not func then func=function() print("elFramo warning: No function given to DropDownButton "..tostring(name)) end end
+    b.func=func
+    b.arg=arg
+    b.parentList=self.dropDownList
+    b.parentButton=self
+    
+    b:SetHeight(16)
+    b:SetPoint("TOPLEFT",self.dropDownList,"TOPLEFT",15,-16-self.nButtons*16)
+    b:SetPoint("TOPRIGHT",self.dropDownList,"TOPRIGHT",-15,-16-self.nButtons*16)
+    
+    
+    b.displayText=b:CreateFontString(nil,"OVERLAY")
+    local dt=b.displayText
+    dt:SetFont("Fonts\\FRIZQT__.ttf",10)
+    dt:SetPoint("LEFT",b,"LEFT",8,0)
+    dt:SetText(name)
+    
+    local ht=b:CreateTexture(nil,"BACKGROUND")
+    ht:SetAllPoints()
+    ht:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
+    b:SetHighlightTexture(ht)
+    
+    b:SetScript("OnClick",function(self)
+      self:func()
+      self.parentList:Hide()
+      self.parentButton:setButtonText(self.name)
+    end)
+    
+    self.nButtons=self.nButtons+1
+    self.dropDownList:SetHeight(16*self.nButtons+30)
+  end
+  
+  dd:setListWidth(100)
+  dd:setButtonText("NA_")
 end
 
 local function updateAllFramesFamilyParas(j)
@@ -651,7 +781,7 @@ local function intSetInitValues()
   do
   fD.ebHeight:SetText(units.height)
   fD.ebWidth:SetText(units.width)
-  UIDropDownMenu_Initialize(fD.hDir,fD.hDir.initialize)
+  fD.hDir:setButtonText(units.healthGrow)
   fD.gradStart:SetText( eF.toDecimal(units.hpGrad1R,2) or "nd")
   fD.gradFinal:SetText( eF.toDecimal(units.hpGrad2R,2) or "nd")
   fD.nMax:SetText(units.textLim)
@@ -668,18 +798,18 @@ local function intSetInitValues()
   fD.nColor.thumb:SetVertexColor(units.textR,units.textG,units.textB)
   
   local font=ssub(units.textFont,7,-5)
-  UIDropDownMenu_Initialize(fD.nFont,fD.nFont.initialize)
+  fD.nFont:setButtonText(font) 
   
   fD.nAlpha:SetText(eF.toDecimal(units.textA,2) or "nd")
-  UIDropDownMenu_Initialize(fD.nPos,fD.nPos.initialize)
+  fD.nPos:setButtonText(units.textPos)
   fD.textXOS:SetText(units.textXOS or 0)
   fD.textYOS:SetText(units.textYOS or 0)
 
   fD.bColor.thumb:SetVertexColor(units.borderR,units.borderG,units.borderB)
   fD.bWid:SetText(units.borderSize)
   
-  UIDropDownMenu_Initialize(fD.grow1,fD.grow1.initialize)
-  UIDropDownMenu_Initialize(fD.grow2,fD.grow2.initialize)
+  fD.grow1:setButtonText(units.grow1)
+  fD.grow2:setButtonText(units.grow2)
   fD.spacing:SetText(units.spacing)
   fD.maxInLine:SetText(units.maxInLine)
   fD.byGroup:SetChecked(units.byGroup)
@@ -694,7 +824,8 @@ local function intSetInitValues()
   
   fDLazy.ebHeight:SetText(unitsGroup.height)
   fDLazy.ebWidth:SetText(unitsGroup.width)
-  UIDropDownMenu_Initialize(fDLazy.hDir,fDLazy.hDir.initialize)
+  
+  fDLazy.hDir:setButtonText(unitsGroup.healthGrow)  
   fDLazy.gradStart:SetText( eF.toDecimal(unitsGroup.hpGrad1R,2) or "nd")
   fDLazy.gradFinal:SetText( eF.toDecimal(unitsGroup.hpGrad2R,2) or "nd")
   fDLazy.nMax:SetText(unitsGroup.textLim)
@@ -711,27 +842,26 @@ local function intSetInitValues()
   fDLazy.nColor.thumb:SetVertexColor(unitsGroup.textR,unitsGroup.textG,unitsGroup.textB)
   
   local font=ssub(unitsGroup.textFont,7,-5)
-  UIDropDownMenu_Initialize(fDLazy.nFont,fDLazy.nFont.initialize)
+  fDLazy.nFont:setButtonText(font) 
   
   fDLazy.nAlpha:SetText(eF.toDecimal(unitsGroup.textA,2) or "nd")
-  UIDropDownMenu_Initialize(fDLazy.nPos,fDLazy.nPos.initialize)
+  fDLazy.nPos:setButtonText(unitsGroup.textPos)
   fDLazy.textXOS:SetText(unitsGroup.textXOS or 0)
   fDLazy.textYOS:SetText(unitsGroup.textYOS or 0)
 
   fDLazy.bColor.thumb:SetVertexColor(unitsGroup.borderR,unitsGroup.borderG,unitsGroup.borderB)
   fDLazy.bWid:SetText(unitsGroup.borderSize)
-  
-  UIDropDownMenu_Initialize(fDLazy.grow1,fDLazy.grow1.initialize)
-  UIDropDownMenu_Initialize(fDLazy.grow2,fDLazy.grow2.initialize)
+  fDLazy.grow1:setButtonText(unitsGroup.grow1)
+  fDLazy.grow2:setButtonText(unitsGroup.grow2)
   fDLazy.spacing:SetText(unitsGroup.spacing)
   fDLazy.maxInLine:SetText(unitsGroup.maxInLine)
   fDLazy.byGroup:SetChecked(unitsGroup.byGroup)
   fDLazy.xPos:SetText(math.floor(unitsGroup.xPos or 0))
   fDLazy.yPos:SetText(math.floor(unitsGroup.yPos or 0))
   end
-   
+  
   eF.units:updateAllParas()
-   
+ 
   --family frame
   do 
   for i=1,#bil do
@@ -1780,9 +1910,9 @@ local function setSFFActiveValues(self)
   self.name:SetText(para.displayName)
   local typ=para.type
   if typ=="b" then typ="Blacklist" elseif typ=="w" then typ="Whitelist" end
-  UIDropDownMenu_Initialize(self.type,self.type.initialize)
+  self.type:setButtonText(typ)
   
-  UIDropDownMenu_Initialize(self.trackType,self.trackType.initialize)
+  self.trackType:setButtonText(para.trackType)
 
   self.ignorePermanents:SetChecked(para.ignorePermanents)
   if para.ignoreDurationAbove then self.ignoreDurationAbove:SetText(para.ignoreDurationAbove) else self.ignoreDurationAbove:SetText("nil") end
@@ -1793,7 +1923,7 @@ local function setSFFActiveValues(self)
   --layout
   do 
   self.count:SetText(para.count)
-  UIDropDownMenu_Initialize(self.grow,self.grow.initialize)
+  self.grow:setButtonText(para.grow)
   self.width:SetText(para.width)
   self.height:SetText(para.height)
   self.spacing:SetText(para.spacing)
@@ -1803,7 +1933,7 @@ local function setSFFActiveValues(self)
   do
   self.xPos:SetText(para.xPos)
   self.yPos:SetText(para.yPos)
-  UIDropDownMenu_Initialize(self.anchor,self.anchor.initialize)
+  self.anchor:setButtonText(para.anchor)
   end
   
   --icon
@@ -1846,14 +1976,14 @@ local function setSFFActiveValues(self)
   do
   self.hasBorder:SetChecked(para.hasBorder)
   if not para.hasBorder then self.iconBlocker4:Show() else self.iconBlocker4:Hide() end
-  UIDropDownMenu_Initialize(self.borderType,self.borderType.initialize)
+  self.borderType:setButtonText(para.borderType)
   end --end of border
 
   --text1
   do
   self.hasText1:SetChecked(para.hasText)
   if not para.hasText then self.iconBlocker5:Show() else self.iconBlocker5:Hide() end
-  UIDropDownMenu_Initialize(self.textType1,self.textType1.initialize)
+  self.textType1:setButtonText(self.textType)
   
   self.textColor1.thumb:SetVertexColor(para.textR,para.textG,para.textB)
   self.textDecimals1:SetText(para.textDecimals or 0)
@@ -1862,9 +1992,8 @@ local function setSFFActiveValues(self)
   self.textA1:SetText(para.textA or 1)
   
   local font=ssub(para.textFont or "Fonts\\FRIZQT__.ttf",7,-5)
-  UIDropDownMenu_Initialize(self.textFont1,self.textFont1.initialize)
-  
-  UIDropDownMenu_Initialize(self.textAnchor1,self.textAnchor1.initialize)
+  self.textFont1:setButtonText(font)
+  self.textAnchor1:setButtonText(para.textAnchor)
   
   self.textXOS1:SetText(para.textXOS or 0)
   self.textYOS1:SetText(para.textYOS or 0)
@@ -1875,7 +2004,7 @@ local function setSFFActiveValues(self)
   do
   self.hasText2:SetChecked(para.hasText2)
   if not para.hasText2 then self.iconBlocker6:Show() else self.iconBlocker6:Hide() end
-  UIDropDownMenu_Initialize(self.text2Type,self.text2Type.initialize)
+  self.text2Type:setButtonText(para.text2Type)
 
   
   self.text2Color.thumb:SetVertexColor(para.text2R or 1,para.text2G or 1,para.text2B or 1)
@@ -1885,9 +2014,8 @@ local function setSFFActiveValues(self)
   self.text2A:SetText(para.text2A or 1)
   
   local font=ssub(para.text2Font or "Fonts\\FRIZQT__.ttf",7,-5)
-  UIDropDownMenu_Sinitialize(self.text2Font,self.text2Font.initialize)
-  
-  UIDropDownMenu_Initialize(self.text2Anchor,self.text2Anchor.initialize)
+  self.text2Font:setButtonText(font)
+  self.text2Anchor:setButtonText(para.text2Anchor)
   
   self.text2XOS:SetText(para.text2XOS or 0)
   self.text2YOS:SetText(para.text2YOS or 0)
@@ -1904,13 +2032,11 @@ local function setCIFActiveValues(self)
   --general
   do
   self.name:SetText(para.displayName)
-  
-  UIDropDownMenu_Initialize(self.trackType,self.trackType.initialize)
+  self.trackType:setButtonText(para.trackType)
 
   if para.trackType=="Static" then self.iconBlocker6:Show() else self.iconBlocker6:Hide() end
 
-  
-  UIDropDownMenu_Initialize(self.trackBy,self.trackBy.initialize)
+  self.trackBy:setButtonText(para.trackBy)
   
   if para.arg1 then self.spell:SetText(para.arg1) else self.spell:SetText("") end
   
@@ -1924,7 +2050,7 @@ local function setCIFActiveValues(self)
   self.height:SetText(para.height)
   self.xPos:SetText(para.xPos)
   self.yPos:SetText(para.yPos)
-  UIDropDownMenu_Initialize(self.anchor,self.anchor.initialize)
+  self.anchor:setButtonText(para.anchor)
   
   end
   
@@ -1954,14 +2080,14 @@ local function setCIFActiveValues(self)
   do
   self.hasBorder:SetChecked(para.hasBorder)
   if not para.hasBorder then self.iconBlocker4:Show() else self.iconBlocker4:Hide() end
-  UIDropDownMenu_Initialize(self.borderType,self.borderType.initialize)
+  self.borderType:setButtonText(para.borderType)
   end --end of border
 
   --text1
   do
   self.hasText1:SetChecked(para.hasText)
   if not para.hasText then self.iconBlocker5:Show() else self.iconBlocker5:Hide()  end
-  UIDropDownMenu_Initialize(self.textType1,self.textType1.initialize)
+  self.textType1:setButtonText(para.textType)
   
   self.textColor1.thumb:SetVertexColor(para.textR,para.textG,para.textB)
   self.textDecimals1:SetText(para.textDecimals or 0)
@@ -1970,9 +2096,8 @@ local function setCIFActiveValues(self)
   self.textA1:SetText(para.textA or 1)
   
   local font=ssub(para.textFont or "Fonts\\FRIZQT__.ttf",7,-5)
-  UIDropDownMenu_Initialize(self.textFont1,self.textFont1.initialize)
-  
-  UIDropDownMenu_Initialize(self.textAnchor1,self.textAnchor1.initialize)
+  self.textFont1:setButtonText(font)
+  self.textAnchor1:setButtonText(para.textAnchor)
   
   self.textXOS1:SetText(para.textXOS or 0)
   self.textYOS1:SetText(para.textYOS or 0)
@@ -1984,7 +2109,7 @@ local function setCIFActiveValues(self)
   do
   self.hasText2:SetChecked(para.hasText2)
   if not para.hasText2 then self.iconBlocker7:Show() else self.iconBlocker7:Hide()  end
-  UIDropDownMenu_Initialize(self.text2Type,self.text2Type.initialize)
+  self.text2Type:setButtonText(para.text2Type)
   
   self.text2Color.thumb:SetVertexColor(para.text2R or 1,para.text2G or 1,para.text2B or 1)
   self.text2Decimals:SetText(para.text2Decimals or 0)
@@ -1993,9 +2118,8 @@ local function setCIFActiveValues(self)
   self.text2A:SetText(para.text2A or 1)
   
   local font=ssub(para.text2Font or "Fonts\\FRIZQT__.ttf",7,-5)
-  UIDropDownMenu_Initialize(self.text2Font,self.text2Font.initialize)
-  
-  UIDropDownMenu_Initialize(self.text2Anchor,self.text2Anchor.initialize)
+  self.text2Font:setButtonText(font)
+  self.text2Anchor:setButtonText(para.text2Anchor)
   
   self.text2XOS:SetText(para.text2XOS or 0)
   self.text2YOS:SetText(para.text2YOS or 0)
@@ -2013,12 +2137,11 @@ local function setCBOFActiveValues(self)
   do
   self.name:SetText(para.displayName)
   
-  UIDropDownMenu_Initialize(self.trackType,self.trackType.initialize)
-
+  self.trackType:setButtonText(para.trackType)
+  
   if para.trackType=="Static" then self.iconBlocker1:Show() else self.iconBlocker1:Hide() end
 
-  
-  UIDropDownMenu_Initialize(self.trackBy,self.trackBy.initialize)
+  self.trackBy:setButtonText(para.trackBy)
   
   if para.arg1 then self.spell:SetText(para.arg1) else self.spell:SetText("") end
   
@@ -2114,8 +2237,7 @@ local function setCBFActiveValues(self)
   --general
   do
   self.name:SetText(para.displayName)
-  
-  UIDropDownMenu_Initialize(self.trackType,self.trackType.initialize)
+  self.trackType:setButtonText(para.trackType)
   
     
   self.lFix:SetText(para.lFix or 10)
@@ -2125,10 +2247,8 @@ local function setCBFActiveValues(self)
   self.textureAlpha:SetText(para.textureA or 1)
   self.xPos:SetText(para.xPos)
   self.yPos:SetText(para.yPos)
-  
-  UIDropDownMenu_Initialize(self.anchor,self.anchor.initialize)
-  
-  UIDropDownMenu_Initialize(self.grow,self.grow.initialize)
+  self.anchor:setButtonText(para.anchor)
+  self.grow:setButtonText(para.grow)
 
   end
   
@@ -2436,31 +2556,20 @@ hCB.texture:SetAllPoints()
 hCB.texture:SetColorTexture(0.07,0.07,0.07,0.4)
 
 
-createDD(fD,"hDir",fD)
+createNewDD(fD,"hDir",fD,50)
 fD.hDir.text:SetPoint("RIGHT",fD.hColor.text,"RIGHT",0,-ySpacing)
---fD.hDir:SetText(eF.para.units.healthGrow) --SETTING INIT VAL
 fD.hDir.text:SetText("Orientation:")
-fD.hDir.initialize=function(frame,level,menuList)
- local info = UIDropDownMenu_CreateInfo()
- for i=1,#eF.orientations do
-   local v=eF.orientations[i]
-   info.text, info.checked, info.arg1 = v,false,v
-   info.func=function(self,arg1,arg2,checked)
-     eF.para.units.healthGrow=arg1
-     eF.units.healthGrow=arg1
-     eF.units:updateAllParas()
-     UIDropDownMenu_SetText(frame,v)
-     UIDropDownMenu_SetSelectedName(frame,v)
-     CloseDropDownMenus()
-   end
-   UIDropDownMenu_AddButton(info)
- end
- 
- UIDropDownMenu_SetSelectedName(frame,eF.para.units.healthGrow)
- UIDropDownMenu_SetText(frame,eF.para.units.healthGrow)
+fD.hDir:SetPoint("LEFT",fD.hDir.text,"BOTTOMRIGHT",-12,10) --no clue why but this one was shifted
 
+local lf=function(self)
+     eF.para.units.healthGrow=self.arg
+     eF.units:updateAllParas()
 end
-UIDropDownMenu_SetWidth(fD.hDir,55)
+
+for i=1,#eF.orientations do
+  local v=eF.orientations[i]
+  fD.hDir:addButton(v,lf,v)
+end
 
 createNumberEB(fD,"gradStart",fD)
 fD.gradStart.text:SetPoint("RIGHT",fD.hDir.text,"RIGHT",0,-ySpacing)
@@ -2590,52 +2699,35 @@ eF.para.units.textA=a; eF.units.textA=a; eF.units:updateAllParas()
 end)
 
 
-createDD(fD,"nFont",fD)
+createNewDD(fD,"nFont",fD,50)
 fD.nFont.text:SetPoint("RIGHT",fD.nAlpha.text,"RIGHT",0,-ySpacing)
 fD.nFont.text:SetText("Font:")
-fD.nFont.initialize=function(frame,level,menuList)
- local info = UIDropDownMenu_CreateInfo()
- for i=1,#eF.fonts do
-   local v=eF.fonts[i]
-   info.text, info.checked, info.arg1 = v,false,v
-   info.func=function(self,arg1,arg2,checked)
-     eF.para.units.textFont="Fonts\\"..arg1..".ttf"
-     eF.units.textFont="Fonts\\"..arg1..".ttf"
+
+local lf=function(self)
+     eF.para.units.textFont=self.arg
      eF.units:updateAllParas()
-     UIDropDownMenu_SetText(frame,v)
-     UIDropDownMenu_SetSelectedName(frame,v)
-     CloseDropDownMenus()
-     eF.units:updateAllParas()
-   end
-   
-   UIDropDownMenu_AddButton(info)
- end
- UIDropDownMenu_SetSelectedName(frame,eF.para.units.textFont)
- UIDropDownMenu_SetText(frame,eF.para.units.textFont)
 end
 
-createDD(fD,"nPos",fD)
+for i=1,#eF.fonts do
+  local v=eF.fonts[i]
+  local font="Fonts\\"..v..".ttf"
+  fD.nFont:addButton(v,lf,font)
+end
+
+
+createNewDD(fD,"nPos",fD,50)
 fD.nPos.text:SetPoint("RIGHT",fD.nFont.text,0,-ySpacing)
 fD.nPos.text:SetText("Position:")
-fD.nPos.initialize=function(frame,level,menuList)
- local info = UIDropDownMenu_CreateInfo()
- for i=1,#eF.positions do
-   local v=eF.positions[i]
-   info.text, info.checked, info.arg1 = v,false,v
-   info.func=function(self,arg1,arg2,checked)
-     eF.para.units.textPos=arg1
-     eF.units.textPos=arg1
+local lf=function(self)
+     eF.para.units.textPos=self.arg
      eF.units:updateAllParas()
-     UIDropDownMenu_SetText(frame,v)
-     UIDropDownMenu_SetSelectedName(frame,v)
-     CloseDropDownMenus()
-   end
-   UIDropDownMenu_AddButton(info)
-
- end
- UIDropDownMenu_SetSelectedName(frame,eF.para.units.textPos)
- UIDropDownMenu_SetText(frame,eF.para.units.textPos)
 end
+
+for i=1,#eF.positions do
+  local v=eF.positions[i]
+  fD.nPos:addButton(v,lf,v)
+end
+
 
 createNumberEB(fD,"textXOS",fD)
 fD.textXOS.text:SetPoint("RIGHT",fD.nPos.text,"RIGHT",0,-ySpacing)
@@ -2743,51 +2835,30 @@ tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
 tS:SetWidth(110)
 
-createDD(fD,"grow1",fD)
+createNewDD(fD,"grow1",fD,50)
 fD.grow1.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
 fD.grow1.text:SetText("Grows:")
-fD.grow1.initialize=function(frame,level,menuList)
- local info = UIDropDownMenu_CreateInfo()
- for i=1,#eF.orientations do
-   local v=eF.orientations[i]
-   info.text, info.checked, info.arg1 = v,false,v
-   info.func=function(self,arg1,arg2,checked)
-     eF.para.units.grow1=arg1
+local lf=function(self)
+     eF.para.units.grow1=self.arg
      eF.units:updateAllParas()
-     UIDropDownMenu_SetText(frame,v)
-     UIDropDownMenu_SetSelectedName(frame,v)
-     CloseDropDownMenus()
-     eF.units:updateAllParas()
-     eF.layout:update()
-   end
-   UIDropDownMenu_AddButton(info)
- end
-   UIDropDownMenu_SetSelectedName(frame,eF.para.units.grow1)
-   UIDropDownMenu_SetText(frame,eF.para.units.grow1)
 end
 
-createDD(fD,"grow2",fD)
+for i=1,#eF.orientations do
+  local v=eF.orientations[i]
+  fD.grow1:addButton(v,lf,v)
+end
+
+
+createNewDD(fD,"grow2",fD,50)
 fD.grow2.text:SetPoint("RIGHT",fD.grow1.text,"RIGHT",0,-ySpacing)
 fD.grow2.text:SetText("then:")
-fD.grow2.initialize=function(frame,level,menuList)
- local info = UIDropDownMenu_CreateInfo()
- for i=1,#eF.orientations do
-   local v=eF.orientations[i]
-   info.text, info.checked, info.arg1 = v,false,v
-   info.func=function(self,arg1,arg2,checked)
-     eF.para.units.grow2=arg1
+local lf=function(self)
+     eF.para.units.grow2=self.arg
      eF.units:updateAllParas()
-     UIDropDownMenu_SetText(frame,v)
-     UIDropDownMenu_SetSelectedName(frame,v)
-     CloseDropDownMenus()
-     eF.units:updateAllParas()
-     eF.layout:update()
-   end
-   UIDropDownMenu_AddButton(info)
-
- end
-   UIDropDownMenu_SetSelectedName(frame,eF.para.units.grow2)
-   UIDropDownMenu_SetText(frame,eF.para.units.grow2)
+end
+for i=1,#eF.orientations do
+  local v=eF.orientations[i]
+  fD.grow2:addButton(v,lf,v)
 end
 
 createNumberEB(fD,"spacing",fD)
@@ -3026,30 +3097,17 @@ hCB.texture:SetAllPoints()
 hCB.texture:SetColorTexture(0.07,0.07,0.07,0.4)
 
 
-createDD(fDLazy,"hDir",fDLazy)
+createNewDD(fDLazy,"hDir",fDLazy)
 fDLazy.hDir.text:SetPoint("RIGHT",fDLazy.hColor.text,"RIGHT",0,-ySpacing)
---fDLazy.hDir:SetText(eF.para.unitsGroup.healthGrow) --SETTING INIT VAL
 fDLazy.hDir.text:SetText("Orientation:")
-fDLazy.hDir.initialize=function(frame,level,menuList)
- local info = UIDropDownMenu_CreateInfo()
- for i=1,#eF.orientations do
-   local v=eF.orientations[i]
-   info.text, info.checked, info.arg1 = v,false,v
-   info.func=function(self,arg1,arg2,checked)
-     eF.para.unitsGroup.healthGrow=arg1
-     eF.units.healthGrow=arg1
-     eF.units:updateAllParas()
-     UIDropDownMenu_SetText(frame,v)
-     UIDropDownMenu_SetSelectedName(frame,v)
-     CloseDropDownMenus()
-   end
-   UIDropDownMenu_AddButton(info)
-
- end
-   UIDropDownMenu_SetSelectedName(frame,eF.para.unitsGroup.healthGrow)
-   UIDropDownMenu_SetText(frame,eF.para.unitsGroup.healthGrow)
+local lf=function(self)
+  eF.para.unitsGroup.healthGrow=self.arg
+  eF.units:updateAllParas()
 end
-UIDropDownMenu_SetWidth(fDLazy.hDir,55)
+for i=1,#eF.orientations do
+  local v=eF.orientations[i]
+  fDLazy.hDir:addButton(v,lf,v)
+end
 
 createNumberEB(fDLazy,"gradStart",fDLazy)
 fDLazy.gradStart.text:SetPoint("RIGHT",fDLazy.hDir.text,"RIGHT",0,-ySpacing)
@@ -3179,51 +3237,30 @@ eF.para.unitsGroup.textA=a; eF.units.textA=a; eF.units:updateAllParas()
 end)
 
 
-createDD(fDLazy,"nFont",fDLazy)
+createNewDD(fDLazy,"nFont",fDLazy)
 fDLazy.nFont.text:SetPoint("RIGHT",fDLazy.nAlpha.text,"RIGHT",0,-ySpacing)
 fDLazy.nFont.text:SetText("Font:")
-fDLazy.nFont.initialize=function(frame,level,menuList)
- local info = UIDropDownMenu_CreateInfo()
- for i=1,#eF.fonts do
-   local v=eF.fonts[i]
-   info.text, info.checked, info.arg1 = v,false,v
-   info.func=function(self,arg1,arg2,checked)
-     eF.para.unitsGroup.textFont="Fonts\\"..arg1..".ttf"
-     eF.units.textFont="Fonts\\"..arg1..".ttf"
-     eF.units:updateAllParas()
-     UIDropDownMenu_SetText(frame,v)
-     UIDropDownMenu_SetSelectedName(frame,v)
-     CloseDropDownMenus()
-     eF.units:updateAllParas()
-   end
-   UIDropDownMenu_AddButton(info)
-
- end
-   UIDropDownMenu_SetSelectedName(frame,eF.para.unitsGroup.textFont)
-   UIDropDownMenu_SetText(frame,eF.para.unitsGroup.textFont)
+local lf=function(self)
+  eF.para.unitsGroup.textFont=self.arg
+  eF.units:updateAllParas()
+end
+for i=1,#eF.fonts do
+  local v=eF.fonts[i]
+  local font="Fonts\\"..v..".ttf"
+  fDLazy.nFont:addButton(v,lf,font)
 end
 
-createDD(fDLazy,"nPos",fDLazy)
+
+createNewDD(fDLazy,"nPos",fDLazy)
 fDLazy.nPos.text:SetPoint("RIGHT",fDLazy.nFont.text,0,-ySpacing)
 fDLazy.nPos.text:SetText("Position:")
-fDLazy.nPos.initialize=function(frame,level,menuList)
- local info = UIDropDownMenu_CreateInfo()
- for i=1,#eF.positions do
-   local v=eF.positions[i]
-   info.text, info.checked, info.arg1 = v,false,v
-   info.func=function(self,arg1,arg2,checked)
-     eF.para.unitsGroup.textPos=arg1
-     eF.units.textPos=arg1
-     eF.units:updateAllParas()
-     UIDropDownMenu_SetText(frame,v)
-     UIDropDownMenu_SetSelectedName(frame,v)
-     CloseDropDownMenus()
-   end
-   UIDropDownMenu_AddButton(info)
-
- end
-    UIDropDownMenu_SetSelectedName(frame,eF.para.unitsGroup.textPos)
-   UIDropDownMenu_SetText(frame,eF.para.unitsGroup.textPos)
+local lf=function(self)
+  eF.para.unitsGroup.textPos=self.arg
+  eF.units:updateAllParas()
+end
+for i=1,#eF.positions do
+  local v=eF.positions[i]
+  fDLazy.nPos:addButton(v,lf,v)
 end
 
 createNumberEB(fDLazy,"textXOS",fDLazy)
@@ -3332,52 +3369,29 @@ tS:SetHeight(8)
 tS:SetTexture(titleSpacer)
 tS:SetWidth(110)
 
-createDD(fDLazy,"grow1",fDLazy)
+createNewDD(fDLazy,"grow1",fDLazy)
 fDLazy.grow1.text:SetPoint("TOPLEFT",tS,"TOPLEFT",25,-initSpacing)
 fDLazy.grow1.text:SetText("Grows:")
-fDLazy.grow1.initialize=function(frame,level,menuList)
- local info = UIDropDownMenu_CreateInfo()
- for i=1,#eF.orientations do
-   local v=eF.orientations[i]
-   info.text, info.checked, info.arg1 = v,false,v
-   info.func=function(self,arg1,arg2,checked)
-     eF.para.unitsGroup.grow1=arg1
-     eF.units:updateAllParas()
-     UIDropDownMenu_SetText(frame,v)
-     UIDropDownMenu_SetSelectedName(frame,v)
-     CloseDropDownMenus()
-     eF.units:updateAllParas()
-     eF.layout:update()
-   end
-   UIDropDownMenu_AddButton(info)
-
- end
-   UIDropDownMenu_SetSelectedName(frame,eF.para.unitsGroup.grow1)
-   UIDropDownMenu_SetText(frame,eF.para.unitsGroup.grow1)
+local lf=function(self)
+  eF.para.unitsGroup.grow1=self.arg
+  eF.units:updateAllParas()
+end
+for i=1,#eF.orientations do
+  local v=eF.orientations[i]
+  fDLazy.grow1:addButton(v,lf,v)
 end
 
-createDD(fDLazy,"grow2",fDLazy)
+
+createNewDD(fDLazy,"grow2",fDLazy)
 fDLazy.grow2.text:SetPoint("RIGHT",fDLazy.grow1.text,"RIGHT",0,-ySpacing)
 fDLazy.grow2.text:SetText("then:")
-fDLazy.grow2.initialize=function(frame,level,menuList)
- local info = UIDropDownMenu_CreateInfo()
- for i=1,#eF.orientations do
-   local v=eF.orientations[i]
-   info.text, info.checked, info.arg1 = v,false,v
-   info.func=function(self,arg1,arg2,checked)
-     eF.para.unitsGroup.grow2=arg1
-     eF.units:updateAllParas()
-     UIDropDownMenu_SetText(frame,v)
-     UIDropDownMenu_SetSelectedName(frame,v)
-     CloseDropDownMenus()
-     eF.units:updateAllParas()
-     eF.layout:update()
-   end
-   UIDropDownMenu_AddButton(info)
-
- end
-   UIDropDownMenu_SetSelectedName(frame,eF.para.unitsGroup.grow2)
-   UIDropDownMenu_SetText(frame,eF.para.unitsGroup.grow2)
+local lf=function(self)
+  eF.para.unitsGroup.grow2=self.arg
+  eF.units:updateAllParas()
+end
+for i=1,#eF.orientations do
+  local v=eF.orientations[i]
+  fDLazy.grow2:addButton(v,lf,v)
 end
 
 createNumberEB(fDLazy,"spacing",fDLazy)
@@ -3677,56 +3691,35 @@ do
   end
   end)
 
-  createDD(sff,"type",sff)
+  createNewDD(sff,"type",sff,80)
   sff.type.text:SetPoint("RIGHT",sff.name.text,"RIGHT",0,-ySpacing)
   sff.type.text:SetText("Type:")
-  sff.type.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst={"Blacklist","Whitelist"}
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       local rv
-       if arg1=="Blacklist" then rv="b" elseif arg1=="Whitelist" then rv="w" end
-       eF.activePara.type=rv
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesFamilyParas(eF.activeFamilyIndex)
-       
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.type)
-   UIDropDownMenu_SetText(frame,eF.activePara.type)
+  local lf=function(self)
+    eF.activePara.type=self.arg
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end
-  UIDropDownMenu_SetWidth(sff.type,80)
+  local lst={"Blacklist","Whitelist"}
+  for i=1,#lst do
+    local v=lst[i]
+    local rv
+    if v=="Blacklist" then rv="b" elseif v=="Whitelist" then rv="w" end
+    sff.type:addButton(v,lf,rv)
+  end
+  
 
-  createDD(sff,"trackType",sff)
+  createNewDD(sff,"trackType",sff)
   sff.trackType.text:SetPoint("RIGHT",sff.type.text,"RIGHT",0,-ySpacing)
   sff.trackType.text:SetText("Tracks:")
-  sff.trackType.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst={"Buffs","Debuffs"}
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.trackType=v
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesFamilyParas(eF.activeFamilyIndex)
-
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.trackType)
-   UIDropDownMenu_SetText(frame,eF.activePara.trackType.value)
+  local lf=function(self)
+    eF.activePara.trackType=self.arg
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end
-  UIDropDownMenu_SetWidth(sff.trackType,80)
-  
+  local lst={"Buffs","Debuffs"}
+  for i=1,#lst do
+    local v=lst[i]
+    sff.trackType:addButton(v,lf,v)
+  end
+ 
   createCB(sff,"ignorePermanents",sff)
   sff.ignorePermanents.text:SetPoint("RIGHT",sff.trackType.text,"RIGHT",0,-ySpacing)
   sff.ignorePermanents.text:SetText("Ignore permanents:")
@@ -3795,35 +3788,24 @@ do
   end)
   --NYI: update without reload
 
-  createDD(sff,"grow",sff)
+  createNewDD(sff,"grow",sff)
   sff.grow.text:SetPoint("RIGHT",sff.count.text,"RIGHT",0,-ySpacing)
   sff.grow.text:SetText("Grows:")
-  sff.grow.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst=eF.orientations
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.grow=v
-       
-       if v=="right" then eF.activePara.growAnchor="LEFT"
-       elseif v=="left" then eF.activePara.growAnchor="RIGHT"
-       elseif v=="up" then eF.activePara.growAnchor="BOTTOM"
-       elseif v=="down" then eF.activePara.growAnchor="TOP" end
-       
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesFamilyLayout(eF.activeFamilyIndex)
-
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-  UIDropDownMenu_SetSelectedName(frame,eF.activePara.grow)
-  UIDropDownMenu_SetText(frame,eF.activePara.grow)
+  local lf=function(self)
+    local v=self.arg
+    eF.activePara.grow=v    
+    if v=="right" then eF.activePara.growAnchor="LEFT"
+    elseif v=="left" then eF.activePara.growAnchor="RIGHT"
+    elseif v=="up" then eF.activePara.growAnchor="BOTTOM"
+    elseif v=="down" then eF.activePara.growAnchor="TOP" end
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end
-  UIDropDownMenu_SetWidth(sff.grow,60)
+  local lst=eF.orientations
+  for i=1,#lst do
+    local v=lst[i]
+    sff.grow:addButton(v,lf,v)
+  end
+
 
   createNumberEB(sff,"width",sff)
   sff.width.text:SetPoint("RIGHT",sff.grow.text,"RIGHT",0,-ySpacing)
@@ -3915,30 +3897,19 @@ do
   updateAllFramesFamilyLayout(eF.activeFamilyIndex)
   end)
 
-  createDD(sff,"anchor",sff)
+  createNewDD(sff,"anchor",sff)
   sff.anchor.text:SetPoint("RIGHT",sff.yPos.text,"RIGHT",0,-ySpacing)
   sff.anchor.text:SetText("Position:")
-  sff.anchor.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst=eF.positions
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.anchor=v
-       eF.activePara.anchorTo=v
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus() 
-       updateAllFramesFamilyLayout(eF.activeFamilyIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.anchor)
-   UIDropDownMenu_SetText(frame,eF.activePara.anchorTo)
+  local lf=function(self)
+    eF.activePara.anchor=self.arg    
+    eF.activePara.anchorTo=self.arg    
+    updateAllFramesFamilyLayout(eF.activeFamilyIndex)
   end
-  UIDropDownMenu_SetWidth(sff.anchor,60)
+  local lst=eF.positions
+  for i=1,#lst do
+    local v=lst[i]
+    sff.anchor:addButton(v,lf,v)
+  end
 
   end--end of position settings
 
@@ -4144,30 +4115,19 @@ do
   end)
   --NYI not hiding border
   
-  createDD(sff,"borderType",sff)
+  createNewDD(sff,"borderType",sff,60)
   sff.borderType.text:SetPoint("RIGHT",sff.hasBorder.text,"RIGHT",0,-ySpacing)
   sff.borderType.text:SetText("Border type:")
-  sff.borderType.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst={"debuffColor"}
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.borderType=v
-
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus() 
-       updateAllFramesFamilyParas(eF.activeFamilyIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.borderType)
-   UIDropDownMenu_SetText(frame,eF.activePara.borderType)
+  local lf=function(self)
+    eF.activePara.borderType=self.arg    
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end
-  UIDropDownMenu_SetWidth(sff.borderType,60)
-
+  local lst={"debuffColor"}
+  for i=1,#lst do
+    local v=lst[i]
+    sff.borderType:addButton(v,lf,v)
+  end
+  
 
   sff.iconBlocker4=CreateFrame("Button",nil,sff)
   local iB4=sff.iconBlocker4
@@ -4208,29 +4168,18 @@ do
     updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end)
   
-  createDD(sff,"textType1",sff)
+  createNewDD(sff,"textType1",sff,60)
   sff.textType1.text:SetPoint("RIGHT",sff.hasText1.text,"RIGHT",0,-ySpacing)
   sff.textType1.text:SetText("Text type:")
-  sff.textType1.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst={"Time left","Stacks"}
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.textType=v
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus() 
-       updateAllFramesFamilyParas(eF.activeFamilyIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.textType)
-   UIDropDownMenu_SetText(frame,eF.activePara.textType)
+  local lf=function(self)
+    eF.activePara.textType=self.arg    
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end
-  UIDropDownMenu_SetWidth(sff.textType1,60)
-
+  local lst={"Time left","Stacks"}
+  for i=1,#lst do
+    local v=lst[i]
+    sff.textType1:addButton(v,lf,v)
+  end
   
   createCS(sff,"textColor1",sff)
   sff.textColor1.text:SetPoint("RIGHT",sff.textType1.text,"RIGHT",0,-ySpacing)
@@ -4285,51 +4234,33 @@ do
   end)
 
 
-  createDD(sff,"textFont1",sff)
+  createNewDD(sff,"textFont1",sff)
   sff.textFont1.text:SetPoint("RIGHT",sff.textA1.text,"RIGHT",0,-ySpacing)
   sff.textFont1.text:SetText("Font:")
-  sff.textFont1.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   for i=1,#eF.fonts do
-     local v=eF.fonts[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.textFont="Fonts\\"..arg1..".ttf"
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesFamilyParas(eF.activeFamilyIndex)
-     end
-     
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.textFont)
-   UIDropDownMenu_SetText(frame,eF.activePara.textFont)
+  local lf=function(self)
+    eF.activePara.textFont=self.arg    
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end
+  local lst=eF.fonts
+  for i=1,#lst do
+    local v=lst[i]
+    local font="Fonts\\"..v..".ttf"
+    sff.textFont1:addButton(v,lf,font)
   end
 
-  createDD(sff,"textAnchor1",sff)
+  createNewDD(sff,"textAnchor1",sff)
   sff.textAnchor1.text:SetPoint("RIGHT",sff.textFont1.text,"RIGHT",0,-ySpacing)
   sff.textAnchor1.text:SetText("Position:")
-  sff.textAnchor1.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   for i=1,#eF.positions do
-     local v=eF.positions[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.textAnchor=arg1
-       eF.activePara.textAnchorTo=arg1
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesFamilyParas(eF.activeFamilyIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   
-  UIDropDownMenu_SetSelectedName(frame,eF.activePara.textAnchor)
-  UIDropDownMenu_SetText(frame,eF.activePara.textAnchor)
+  local lf=function(self)
+    eF.activePara.textAnchor=self.arg    
+    eF.activePara.textAnchorTo=self.arg    
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end
-
+  local lst=eF.positions
+  for i=1,#lst do
+    local v=lst[i]
+    sff.textAnchor1:addButton(v,lf,v)
+  end
   
   createNumberEB(sff,"textXOS1",sff)
   sff.textXOS1.text:SetPoint("RIGHT",sff.textAnchor1.text,"RIGHT",0,-ySpacing)
@@ -4401,29 +4332,19 @@ do
     updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end)
   
-  createDD(sff,"text2Type",sff)
+  createNewDD(sff,"text2Type",sff,60)
   sff.text2Type.text:SetPoint("RIGHT",sff.hasText2.text,"RIGHT",0,-ySpacing)
   sff.text2Type.text:SetText("Text type:")
-  sff.text2Type.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst={"Time left","Stacks"}
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.text2Type=v
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus() 
-       updateAllFramesFamilyParas(eF.activeFamilyIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   
-  UIDropDownMenu_SetSelectedName(frame,eF.activePara.text2Type)
-  UIDropDownMenu_SetText(frame,eF.activePara.text2Type)
+  local lf=function(self)
+    eF.activePara.text2Type=self.arg    
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end
-  UIDropDownMenu_SetWidth(sff.text2Type,60)
+  local lst={"Time left","Stacks"}
+  for i=1,#lst do
+    local v=lst[i]
+    sff.text2Type:addButton(v,lf,v)
+  end
+
 
   
   createCS(sff,"text2Color",sff)
@@ -4479,48 +4400,34 @@ do
   end)
 
 
-  createDD(sff,"text2Font",sff)
+  createNewDD(sff,"text2Font",sff)
   sff.text2Font.text:SetPoint("RIGHT",sff.text2A.text,"RIGHT",0,-ySpacing)
   sff.text2Font.text:SetText("Font:")
-  sff.text2Font.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   for i=1,#eF.fonts do
-     local v=eF.fonts[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.text2Font="Fonts\\"..arg1..".ttf"
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesFamilyParas(eF.activeFamilyIndex)
-     end
-     
-     UIDropDownMenu_AddButton(info)
-   end
-    UIDropDownMenu_SetSelectedName(frame,eF.activePara.text2Font)
-   UIDropDownMenu_SetText(frame,eF.activePara.text2Font)
+  local lf=function(self)
+    eF.activePara.text2Font=self.arg    
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end
-
-  createDD(sff,"text2Anchor",sff)
+  local lst=eF.fonts
+  for i=1,#lst do
+    local v=lst[i]
+    local font="Fonts\\"..v..".ttf"
+    sff.text2Font:addButton(v,lf,font)
+  end
+ 
+  
+  createNewDD(sff,"text2Anchor",sff)
   sff.text2Anchor.text:SetPoint("RIGHT",sff.text2Font.text,"RIGHT",0,-ySpacing)
   sff.text2Anchor.text:SetText("Position:")
-  sff.text2Anchor.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   for i=1,#eF.positions do
-     local v=eF.positions[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.text2Anchor=arg1
-       eF.activePara.text2AnchorTo=arg1
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesFamilyParas(eF.activeFamilyIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.text2Anchor)
-   UIDropDownMenu_SetText(frame,eF.activePara.text2Anchor)
+  
+  local lf=function(self)
+    eF.activePara.text2Anchor=self.arg   
+    eF.activePara.text2AnchorTo=self.arg    
+    updateAllFramesFamilyParas(eF.activeFamilyIndex)
+  end
+  local lst=eF.positions
+  for i=1,#lst do
+    local v=lst[i]
+    sff.text2Anchor:addButton(v,lf,v)
   end
 
   
@@ -5253,53 +5160,35 @@ do
   end
   end)
 
-  createDD(cif,"trackType",cif)
+  createNewDD(cif,"trackType",cif,80)
   cif.trackType.text:SetPoint("RIGHT",cif.name.text,"RIGHT",0,-ySpacing)
   cif.trackType.text:SetText("Tracks:")
-  cif.trackType.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst={"Buffs","Debuffs","Static"}
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.trackType=v
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-       if v=="Static" then cif.iconBlocker6:Show() else cif.iconBlocker6:Hide() end
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-    UIDropDownMenu_SetSelectedName(frame,eF.activePara.trackType)
-   UIDropDownMenu_SetText(frame,eF.activePara.trackType)
-  end
-  UIDropDownMenu_SetWidth(cif.trackType,80)
   
-  createDD(cif,"trackBy",cif)
+  local lf=function(self)
+    eF.activePara.trackType=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+    if self.arg=="Static" then cif.iconBlocker6:Show() else cif.iconBlocker6:Hide() end
+  end
+  local lst={"Buffs","Debuffs","Static"}
+  for i=1,#lst do
+    local v=lst[i]
+    cif.trackType:addButton(v,lf,v)
+  end
+  
+
+  
+  createNewDD(cif,"trackBy",cif,80)
   cif.trackBy.text:SetPoint("RIGHT",cif.trackType.text,"RIGHT",0,-ySpacing)
   cif.trackBy.text:SetText("Track by:")
-  cif.trackBy.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst={"Name","Spell ID"}
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.trackBy=v
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.trackBy)
-   UIDropDownMenu_SetText(frame,eF.activePara.trackBy)
+  local lf=function(self)
+    eF.activePara.trackBy=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end
-  UIDropDownMenu_SetWidth(cif.trackType,80)
+  local lst={"Name","Spell ID"}
+  for i=1,#lst do
+    local v=lst[i]
+    cif.trackBy:addButton(v,lf,v)
+  end
 
   
   createNumberEB(cif,"spell",cif)
@@ -5413,29 +5302,21 @@ do
   updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
 
-  createDD(cif,"anchor",cif)
+  createNewDD(cif,"anchor",cif,60)
   cif.anchor.text:SetPoint("RIGHT",cif.yPos.text,"RIGHT",0,-ySpacing)
   cif.anchor.text:SetText("Position:")
-  cif.anchor.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst=eF.positions
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.anchor=v
-       eF.activePara.anchorTo=v
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus() 
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.anchor)
-   UIDropDownMenu_SetText(frame,eF.activePara.anchor)
+  
+  local lf=function(self)
+    eF.activePara.anchor=self.arg   
+    eF.activePara.anchorTo=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end
-  UIDropDownMenu_SetWidth(cif.anchor,60)
+  local lst=eF.positions
+  for i=1,#lst do
+    local v=lst[i]
+    cif.anchor:addButton(v,lf,v)
+  end
+
 
   end--end of layout settings
 
@@ -5621,30 +5502,19 @@ do
   end)
   --NYI not hiding border
   
-  createDD(cif,"borderType",cif)
+  createNewDD(cif,"borderType",cif,60)
   cif.borderType.text:SetPoint("RIGHT",cif.hasBorder.text,"RIGHT",0,-ySpacing)
   cif.borderType.text:SetText("Border type:")
-  cif.borderType.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst={"debuffColor"}
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.borderType=v
-
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus() 
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.borderType)
-   UIDropDownMenu_SetText(frame,eF.activePara.borderType)
+  
+  local lf=function(self)
+    eF.activePara.borderType=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end
-  UIDropDownMenu_SetWidth(cif.borderType,60)
-
+  local lst={"debuffColor"}
+  for i=1,#lst do
+    local v=lst[i]
+    cif.borderType:addButton(v,lf,v)
+  end
 
   cif.iconBlocker4=CreateFrame("Button",nil,cif)
   local iB4=cif.iconBlocker4
@@ -5686,30 +5556,21 @@ do
   end)
   --NYI not hiding border
   
-  createDD(cif,"textType1",cif)
+  createNewDD(cif,"textType1",cif,60)
   cif.textType1.text:SetPoint("RIGHT",cif.hasText1.text,"RIGHT",0,-ySpacing)
   cif.textType1.text:SetText("Text type:")
-  cif.textType1.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst={"Time left","Stacks"}
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.textType=v
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus() 
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.textType)
-   UIDropDownMenu_SetText(frame,eF.activePara.textType)
-  end
-  UIDropDownMenu_SetWidth(cif.textType1,60)
-
   
+  local lf=function(self)
+    eF.activePara.textType1=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end
+  local lst={"Time left","Stacks"}
+  for i=1,#lst do
+    local v=lst[i]
+    cif.textType1:addButton(v,lf,v)
+  end
+  
+
   createCS(cif,"textColor1",cif)
   cif.textColor1.text:SetPoint("RIGHT",cif.textType1.text,"RIGHT",0,-ySpacing)
   cif.textColor1.text:SetText("Color:")
@@ -5763,48 +5624,33 @@ do
   end)
 
 
-  createDD(cif,"textFont1",cif)
+  createNewDD(cif,"textFont1",cif)
   cif.textFont1.text:SetPoint("RIGHT",cif.textA1.text,"RIGHT",0,-ySpacing)
   cif.textFont1.text:SetText("Font:")
-  cif.textFont1.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   for i=1,#eF.fonts do
-     local v=eF.fonts[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.textFont="Fonts\\"..arg1..".ttf"
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-     end
-     
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.textFont)
-   UIDropDownMenu_SetText(frame,eF.activePara.textFont)
+  local lf=function(self)
+    eF.activePara.textFont=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end
+  local lst={"Name","Spell ID"}
+  for i=1,#lst do
+    local v=lst[i]
+    local font="Fonts\\"..v..".ttf"
+    cif.textFont1:addButton(v,lf,font)
   end
 
-  createDD(cif,"textAnchor1",cif)
+  createNewDD(cif,"textAnchor1",cif)
   cif.textAnchor1.text:SetPoint("RIGHT",cif.textFont1.text,"RIGHT",0,-ySpacing)
   cif.textAnchor1.text:SetText("Position:")
-  cif.textAnchor1.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   for i=1,#eF.positions do
-     local v=eF.positions[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.textAnchor=arg1
-       eF.activePara.textAnchorTo=arg1
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.textAnchor)
-   UIDropDownMenu_SetText(frame,eF.activePara.textAnchor)
+  
+  local lf=function(self)
+    eF.activePara.textAnchor=self.arg
+    eF.activePara.textAnchorTo=self.arg
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end
+  local lst=eF.positions
+  for i=1,#lst do
+    local v=lst[i]
+    cif.textAnchor1:addButton(v,lf,v)
   end
 
   
@@ -5879,28 +5725,19 @@ do
   end)
   --NYI not hiding border
   
-  createDD(cif,"text2Type",cif)
+  createNewDD(cif,"text2Type",cif,60)
   cif.text2Type.text:SetPoint("RIGHT",cif.hasText2.text,"RIGHT",0,-ySpacing)
   cif.text2Type.text:SetText("Text type:")
-  cif.text2Type.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst={"Time left","Stacks"}
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.text2Type=v
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus() 
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.text2Type)
-   UIDropDownMenu_SetText(frame,eF.activePara.text2Type)
- end
-  UIDropDownMenu_SetWidth(cif.text2Type,60)
+  
+  local lf=function(self)
+    eF.activePara.text2Type=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end
+  local lst={"Time left","Stacks"}
+  for i=1,#lst do
+    local v=lst[i]
+    cif.text2Type:addButton(v,lf,v)
+  end
 
   
   createCS(cif,"text2Color",cif)
@@ -5956,50 +5793,35 @@ do
   end)
 
 
-  createDD(cif,"text2Font",cif)
+  createNewDD(cif,"text2Font",cif)
   cif.text2Font.text:SetPoint("RIGHT",cif.text2A.text,"RIGHT",0,-ySpacing)
   cif.text2Font.text:SetText("Font:")
-  cif.text2Font.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   for i=1,#eF.fonts do
-     local v=eF.fonts[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.text2Font="Fonts\\"..arg1..".ttf"
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-     end
-     
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.text2Font)
-   UIDropDownMenu_SetText(frame,eF.activePara.text2Font)
+  
+  local lf=function(self)
+    eF.activePara.text2Font=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end
-
-  createDD(cif,"text2Anchor",cif)
+  local lst=eF.fonts
+  for i=1,#lst do
+    local v=lst[i]
+    local font="Fonts\\"..v..".ttf"
+    cif.text2Font:addButton(v,lf,font)
+  end
+  
+  createNewDD(cif,"text2Anchor",cif)
   cif.text2Anchor.text:SetPoint("RIGHT",cif.text2Font.text,"RIGHT",0,-ySpacing)
   cif.text2Anchor.text:SetText("Position:")
-  cif.text2Anchor.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   for i=1,#eF.positions do
-     local v=eF.positions[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.text2Anchor=arg1
-       eF.activePara.text2AnchorTo=arg1
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.text2Anchor)
-   UIDropDownMenu_SetText(frame,eF.activePara.text2Anchor)
+  
+  local lf=function(self)
+    eF.activePara.text2Anchor=self.arg   
+    eF.activePara.text2AnchorTo=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end
-
+  local lst=eF.positions
+  for i=1,#lst do
+    local v=lst[i]
+    cif.text2Anchor:addButton(v,lf,v)
+  end 
   
   createNumberEB(cif,"text2XOS",cif)
   cif.text2XOS.text:SetPoint("RIGHT",cif.text2Anchor.text,"RIGHT",0,-ySpacing)
@@ -6120,28 +5942,18 @@ do
   end
   end)
 
-  createDD(cbf,"trackType",cbf)
+  createNewDD(cbf,"trackType",cbf,80)
   cbf.trackType.text:SetPoint("RIGHT",cbf.name.text,"RIGHT",0,-ySpacing)
   cbf.trackType.text:SetText("Tracks:")
-  cbf.trackType.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst={"power"}
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.trackType=v
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.trackType)
-   UIDropDownMenu_SetText(frame,eF.activePara.trackType)
+  local lf=function(self)
+    eF.activePara.trackType=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end
-  UIDropDownMenu_SetWidth(cbf.trackType,80)
+  local lst={"Name","Spell ID"}
+  for i=1,#lst do
+    local v=lst[i]
+    cbf.trackType:addButton(v,lf,v)
+  end
   
   createNumberEB(cbf,"lFix",cbf)
   cbf.lFix.text:SetPoint("RIGHT",cbf.trackType.text,"RIGHT",0,-ySpacing)
@@ -6236,52 +6048,36 @@ do
   updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end)
 
-  createDD(cbf,"anchor",cbf)
+  createNewDD(cbf,"anchor",cbf,60)
   cbf.anchor.text:SetPoint("RIGHT",cbf.yPos.text,"RIGHT",0,-ySpacing)
   cbf.anchor.text:SetText("Position:")
-  cbf.anchor.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst=eF.positions
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.anchor=v
-       eF.activePara.anchorTo=v
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus() 
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.anchor)
-   UIDropDownMenu_SetText(frame,eF.activePara.anchor)
-  end
-  UIDropDownMenu_SetWidth(cbf.anchor,60)
   
-  createDD(cbf,"grow",cbf)
+  local lf=function(self)
+    eF.activePara.anchor=self.arg   
+    eF.activePara.anchorTo=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end
+  local lst=eF.positions
+  for i=1,#lst do
+    local v=lst[i]
+    cbf.anchor:addButton(v,lf,v)
+  end
+
+  
+  createNewDD(cbf,"grow",cbf,60)
   cbf.grow.text:SetPoint("RIGHT",cbf.anchor.text,"RIGHT",0,-ySpacing)
   cbf.grow.text:SetText("Grows:")
-  cbf.grow.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst=eF.orientations
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.grow=v
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.grow)
-   UIDropDownMenu_SetText(frame,eF.activePara.grow)
+  
+  local lf=function(self)
+    eF.activePara.grow=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end
-  UIDropDownMenu_SetWidth(cbf.grow,60)
+  local lst=eF.orientations
+  for i=1,#lst do
+    local v=lst[i]
+    cbf.grow:addButton(v,lf,v)
+  end
+
   
   end--end of general settings
   
@@ -6363,53 +6159,37 @@ do
   end
   end)
 
-  createDD(cbof,"trackType",cbof)
+  createNewDD(cbof,"trackType",cbof,80)
   cbof.trackType.text:SetPoint("RIGHT",cbof.name.text,"RIGHT",0,-ySpacing)
   cbof.trackType.text:SetText("Tracks:")
-  cbof.trackType.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst={"Buffs","Debuffs","Static"}
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.trackType=v
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-       if v=="Static" then cbof.iconBlocker1:Show() else cbof.iconBlocker1:Hide() end
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.trackType)
-   UIDropDownMenu_SetText(frame,eF.activePara.trackType)
-  end
-  UIDropDownMenu_SetWidth(cbof.trackType,80)
   
-  createDD(cbof,"trackBy",cbof)
+  local lf=function(self)
+    eF.activePara.trackType=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+    if self.arg=="Static" then cbof.iconBlocker1:Show() else cbof.iconBlocker1:Hide() end
+
+  end
+  local lst={"Buffs","Debuffs","Static"}
+  for i=1,#lst do
+    local v=lst[i]
+    cbof.trackType:addButton(v,lf,v)
+  end
+
+  
+  createNewDD(cbof,"trackBy",cbof,80)
   cbof.trackBy.text:SetPoint("RIGHT",cbof.trackType.text,"RIGHT",0,-ySpacing)
   cbof.trackBy.text:SetText("Track by:")
-  cbof.trackBy.initialize=function(frame,level,menuList)
-   local info = UIDropDownMenu_CreateInfo()
-   local lst={"Name","Spell ID"}
-   for i=1,#lst do
-     local v=lst[i]
-     info.text, info.checked, info.arg1 = v,false,v
-     info.func=function(self,arg1,arg2,checked)
-       eF.activePara.trackBy=v
-       UIDropDownMenu_SetText(frame,v)
-       UIDropDownMenu_SetSelectedName(frame,v)
-       CloseDropDownMenus()
-       updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
-
-     end
-     UIDropDownMenu_AddButton(info)
-   end
-   UIDropDownMenu_SetSelectedName(frame,eF.activePara.trackBy)
-   UIDropDownMenu_SetText(frame,eF.activePara.trackBy)
+  
+  local lf=function(self)
+    eF.activePara.trackBy=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end
-  UIDropDownMenu_SetWidth(cbof.trackType,80)
+  local lst={"Name","Spell ID"}
+  for i=1,#lst do
+    local v=lst[i]
+    cbof.trackBy:addButton(v,lf,v)
+  end
+
   
   createNumberEB(cbof,"spell",cbof)
   cbof.spell.text:SetPoint("RIGHT",cbof.trackBy.text,"RIGHT",0,-ySpacing)
