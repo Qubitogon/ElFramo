@@ -221,7 +221,13 @@ local function unitEventHandler(self,event)
     elseif not connected then self.offlineFrame:Show()
     end
     
-  end 
+  elseif event=="UNIT_HEAL_ABSORB_AMOUNT_CHANGED" then
+    local c=self.onHAbsorbList
+    for j=1,#c do
+      local v=c[j]
+      v[1](v[2])
+    end
+  end
   
 end
 eF.rep.unitEventHandler=unitEventHandler
@@ -379,9 +385,9 @@ local function createUnitFrame(self,unit)
   self[unit].onDebuffList={}
   self[unit].onPowerList={}
   self[unit].onPostAuraList={}
+  self[unit].onHAbsorbList={}
   
-  
-  self[unit].events={"UNIT_HEALTH_FREQUENT","UNIT_MAXHEALTH","UNIT_CONNECTION","UNIT_FACTION","UNIT_AURA","UNIT_POWER_UPDATE","UNIT_FLAGS"}
+  self[unit].events={"UNIT_HEALTH_FREQUENT","UNIT_MAXHEALTH","UNIT_CONNECTION","UNIT_FACTION","UNIT_AURA","UNIT_POWER_UPDATE","UNIT_FLAGS","UNIT_HEAL_ABSORB_AMOUNT_CHANGED"}
   for i=1,#self[unit].events do self[unit]:RegisterUnitEvent(self[unit].events[i],unit) end
   self[unit]:SetScript("OnEvent",self[unit].eventHandler)
   
@@ -646,6 +652,7 @@ local function unitLoad(self)
   self.onDebuffList={}
   self.onPowerList={}
   self.onPostAuraList={}
+  self.onHAbsorbList={}
   for j=1,nj do 
     if self[j].smart then 
       if checkElementLoad(self[j],unitRole,unitClass) then
@@ -655,6 +662,7 @@ local function unitLoad(self)
         local onPower=self[j].onPowerList
         local onUpdate=self[j].onUpdateList
         local onPostAura=self[j].onPostAuraList
+        local onHAbsorb=self[j].onHAbsorbList
         
         for l=1,#onAura do
           insert(self.onAuraList,onAura[l])
@@ -676,6 +684,9 @@ local function unitLoad(self)
           insert(self.onPostAuraList,onPostAura[l])
         end
         
+        for l=1,#onHAbsorb do
+          insert(self.onHAbsorbList,onHAbsorb[l])
+        end
         
       end --end of if self[j]:checkLoad
       
@@ -689,6 +700,7 @@ local function unitLoad(self)
           local onPower=self[j][k].onPowerList
           local onUpdate=self[j][k].onUpdateList
           local onPostAura=self[j][k].onPostAuraList
+          local onHAbsorb=self[j][k].onHAbsorbList
           
           if self[j][k].static then self[j][k]:enable() end
           
@@ -712,6 +724,10 @@ local function unitLoad(self)
             insert(self.onPostAuraList,onPostAura[l])
           end
               
+          for l=1,#onHAbsorb do
+            insert(self.onHAbsorbList,onHAbsorb[l])
+          end
+              
         else--else of if selfjk.checkLoad
           if self[j][k].static then self[j][k]:disable() end
         end
@@ -721,7 +737,9 @@ local function unitLoad(self)
     end--end of if smart else 
     
   end--end of for j=1,nj
- 
+      
+  self:eventHandler("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
+  self:eventHandler("UNIT_POWER_UPDATE")
 end
 eF.rep.unitLoad=unitLoad
 

@@ -10,7 +10,6 @@ eF.fonts={"FRIZQT__","ARIALN","skurri","MORPHEUS"}
 eF.OOCActions={layoutUpdate=false,groupUpdate=false}
 eF.info={}
 eF.info.playerClass=UnitClass("player")
-
 eF.characterframes={
                     "Interface\\CHARACTERFRAME\\TemporaryPortrait-Vehicle-Organic",
                     "Interface\\CHARACTERFRAME\\TEMPORARYPORTRAIT-PET",
@@ -27,12 +26,12 @@ eF.characterframes={
                     "Interface\\CHARACTERFRAME\\TEMPORARYPORTRAIT-MALE-DWARF",
 
                     }
-
 for i=1,40 do
   local s="raid"..tostring(i)
   table.insert(eF.raidLoop,s)
 end
 
+_eFGlobal=eF
 
 function MakeMovable(frame)
   frame:SetMovable(true)

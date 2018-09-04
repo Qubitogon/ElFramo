@@ -1,8 +1,5 @@
 local _,eF=...
 
-eFGlob=eF
-
-
 local function layoutEventHandler(self,event,...)
   local ic=InCombatLockdown()
   if ic then eF.OOCActions.layoutUpdate=true else self:update() end

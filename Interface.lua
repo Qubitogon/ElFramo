@@ -351,7 +351,8 @@ local function updateAllFramesChildParas(j,k)
     if i<41 then frame=eF.units[eF.raidLoop[i]] else frame=eF.units[eF.partyLoop[i-40]] end
     frame:applyChildParas(j,k)
     frame:checkLoad()
-    frame:eventHandler("UNIT_AURA")
+    frame:eventHandler("UNIT_AURA")  
+    
   end--end of for i=1,45
 end
 
@@ -5949,7 +5950,7 @@ do
     eF.activePara.trackType=self.arg   
     updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end
-  local lst={"Name","Spell ID"}
+  local lst={"power","heal absorb"}
   for i=1,#lst do
     local v=lst[i]
     cbf.trackType:addButton(v,lf,v)

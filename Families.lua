@@ -267,6 +267,12 @@ local function statusBarPowerUpdate(self)
 end
 eF.rep.statusBarPowerUpdate=statusBarPowerUpdate
 
+local function statusBarHAbsorbUpdate(self)
+  local unit=self.id
+  self:SetValue(UnitGetTotalHealAbsorbs(unit)/UnitHealthMax(unit))
+end
+eF.rep.statusBarHAbsorbUpdate=statusBarHAbsorbUpdate
+
 local function createFamilyFrame(self,j)
   local insert=table.insert
   if self[j] then self[j]=nil end
@@ -296,6 +302,7 @@ local function createFamilyFrame(self,j)
     f.onUpdateList={}
     f.onPowerList={}
     f.onPostAuraList={}
+    f.onHAbsorbList={}
         
     if f.para.loadAlways then f.loadAlways=true 
     else 
@@ -448,6 +455,7 @@ local function applyFamilyParas(self,j)
     f.onDebuffList={}
     f.onPowerList={}
     f.onPostAuraList={}
+    f.onHAbsorbList={}
 
     if f.para.type=="b" then 
       if f.para.trackType=="Buffs" then insert(f.onBuffList,{eF.rep.blacklistFamilyAdopt,f})  
@@ -592,6 +600,7 @@ function applyChildParas(self,j,k)
   c.onDebuffList={}
   c.onPowerList={}
   c.onUpdateList={}
+  c.onHAbsorbList={}
 
   if c.para.type=="icon" then
     
@@ -737,6 +746,11 @@ function applyChildParas(self,j,k)
       c.id=self.id
       c.static=true
       c:Show()
+    elseif c.para.trackType=="heal absorb" then
+      insert(c.onHAbsorbList,{eF.rep.statusBarHAbsorbUpdate,c})
+      c.id=self.id
+      c.static=true
+      c:Show()        
     end
     
     c:SetSize(0,0)
@@ -770,7 +784,7 @@ function applyChildParas(self,j,k)
     local r,g,b,a=c.para.textureR or 1,c.para.textureG or 1,c.para.textureB or 1, c.para.textureA or 1
     c:SetStatusBarTexture(r,g,b,a)  
     c:SetMinMaxValues(0,1)  
-    
+
   end
   
   if c.para.type=="border" then
@@ -846,6 +860,7 @@ function createFamilyChild(self,k)
     c.onDebuffList={}
     c.onUpdateList={}
     c.onPowerList={}
+    c.onHAbsorbList={}
     
     
     if c.para.trackType=="Buffs" then
@@ -957,6 +972,7 @@ function createFamilyChild(self,k)
     c.onDebuffList={}
     c.onUpdateList={}
     c.onPowerList={}
+    c.onHAbsorbList={}
 
     
     if c.para.loadAlways then c.loadAlways=true 
@@ -1022,6 +1038,7 @@ function createFamilyChild(self,k)
     c.onDebuffList={}
     c.onUpdateList={}
     c.onPowerList={}
+    c.onHAbsorbList={}
     
     
     if c.para.trackType=="Buffs" then
