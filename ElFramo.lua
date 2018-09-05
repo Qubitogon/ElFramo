@@ -242,7 +242,6 @@ local function createUnitFrame(self,unit)
   self[unit]=CreateFrame("Button",s,UIParent,"SecureUnitButtonTemplate")
   self[unit].id=unit
   
-
   
   self[unit]:SetAttribute("unit",unit)
   self[unit]:SetAttribute("type1","target")
@@ -256,7 +255,7 @@ local function createUnitFrame(self,unit)
   end
   
   self[unit]:SetSize(para.width,para.height)
-  self[unit]:SetFrameStrata("MEDIUM")
+  self[unit]:SetFrameLevel(15)
   RegisterUnitWatch(self[unit])
   self[unit].enabled=true
   
@@ -266,19 +265,12 @@ local function createUnitFrame(self,unit)
   
   if eF.para.units.checkOOR then self[unit].updateRange=eF.rep.unitUpdateRange end
   
-  if para.bg then 
-    self[unit].bg=self[unit]:CreateTexture()
-    self[unit].bg:SetAllPoints()
-    if para.bgR then self[unit].bg:SetColorTexture(para.bgR,para.bgG,para.bgB)
-    else self[unit].bg:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Background") end 
-    
-    self[unit].bg:SetDrawLayer("BACKGROUND",-4)
-  end --end of if para.bg
+  
   
   --status bar health: https://us.battle.net/forums/en/wow/topic/8796680765
   
   do --create HP bar
-  self[unit].hp=CreateFrame("StatusBar",nil,self[unit],"TextStatusBar") 
+  self[unit].hp=CreateFrame("StatusBar",s.."Health",self[unit],"TextStatusBar") 
   if para.healthGrow=="up" then 
     self[unit].hp:SetPoint("BOTTOMLEFT"); self[unit].hp:SetPoint("BOTTOMRIGHT");  self[unit].hp:SetHeight(para.height); self[unit].hp:SetOrientation("VERTICAL"); self[unit].hp:SetReverseFill(false)
   elseif para.healthGrow=="right" then
@@ -289,6 +281,14 @@ local function createUnitFrame(self,unit)
     self[unit].hp:SetPoint("TOPRIGHT"); self[unit].hp:SetPoint("BOTTOMRIGHT"); self[unit].hp:SetWidth(para.width); self[unit].hp:SetOrientation("HORIZONTAL"); self[unit].hp:SetReverseFill(true)
   end
   
+  if para.bg then 
+    self[unit].bg=self[unit].hp:CreateTexture()
+    self[unit].bg:SetAllPoints()
+    if para.bgR then self[unit].bg:SetColorTexture(para.bgR,para.bgG,para.bgB)
+    else self[unit].bg:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Background") end 
+    
+    self[unit].bg:SetDrawLayer("BACKGROUND",-4)
+  end --end of if para.bg
   
   if not eF.para.units.byClassColor then
     local r,g,b,alpha=eF.para.units.hpR,eF.para.units.hpG,eF.para.units.hpB,eF.para.units.hpA
@@ -309,7 +309,7 @@ local function createUnitFrame(self,unit)
   end
   
   self[unit].hp:SetMinMaxValues(0,1) 
-  self[unit].hp:SetFrameLevel( self[unit]:GetFrameLevel())
+  self[unit].hp:SetFrameLevel(5)
   
   local hpTexture=self[unit].hp:GetStatusBarTexture()
   
@@ -321,7 +321,7 @@ local function createUnitFrame(self,unit)
   end  
   
   do --create name string
-  self[unit].text=self[unit]:CreateFontString(nil,"OVERLAY",-1)
+  self[unit].text=self[unit].hp:CreateFontString(nil,"OVERLAY",-1)
   self[unit].text:SetFont(para.textFont,para.textSize,para.textExtra)
   self[unit].text:SetPoint(para.textPos,self[unit],para.textPos,para.textXOS,para.textYOS)
   local r=para.textR or 1
@@ -349,7 +349,7 @@ local function createUnitFrame(self,unit)
 
   
   --create dead frame
-  self[unit].deadFrame=CreateFrame("Frame",nil,self[unit])
+  self[unit].deadFrame=CreateFrame("Frame",s.."deadFrame",self[unit].hp)
   self[unit].deadFrame:SetAllPoints(true)
   self[unit].deadFrame:SetFrameLevel(self[unit]:GetFrameLevel()+1)
   self[unit].deadFrame.texture=self[unit].deadFrame:CreateTexture(nil,"BACKGROUND")
@@ -362,7 +362,7 @@ local function createUnitFrame(self,unit)
   self[unit].deadFrame:Hide()
   
   --create offline frame
-  self[unit].offlineFrame=CreateFrame("Frame",nil,self[unit])
+  self[unit].offlineFrame=CreateFrame("Frame",s.."offlineFrame",self[unit].hp)
   self[unit].offlineFrame:SetAllPoints(true)
   self[unit].offlineFrame:SetFrameLevel(self[unit]:GetFrameLevel()+1)
   self[unit].offlineFrame.texture=self[unit].offlineFrame:CreateTexture(nil,"BACKGROUND")
