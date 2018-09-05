@@ -641,7 +641,7 @@ eF.rep.unitsLoad=unitsLoad
 
 local function unitLoad(self)
   local insert=table.insert
-  local nj=#self.families
+  local nj=#self.families or 0
   local unitRole=self.role
   local unitClass=self.class
   local checkElementLoad=eF.rep.checkElementLoad
@@ -653,6 +653,7 @@ local function unitLoad(self)
   self.onPowerList={}
   self.onPostAuraList={}
   self.onHAbsorbList={}
+  
   for j=1,nj do 
     if self[j].smart then 
       if checkElementLoad(self[j],unitRole,unitClass) then

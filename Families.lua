@@ -289,7 +289,7 @@ local function createFamilyFrame(self,j)
     f.disable=eF.rep.smartFamilyDisableAll
     f.enable=eF.rep.smartFamilyEnableAll
     f.smart=true       
-    f:SetFrameLevel(f.para.frameLevel+self:GetFrameLevel()-1)
+    f:SetFrameLevel(f.para.frameLevel+self.hp:GetFrameLevel()-1)
     f.active=0
     f:SetPoint(f.para.anchor, self, f.para.anchorTo, f.para.xPos, f.para.yPos)
 
@@ -845,7 +845,7 @@ function createFamilyChild(self,k)
     c.para=self.para[k]
     c:SetPoint(c.para.anchor,self.unitFrame,c.para.anchorTo,c.para.xPos,c.para.yPos)
     c:SetSize(c.para.width,c.para.height)
-    c:SetFrameLevel(c.para.frameLevel+self:GetFrameLevel())
+    c:SetFrameLevel(c.para.frameLevel+self.unitFrame.hp:GetFrameLevel())
 
     c.disable=eF.rep.iconFrameDisable
     c.enable=eF.rep.iconFrameEnable
@@ -957,7 +957,7 @@ function createFamilyChild(self,k)
     local c=self[k]
     c.para=self.para[k]
 
-    c:SetFrameLevel( (c.para.frameLevel or 1)+self:GetFrameLevel())
+    c:SetFrameLevel( (c.para.frameLevel or 1)+self.unitFrame.hp:GetFrameLevel())
 
     c.disable=eF.rep.iconFrameDisable
     c.enable=eF.rep.iconFrameEnable
@@ -1023,7 +1023,7 @@ function createFamilyChild(self,k)
     local c=self[k]
     c.para=self.para[k]
     c:SetPoint("CENTER")
-    c:SetFrameLevel( (c.para.frameLevel or 1)+self:GetFrameLevel())
+    c:SetFrameLevel( (c.para.frameLevel or 1)+self.unitFrame.hp:GetFrameLevel())
 
     c.disable=eF.rep.iconFrameDisable
     c.enable=eF.rep.iconFrameEnable
