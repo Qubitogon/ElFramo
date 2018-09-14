@@ -5562,7 +5562,7 @@ do
   cif.textType1.text:SetText("Text type:")
   
   local lf=function(self)
-    eF.activePara.textType1=self.arg   
+    eF.activePara.textType=self.arg   
     updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end
   local lst={"Time left","Stacks"}
@@ -5570,7 +5570,6 @@ do
     local v=lst[i]
     cif.textType1:addButton(v,lf,v)
   end
-  
 
   createCS(cif,"textColor1",cif)
   cif.textColor1.text:SetPoint("RIGHT",cif.textType1.text,"RIGHT",0,-ySpacing)
