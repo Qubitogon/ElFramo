@@ -5631,7 +5631,7 @@ do
     eF.activePara.textFont=self.arg   
     updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
   end
-  local lst={"Name","Spell ID"}
+  local lst=eF.fonts
   for i=1,#lst do
     local v=lst[i]
     local font="Fonts\\"..v..".ttf"
