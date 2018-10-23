@@ -99,6 +99,27 @@ local function iconUnconditionalAdopt(self,name,icon,count,debuffType,duration,e
 end
 eF.rep.iconUnconditionalAdopt=iconUnconditionalAdopt
 
+local function iconUnconditionalAdoptCast(self,name,icon,duration,expirationTime,unitCaster,spellId,castID)
+
+  if self.filled then return  end  
+  self.name=name
+  self.icon=icon
+  self.count=nil
+  self.debuffType=nil
+  self.duration=duration
+  self.expirationTime=expirationTime
+  self.unitCaster=unitCaster
+  self.canSteal=false
+  self.spellId=spellId
+  self.castID=castID
+  self.isBoss=false
+  self.filled=true
+  self:enable()
+  return true
+  
+end
+eF.rep.iconUnconditionalAdoptCast=iconUnconditionalAdoptCast
+
 local function blacklistFamilyAdopt(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
   if self.full or eF.isInList(name,self.para.arg1)  then return end
   local sid=tostring(spellId)
@@ -114,6 +135,93 @@ local function blacklistFamilyAdopt(self,name,icon,count,debuffType,duration,exp
   
 end
 eF.rep.blacklistFamilyAdopt=blacklistFamilyAdopt
+
+--spellName,_,texture,castStart,castEnd,_,_,_,spellId
+local function blacklistFamilyAdoptCast(self,name,icon,duration,expirationTime,unitCaster,spellId,castID)
+  if eF.isInList(name,self.para.arg1)  then return false end
+  local sid=tostring(spellId)
+  if eF.isInList(sid,self.para.arg1) then return false end
+  local iDA=self.para.ignoreDurationAbove
+  if iDA then if duration>iDA then return false end end 
+  self.filled=true
+  
+  --add it to list
+  table.insert(self.castList,{})
+  local n=#self.castList
+  self.castList[n].name=name
+  self.castList[n].icon=icon
+  self.castList[n].duration=duration
+  self.castList[n].expirationTime=expirationTime
+  self.castList[n].unitCaster=unitCaster
+  self.castList[n].spellId=spellId
+  self.castList[n].castID=castID
+end
+eF.rep.blacklistFamilyAdoptCast=blacklistFamilyAdoptCast
+
+local function whitelistFamilyAdoptCast(self,name,icon,duration,expirationTime,unitCaster,spellId,castID)
+  if (not eF.isInList(name,self.para.arg1))  then 
+    local sid=tostring(spellId)
+    if (not eF.isInList(sid,self.para.arg1)) then return false end
+  end
+  local iDA=self.para.ignoreDurationAbove
+  if iDA then if duration>iDA then return false end end 
+  self.filled=true
+  
+  
+  --add it to list
+  table.insert(self.castList,{})
+  local n=#self.castList
+  self.castList[n].name=name
+  self.castList[n].icon=icon
+  self.castList[n].duration=duration
+  self.castList[n].expirationTime=expirationTime
+  self.castList[n].unitCaster=unitCaster
+  self.castList[n].spellId=spellId
+  self.castList[n].castID=castID
+  
+end
+eF.rep.whitelistFamilyAdoptCast=whitelistFamilyAdoptCast
+
+local function familyUpdateCasts(self)
+  
+  --resets state (before reinserting casts)
+  self:disable()
+  
+  --remove nils from table
+  local nList={}
+  local ti=table.insert
+  for i=1,#self.castList do
+  
+    local entry=self.castList[i]
+    if entry then 
+      ti(nList,entry) 
+    end
+  end
+  self.castList=nList
+  
+  local n=math.min(#self.castList,self.para.count)
+  self.active=n
+  
+  for i=1,self.para.count do
+    self[i].filled=false
+  end
+  
+  local casts=eF.castWatcher.casts
+  for i=1,#self.castList do
+  
+    local castID=self.castList[i].castID
+    if not casts[castID].list then casts[castID].list={} end
+    ti(casts[castID].list,{self,i})
+    casts[castID].unit=self.id
+  end
+    
+  for i=1,n do
+    local l=self.castList[i]
+    self[i]:adoptCast(l.name,l.icon,l.duration,l.expirationTime,l.unitCaster,l.spellId,l.castID)
+  end
+    
+end
+eF.rep.familyUpdateCasts=familyUpdateCasts
 
 local function whitelistFamilyAdopt(self,name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
   if self.full or not eF.isInList(name,self.para.arg1) then
@@ -179,6 +287,14 @@ local function iconUpdateTextTypeT(self)
   self.text:SetText(s)
 end
 eF.rep.iconUpdateTextTypeT=iconUpdateTextTypeT
+
+local function castOnUpdate(self)
+  local t=GetTime()
+  if t>self.expirationTime+0.5 then
+    eF.castWatcher:onEvent("UNIT_SPELLCAST_STOP",2,self.castID) --"player" just to bypass checks
+  end
+end
+eF.rep.castOnUpdate=castOnUpdate
 
 local function iconUpdateText2TypeT(self)
   local t=GetTime()
@@ -303,6 +419,8 @@ local function createFamilyFrame(self,j)
     f.onPowerList={}
     f.onPostAuraList={}
     f.onHAbsorbList={}
+    f.onCastList={}
+    f.onPostCastList={}
         
     if f.para.loadAlways then f.loadAlways=true 
     else 
@@ -351,7 +469,8 @@ local function createFamilyFrame(self,j)
       c.para=eF.para.families[j]
       c:SetPoint(f.para.growAnchor,f,"CENTER",xOS,yOS)
       c:SetSize(f.para.width,f.para.height)
-      c.adopt=eF.rep.iconUnconditionalAdopt        
+      c.adopt=eF.rep.iconUnconditionalAdopt     
+      c.adoptCast=eF.rep.iconUnconditionalAdoptCast
       c.disable=eF.rep.iconFrameDisable
       c.enable=eF.rep.iconFrameEnable
       c:disable()
@@ -456,29 +575,52 @@ local function applyFamilyParas(self,j)
     f.onPowerList={}
     f.onPostAuraList={}
     f.onHAbsorbList={}
-
+    f.onCastList={}
+    f.onPostCastList={}
+    
+    f.castList={}
     if f.para.type=="b" then 
       if f.para.trackType=="Buffs" then insert(f.onBuffList,{eF.rep.blacklistFamilyAdopt,f})  
-      elseif f.para.trackType=="Debuffs" then insert(f.onDebuffList,{eF.rep.blacklistFamilyAdopt,f}) end
-      insert(f.onAuraList,{eF.rep.smartFamilyDisableAll,f})
+      elseif f.para.trackType=="Debuffs" then insert(f.onDebuffList,{eF.rep.blacklistFamilyAdopt,f}) 
+      elseif f.para.trackType=="Casts" then insert(f.onCastList,{eF.rep.blacklistFamilyAdoptCast,f}) end
+      if ((f.para.trackType=="Buffs") or (f.para.trackType=="Debuffs")) then
+        insert(f.onAuraList,{eF.rep.smartFamilyDisableAll,f})
+      end
     end
             
     if f.para.type=="w" then 
       if f.para.trackType=="Buffs" then insert(f.onBuffList,{eF.rep.whitelistFamilyAdopt,f})  
-      elseif f.para.trackType=="Debuffs" then insert(f.onDebuffList,{eF.rep.whitelistFamilyAdopt,f}) end
-      insert(f.onAuraList,{eF.rep.smartFamilyDisableAll,f})
+      elseif f.para.trackType=="Debuffs" then insert(f.onDebuffList,{eF.rep.whitelistFamilyAdopt,f}) 
+      elseif f.para.trackType=="Casts" then insert(f.onCastList,{eF.rep.whitelistFamilyAdoptCast,f}) end
+      if ((f.para.trackType=="Buffs") or (f.para.trackType=="Debuffs")) then
+        insert(f.onAuraList,{eF.rep.smartFamilyDisableAll,f})
+      end
     end
-
-    if f.para.hasBorder and f.para.borderType=="debuffColor" then 
-      insert(f.onPostAuraList,{eF.rep.smartFamilyDebuffTypeBorderColor,f})
+    
+    if f.para.trackType=="Casts" then 
+      insert(f.onPostCastList,{eF.rep.familyUpdateCasts,f})
+    end
+    
+    if (f.para.hasBorder) and (f.para.borderType=="debuffColor") then 
+      if ((f.para.trackType=="Buffs") or (f.para.trackType=="Debuffs")) then
+        insert(f.onPostAuraList,{eF.rep.smartFamilyDebuffTypeBorderColor,f})
+      end
     end
 
     if f.para.hasTexture and (not f.para.texture or f.para.smartIcon) then
-      insert(f.onPostAuraList,{eF.rep.smartFamilyApplySmartIcons,f})
+      if ((f.para.trackType=="Buffs") or (f.para.trackType=="Debuffs")) then
+        insert(f.onPostAuraList,{eF.rep.smartFamilyApplySmartIcons,f})
+      elseif (f.para.trackType=="Casts") then
+        insert(f.onPostCastList,{eF.rep.smartFamilyApplySmartIcons,f})
+      end
     end
             
     if f.para.cdWheel then
-      insert(f.onPostAuraList,{eF.rep.smartFamilyUpdateCDWheels,f})
+      if ((f.para.trackType=="Buffs") or (f.para.trackType=="Debuffs")) then
+        insert(f.onPostAuraList,{eF.rep.smartFamilyUpdateCDWheels,f})
+      elseif (f.para.trackType=="Casts") then
+        insert(f.onPostCastList,{eF.rep.smartFamilyUpdateCDWheels,f})
+      end
     end
    
     for k=1,f.para.count do
@@ -516,7 +658,10 @@ local function applyFamilyParas(self,j)
         c.border:Hide()
       end
               
-
+      if f.para.trackType=="Casts" then 
+        insert(c.onUpdateList,eF.rep.castOnUpdate)
+      end
+      
       if f.para.cdWheel then
         if f.para.cdReverse then c.cdFrame:SetReverse(true) else c.cdFrame:SetReverse(false) end
         c.cdFrame:Show()
@@ -571,7 +716,7 @@ local function applyFamilyParas(self,j)
       end--end of if frame.hastext2
       
       if #c.onUpdateList>0 then 
-        c.throttle=(0.1^math.floor(f.para.textDecimals))*0.15 or 0.1
+        c.throttle=math.min((0.1^math.floor(f.para.textDecimals))*0.15 or 0.1,0.1)
         c.elapsed=100
         c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction) 
       end
@@ -727,7 +872,7 @@ function applyChildParas(self,j,k)
     --give the OnUdpate function to the frame
     c.onUpdateFunc=eF.rep.frameOnUpdateFunction
     if #c.onUpdateList>0 then
-      c.throttle=(0.1^math.floor(c.para.textDecimals))*0.15 or 0.1
+      c.throttle=math.min((0.1^math.floor(c.para.textDecimals))*0.15 or 0.1,0.1)
       c.elapsed=100
       c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction)
     end

@@ -653,6 +653,8 @@ local function unitLoad(self)
   self.onPowerList={}
   self.onPostAuraList={}
   self.onHAbsorbList={}
+  self.onCastList={}
+  self.onPostCastList={}
   
   for j=1,nj do 
     if self[j].smart then 
@@ -664,6 +666,8 @@ local function unitLoad(self)
         local onUpdate=self[j].onUpdateList
         local onPostAura=self[j].onPostAuraList
         local onHAbsorb=self[j].onHAbsorbList
+        local onCast=self[j].onCastList
+        local onPostCast=self[j].onPostCastList
         
         for l=1,#onAura do
           insert(self.onAuraList,onAura[l])
@@ -687,6 +691,14 @@ local function unitLoad(self)
         
         for l=1,#onHAbsorb do
           insert(self.onHAbsorbList,onHAbsorb[l])
+        end
+        
+        for l=1,#onCast do
+          insert(self.onCastList,onCast[l])
+        end
+        
+        for l=1,#onPostCast do
+          insert(self.onPostCastList,onPostCast[l])
         end
         
       end --end of if self[j]:checkLoad

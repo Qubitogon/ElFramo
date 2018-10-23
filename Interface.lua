@@ -3715,7 +3715,7 @@ do
     eF.activePara.trackType=self.arg
     updateAllFramesFamilyParas(eF.activeFamilyIndex)
   end
-  local lst={"Buffs","Debuffs"}
+  local lst={"Buffs","Debuffs","Casts"}
   for i=1,#lst do
     local v=lst[i]
     sff.trackType:addButton(v,lf,v)
