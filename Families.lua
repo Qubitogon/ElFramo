@@ -291,7 +291,12 @@ eF.rep.iconUpdateTextTypeT=iconUpdateTextTypeT
 local function castOnUpdate(self)
   local t=GetTime()
   if t>self.expirationTime+0.5 then
-    eF.castWatcher:onEvent("UNIT_SPELLCAST_STOP",2,self.castID) --"player" just to bypass checks
+    eF.castWatcher:onEvent("UNIT_SPELLCAST_STOP",self.castID) --"player" just to bypass checks
+    local l=self.unitFrame.onPostCastList
+    for j=1,#l do
+      local v=l[j]
+      v[1](v[2])
+    end
   end
 end
 eF.rep.castOnUpdate=castOnUpdate
@@ -473,6 +478,7 @@ local function createFamilyFrame(self,j)
       c.adoptCast=eF.rep.iconUnconditionalAdoptCast
       c.disable=eF.rep.iconFrameDisable
       c.enable=eF.rep.iconFrameEnable
+      c.unitFrame=self
       c:disable()
       c.onUpdateList={}
 
