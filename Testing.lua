@@ -28,7 +28,6 @@ cW.onEvent=function(self,event,sourceUnit)
   if event=="UNIT_SPELLCAST_START" 
   then
     local units=eF.units
-    if casts[sourceGUID] then return end
     local spellName,_,icon,castStart,castEnd,_,_,_,spellId = UnitCastingInfo(sourceUnit)
     local duration
     if castStart and castEnd then 
@@ -37,7 +36,7 @@ cW.onEvent=function(self,event,sourceUnit)
       duration=castEnd-castStart
     end
     --self,name,icon,duration,expirationTime,unitCaster,spellId
-    if not castID then print("CastID is nil, source: ",sourceUnit," spellName: ",spellName); return end
+    if not castID then return end
     casts[castID]={}
     
     --find the player corresponding to the target
