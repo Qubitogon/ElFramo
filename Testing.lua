@@ -14,7 +14,8 @@ local events={"UNIT_SPELLCAST_START",
               "UNIT_SPELLCAST_FAILED_QUIET",
               "UNIT_TARGET",
               }
-              
+     
+cW.recentlyCast={}     
               
 for i=1,#events do
   cW:RegisterEvent(events[i])
@@ -37,9 +38,9 @@ cW.onEvent=function(self,event,sourceUnit)
     end
     --self,name,icon,duration,expirationTime,unitCaster,spellId
     if not castID then return end
-    casts[castID]={}
     
-    --find the player corresponding to the target
+    casts[castID]={}
+    --find the unit corresponding to the target
     local target=sourceUnit.."target"
 
     local lst

@@ -214,11 +214,12 @@ local function unitEventHandler(self,event)
     
   elseif event=="UNIT_FLAGS" then
     local id=self.id
-    local dead,connected=UnitIsDeadOrGhost(id),UnitIsConnected(id)
+    local dead,connected,charmed=UnitIsDeadOrGhost(id),UnitIsConnected(id),UnitIsCharmed(id)
     
-    self.offlineFrame:Hide();self.deadFrame:Hide()
+    self.offlineFrame:Hide();self.deadFrame:Hide();self.mcFrame:Hide()
     if dead then self.deadFrame:Show()
     elseif not connected then self.offlineFrame:Show()
+    elseif charmed then self.mcFrame:Show()
     end
     
   elseif event=="UNIT_HEAL_ABSORB_AMOUNT_CHANGED" then
@@ -374,6 +375,19 @@ local function createUnitFrame(self,unit)
   self[unit].offlineFrame.text:SetPoint("CENTER")
   self[unit].offlineFrame:Hide()
   
+  --create MC frame
+  self[unit].mcFrame=CreateFrame("Frame",s.."mcFrame",self[unit].hp)
+  self[unit].mcFrame:SetAllPoints(true)
+  self[unit].mcFrame:SetFrameLevel(self[unit]:GetFrameLevel()+1)
+  self[unit].mcFrame.texture=self[unit].mcFrame:CreateTexture(nil,"BACKGROUND")
+  self[unit].mcFrame.texture:SetAllPoints(true)
+  self[unit].mcFrame.texture:SetColorTexture(0.3,0.3,0.3,0.3)
+  self[unit].mcFrame.text=self[unit].mcFrame:CreateFontString(nil,"OVERLAY")
+  self[unit].mcFrame.text:SetFont(para.textFont,para.textSize,para.textExtra)
+  self[unit].mcFrame.text:SetText("MC")
+  self[unit].mcFrame.text:SetPoint("CENTER")
+  self[unit].mcFrame:Hide()
+  
   self[unit].enable=eF.rep.unitEnable
   self[unit].disable=eF.rep.unitDisable
   self[unit].eventHandler=eF.rep.unitEventHandler
@@ -487,6 +501,7 @@ local function updateAllUnitParas(self)
     
     f.deadFrame.text:SetFont(u.textFont,u.textSize,u.textExtra)
     f.offlineFrame.text:SetFont(u.textFont,u.textSize,u.textExtra)
+    f.mcFrame.text:SetFont(u.textFont,u.textSize,u.textExtra)
     
     if u.textColorByClass then
       local r,g,b = 1,1,1
