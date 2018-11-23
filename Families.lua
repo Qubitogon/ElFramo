@@ -883,6 +883,13 @@ function applyChildParas(self,j,k)
       c:SetScript("OnUpdate",eF.rep.frameOnUpdateFunction)
     end
 
+    --extras
+    if c.para.extra1checkOn and (c.para.extra1checkOn=="OnPostAura") and c.para.extra1string then
+      local ff=assert(loadstring([[return ]]..c.para.extra1string))
+      c.para.extra1func=ff()
+      insert(c.onPostAuraList,{c.para.extra1func,c})
+    end
+    
    end
    
   if c.para.type=="bar" then
