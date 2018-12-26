@@ -397,8 +397,7 @@ eF.rep.statusBarHAbsorbUpdate=statusBarHAbsorbUpdate
 local function createFamilyFrame(self,j)
   local insert=table.insert
   if self[j] then self[j]=nil end
-  local s="eFFamilyFrame"..tostring(j)
-  self[j]=CreateFrame("Frame",s,self)
+  self[j]=CreateFrame("Frame",nil,self)
   local f=self[j]
   f.unitFrame=self
   f.id=self.id
@@ -470,8 +469,7 @@ local function createFamilyFrame(self,j)
       elseif f.para.grow=="left" then xOS=(1-k)*(f.para.spacing+f.para.width) end
         
       if f[k] then f[k]=nil end
-      local s="eFFamilyFrame"..tostring(j)..tostring(k)
-      f[k]=CreateFrame("Frame",s,f)
+      f[k]=CreateFrame("Frame",nil,f)
       local c=f[k]
       c.para=eF.para.families[j]
       c:SetPoint(f.para.growAnchor,f,"CENTER",xOS,yOS)
@@ -508,8 +506,7 @@ local function createFamilyFrame(self,j)
 
 
       if c.cdFrame then c.cdFrame = nil end 
-      
-      c.cdFrame=CreateFrame("Cooldown",s.."cdFrame",c,"CooldownFrameTemplate")
+      c.cdFrame=CreateFrame("Cooldown",nil,c,"CooldownFrameTemplate")
       if f.para.cdReverse then c.cdFrame:SetReverse(true) end
       c.cdFrame:SetAllPoints()
       c.cdFrame:SetFrameLevel( c:GetFrameLevel())
@@ -1001,8 +998,7 @@ function createFamilyChild(self,k)
   
   if self.para[k].type=="icon" then
     if self[k] then self[k]=nil end
-    local s="eFChildFrame"..tostring(k)
-    self[k]=CreateFrame("Frame",s,self)
+    self[k]=CreateFrame("Frame",nil,self)
     local c=self[k]
     c.para=self.para[k]
     c:SetPoint(c.para.anchor,self.unitFrame,c.para.anchorTo,c.para.xPos,c.para.yPos)
@@ -1077,7 +1073,7 @@ function createFamilyChild(self,k)
         c.borderColor=eF.para.colors.debuff
       end            
         
-    c.cdFrame=CreateFrame("Cooldown",s.."cdFrame",c,"CooldownFrameTemplate")
+    c.cdFrame=CreateFrame("Cooldown",nil,c,"CooldownFrameTemplate")
     c.cdFrame:SetAllPoints()
     c.cdFrame:SetFrameLevel( c:GetFrameLevel())
     
@@ -1115,8 +1111,7 @@ function createFamilyChild(self,k)
             
   if self.para[k].type=="bar" then
     if self[k] then self[k]=nil end
-    local s="eFChildFrame"..tostring(k)
-    self[k]=CreateFrame("StatusBar",s,self.unitFrame,"TextStatusBar")
+    self[k]=CreateFrame("StatusBar",nil,self.unitFrame,"TextStatusBar")
     local c=self[k]
     c.para=self.para[k]
 
@@ -1182,8 +1177,7 @@ function createFamilyChild(self,k)
   
   if self.para[k].type=="border" then
     if self[k] then self[k]=nil end
-    local s="eFChildFrame"..tostring(k)
-    self[k]=CreateFrame("Frame",s,self)
+    self[k]=CreateFrame("Frame",nil,self)
     local c=self[k]
     c.para=self.para[k]
     c:SetPoint("CENTER")

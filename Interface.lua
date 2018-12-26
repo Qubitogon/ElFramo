@@ -2488,7 +2488,6 @@ do
   fdsf.border:SetPoint("TOPLEFT",fdsf,"TOPLEFT",-5,5)
   fdsf.border:SetPoint("BOTTOMRIGHT",fdsf,"BOTTOMRIGHT",5,-5)
   fdsf.border:SetBackdrop(bd2)
-  
   gf.frameDim=CreateFrame("Frame","eFframeDimChild",gf)
   local fD=gf.frameDim
   fD:SetPoint("TOP",fdsf,"TOP",0,-20)

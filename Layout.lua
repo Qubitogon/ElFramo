@@ -27,8 +27,7 @@ local function layoutUpdate(self)
   if InCombatLockdown() then eF.OOCActions.layoutUpdate=true; return end
   local para
   local raid=IsInRaid()
-  local changed=eF.units.raid==IsInRaid() --is used for the updatefunction
-  eF.units.raid==IsInRaid()
+  eF.units.raid=IsInRaid() --is used for the updatefunction
   local num=GetNumGroupMembers() --for some reason gives 0 when solo
   if num==0 then num=1 end
   eF.units.num=num
@@ -205,7 +204,7 @@ local function layoutUpdate(self)
   
     
   end-- end of if not raid else
-  
+    
   eF.units:onGroupUpdate()
   
 end

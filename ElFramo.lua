@@ -240,7 +240,7 @@ local function createUnitFrame(self,unit)
   local para=eF.para.units
 
   local s="elFramoUnit"..unit
-  self[unit]=CreateFrame("Button",s,UIParent,"SecureUnitButtonTemplate") 
+  self[unit]=CreateFrame("Button",s,UIParent,"SecureUnitButtonTemplate")
   self[unit].id=unit
   
   
