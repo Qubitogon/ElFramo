@@ -125,13 +125,13 @@ local function createNumberEB(self,name,tab)
   eb:SetPoint("LEFT",tx,"RIGHT",12,0)
 end
 
-local function createListCB(self,name,tab)
-
+local function createListCB(self,name,tab,width)
+  local width=width or 200
   self[name]=CreateFrame("ScrollFrame",nil,tab,"UIPanelScrollFrameTemplate")
   local f=self[name]
   f:SetClipsChildren(true)
   f:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)
-  f:SetWidth(200) 
+  f:SetWidth(width) 
   f:SetHeight(120)
   f.border=CreateFrame("Frame",nil,tab)
   f.border:SetPoint("TOPLEFT",f,"TOPLEFT",-4,4)
@@ -149,12 +149,12 @@ local function createListCB(self,name,tab)
   f.scrollChild=CreateFrame("Button",nil,f)
   local fsc=f.scrollChild
   f:SetScrollChild(fsc)
-  fsc:SetWidth(200)
+  fsc:SetWidth(width)
   fsc:SetHeight(500)
   
   f.eb=CreateFrame("EditBox",nil,fsc)
   f.eb:SetMultiLine(true)
-  f.eb:SetWidth(190)
+  f.eb:SetWidth(width-10)
   f.eb:SetCursorPosition(0)
   f.eb:SetAutoFocus(false)
   f.eb:SetFont("Fonts\\FRIZQT__.TTF",12)
@@ -178,6 +178,70 @@ local function createListCB(self,name,tab)
     local _,nls=self:GetText():gsub('\n','\n')
     f:adjustHeight(nls+1)
     
+  end)
+  
+  f.eb:HookScript("OnEnterPressed",function(self)
+    self:Insert('\n')
+    if f:GetVerticalScrollRange()>0 then f:SetVerticalScroll(f:GetVerticalScroll() +13) end
+  end)
+  
+  f.adjustHeight= function(self,ni)
+    self.scrollChild:SetHeight(ni*13) 
+  end
+
+end
+
+local function createFuncBox(self,name,tab,width,height)
+  local width=width or 200
+  self[name]=CreateFrame("ScrollFrame",nil,tab,"UIPanelScrollFrameTemplate")
+  local f=self[name]
+  f:SetClipsChildren(true)
+  f:SetScript("OnMouseWheel",ScrollFrame_OnMouseWheel)
+  f:SetWidth(width) 
+  f:SetHeight(height)
+  f.border=CreateFrame("Frame",nil,tab)
+  f.border:SetPoint("TOPLEFT",f,"TOPLEFT",-4,4)
+  f.border:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",4,-4)
+  f.border:SetBackdrop(bd)
+  
+  f.ScrollBar:ClearAllPoints()
+  f.ScrollBar:SetPoint("TOPRIGHT")
+  f.ScrollBar:SetPoint("BOTTOMRIGHT")
+  f.ScrollBar.bg=f.ScrollBar:CreateTexture(nil,"BACKGROUND")
+  f.ScrollBar.bg:SetAllPoints()
+  f.ScrollBar.bg:SetColorTexture(0,0,0,0.5)
+
+  f.scrollChild=CreateFrame("Button",nil,f)
+  local fsc=f.scrollChild
+  f:SetScrollChild(fsc)
+  fsc:SetWidth(width)
+  fsc:SetHeight(500)
+  
+  f.eb=CreateFrame("EditBox",nil,fsc)
+  f.eb:SetMultiLine(true)
+  f.eb:SetWidth(width-10)
+  f.eb:SetCursorPosition(0)
+  f.eb:SetAutoFocus(false)
+  f.eb:SetFont("Fonts\\FRIZQT__.TTF",12)
+  f.eb:SetJustifyH("LEFT")
+  f.eb:SetJustifyV("CENTER")
+  f.eb:SetPoint("TOPLEFT",fsc,"TOPLEFT",6,-5) 
+  f.scrollChild:SetScript("OnClick",function() f.eb:SetFocus() end )
+  
+  f.bg=f:CreateTexture(nil,"BACKGROUND")
+  f.bg:SetPoint("TOPLEFT")
+  f.bg:SetPoint("BOTTOMRIGHT")
+  f.bg:SetColorTexture(0,0,0,0.4)
+  
+  f.button=CreateFrame("Button",nil,f.border,"UIPanelButtonTemplate")
+  f.button:SetSize(80,25)
+  f.button:SetText("Okay")
+  f.button:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",0,-30)
+  f.button.eb=f.eb
+  f.eb:SetScript("OnTextChanged",function(self) 
+    f.button:Enable()
+    local _,nls=self:GetText():gsub('\n','\n')
+    f:adjustHeight(nls+1)
   end)
   
   f.eb:HookScript("OnEnterPressed",function(self)
@@ -1084,6 +1148,8 @@ local function createNewIconParas(j,k)
   encounterLoadAlways=true,
   playerClassLoadAlways=true,
   playerRoleLoadAlways=true,
+  extra1string="",
+  extra1checkOn="None",
   }
 end
 
@@ -2127,6 +2193,12 @@ local function setCIFActiveValues(self)
 
   end --end of text2
   
+  --extra
+  do
+  self.checkOn:setButtonText(para.extra1checkOn or "")
+  self.funcbox.eb:SetText(para.extra1string or "")
+  C_Timer.After(0.05,function() self.funcbox.button:Disable()end );
+  end
   
 end --end of setCIFActiveValues func 
 
@@ -5866,6 +5938,56 @@ do
   iB7.texture:SetColorTexture(0.07,0.07,0.07,0.4)
 
   end --end of text2 settings
+  
+  --create extra settings
+  do
+  cif.title8=cif:CreateFontString(nil,"OVERLAY")
+  local t=cif.title8
+  t:SetFont(titleFont,15,titleFontExtra)
+  t:SetTextColor(1,1,1)
+  t:SetText("Extra")
+  t:SetPoint("TOPLEFT",cif.title6,"TOPLEFT",0,-330)
+
+  cif.title8Spacer=cif:CreateTexture(nil,"OVERLAY")
+  local tS=cif.title8Spacer
+  tS:SetPoint("TOPLEFT",t,"BOTTOMLEFT",1,5)
+  tS:SetHeight(8)
+  tS:SetTexture(titleSpacer)
+  tS:SetWidth(110)
+  
+  createNewDD(cif,"checkOn",cif,75)
+  cif.checkOn.text:SetPoint("LEFT",tS,"Left",0,-initSpacing)
+  cif.checkOn.text:SetText("Trigger on:")
+  
+  local lf=function(self)
+    eF.activePara.extra1checkOn=self.arg   
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end
+  local lst={"None","OnPostAura"}
+  for i=1,#lst do
+    local v=lst[i]
+    cif.checkOn:addButton(v,lf,v)
+  end
+  
+  createFuncBox(cif,"funcbox",cif,500,300)
+  cif.funcbox:SetPoint("TOPLEFT",cif.checkOn.text,"TOPLEFT",0,-ySpacing)
+  cif.funcbox.button:SetScript("OnClick", function(self) 
+    local s=self.eb:GetText()
+    self:Disable()
+    self.eb:ClearFocus()
+    eF.activePara.extra1string=s
+    updateAllFramesChildParas(eF.activeFamilyIndex,eF.activeChildIndex)
+  end) 
+  cif.funcbox.button:ClearAllPoints()
+  cif.funcbox.button:SetPoint("LEFT",cif.checkOn,"RIGHT",ySpacing+10,-3)
+  --[[
+  function()
+    print("teststst")
+    return 3
+  end
+  ]]--
+  
+  end --end of extra settings
   
 end --end of create child icon frame
 
