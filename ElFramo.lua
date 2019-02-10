@@ -162,12 +162,14 @@ local function updateUnitBorders(self)
 end
 eF.rep.updateUnitBorders=updateUnitBorders
 
+eF.counter=0
 local function unitEventHandler(self,event)
-  if event=="UNIT_HEALTH_FREQUENT" or event=="UNIT_MAXHEALTH" or event=="UNIT_CONNECTION" or event=="UNIT_FACTION" then
+  if event=="UNIT_HEALTH" or event=="UNIT_HEALTH_FREQUENT" or event=="UNIT_MAXHEALTH" or event=="UNIT_CONNECTION" or event=="UNIT_FACTION" then
     self:hpUpdate()
-    
   elseif event=="UNIT_AURA" then 
-    
+    --if true then return end --TBA: remove once bmark done
+    eF.counter=eF.counter+1
+
     local c=self.onAuraList
     for j=1,#c do
       local v=c[j]
@@ -206,6 +208,7 @@ local function unitEventHandler(self,event)
     end
   
   elseif event=="UNIT_POWER_UPDATE" then
+
     local c=self.onPowerList
     for j=1,#c do
       local v=c[j]

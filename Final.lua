@@ -1,4 +1,5 @@
 local _,eF=...
+_eFGlobal=eF
 
 function initialise(self)
   if _eF_savVar then eF.profiles=_eF_savVar.profiles end

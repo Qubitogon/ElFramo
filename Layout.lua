@@ -6,7 +6,6 @@ local function layoutEventHandler(self,event,...)
 end
 eF.rep.layoutEventHandler=layoutEventHandler
 
-
 local function initLayoutFrame()
   eF.layout=CreateFrame("Frame",nil,UIParent)
   eF.layout:SetPoint("TOPRIGHT")

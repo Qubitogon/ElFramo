@@ -2,6 +2,11 @@ local _,eF=...
                
 eF.partyLoop={"player","party1","party2","party3","party4"}
 eF.raidLoop={}
+for i=1,40 do
+  local s="raid"..tostring(i)
+  table.insert(eF.raidLoop,s)
+end
+
 eF.positions={"CENTER","RIGHT","TOPRIGHT","TOP","TOPLEFT","LEFT","BOTTOMLEFT","BOTTOM","BOTTOMRIGHT"}
 eF.orientations={"up","down","right","left"}
 eF.Classes={"Death Knight","Demon Hunter","Druid","Hunter","Mage","Monk","Paladin","Priest","Rogue","Shaman","Warlock","Warrior"}
@@ -24,14 +29,10 @@ eF.characterframes={
                     "Interface\\CHARACTERFRAME\\TEMPORARYPORTRAIT-MALE-GNOME",
                     "Interface\\CHARACTERFRAME\\TEMPORARYPORTRAIT-MALE-TAUREN",
                     "Interface\\CHARACTERFRAME\\TEMPORARYPORTRAIT-MALE-DWARF",
-
                     }
-for i=1,40 do
-  local s="raid"..tostring(i)
-  table.insert(eF.raidLoop,s)
-end
 
-_eFGlobal=eF
+
+
 
 function MakeMovable(frame)
   frame:SetMovable(true)

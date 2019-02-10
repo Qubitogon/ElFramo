@@ -458,7 +458,6 @@ local function createFamilyFrame(self,j)
     if f.para.cdWheel then
       insert(f.onPostAuraList,{eF.rep.smartFamilyUpdateCDWheels,f})
     end
-    
                
     for k=1,f.para.count do
       local xOS=0
@@ -1262,25 +1261,3 @@ local function frameOnUpdateFunction(self,elapsed)
   end
 end
 eF.rep.frameOnUpdateFunction=frameOnUpdateFunction
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
