@@ -164,26 +164,28 @@ eF.rep.updateUnitBorders=updateUnitBorders
 
 eF.counter=0
 local function unitEventHandler(self,event)
-  if event=="UNIT_HEALTH" or event=="UNIT_HEALTH_FREQUENT" or event=="UNIT_MAXHEALTH" or event=="UNIT_CONNECTION" or event=="UNIT_FACTION" then
+  if event=="UNIT_HEALTH_FREQUENT" or event=="UNIT_MAXHEALTH" or event=="UNIT_CONNECTION" or event=="UNIT_FACTION" then
     self:hpUpdate()
   elseif event=="UNIT_AURA" then 
     --if true then return end --TBA: remove once bmark done
-    eF.counter=eF.counter+1
-
+    --eF.counter=eF.counter+1 --TBA
+    
     local c=self.onAuraList
     for j=1,#c do
       local v=c[j]
+      --eF.counter=eF.counter+1 --TBA
       v[1](v[2])
     end
-      
+       
     --BUFFS
     for i=1,40 do
-      local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss=UnitAura(self.id,i)
+      local name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,_,spellId,_,isBoss=UnitAura(self.id,i,"HELPFUL")
       if not name then break end   
       
       local c=self.onBuffList
       for j=1,#c do
         local v=c[j]
+        --eF.counter=eF.counter+1 --TBA
         v[1](v[2],name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
       end  
     
@@ -196,6 +198,7 @@ local function unitEventHandler(self,event)
       local c=self.onDebuffList
       for j=1,#c do
         local v=c[j]
+        --eF.counter=eF.counter+1 --TBA
         v[1](v[2],name,icon,count,debuffType,duration,expirationTime,unitCaster,canSteal,spellId,isBoss)
       end
       
@@ -204,6 +207,7 @@ local function unitEventHandler(self,event)
     local c=self.onPostAuraList
     for j=1,#c do
       local v=c[j]
+      --eF.counter=eF.counter+1 --TBA
       v[1](v[2])
     end
   
