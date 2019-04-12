@@ -55,6 +55,7 @@ eF.units:RegisterEvent("PLAYER_REGEN_DISABLED")
 eF.units:RegisterEvent("PLAYER_REGEN_ENABLED")
 eF.units:RegisterEvent("UNIT_NAME_UPDATE")
 eF.units:RegisterEvent("ENCOUNTER_START")
+eF.units:RegisterEvent("ENCOUNTER_END")
 eF.units:RegisterEvent("PLAYER_FLAGS_CHANGED")
 eF.units:SetScript("OnEvent",eF.units.onEvent)
 
@@ -76,10 +77,15 @@ local function unitsEventHandler(self,event,...)
   elseif event=="PLAYER_REGEN_ENABLED" then
     if eF.OOCActions.layoutUpdate then eF.layout:update(); eF.OOCActions.layoutUpdate=false end
     if eF.OOCActions.groupUpdate then self:onGroupUpdate(); eF.OOCActions.groupUpdate=false end
-    eF.info.encounterID=nil
-    self:checkLoad()  
+    if not UnitExists("boss1") then 
+      eF.info.encounterID=nil
+      self:checkLoad()  
+    end
   elseif event=="ENCOUNTER_START" then
     eF.info.encounterID=...
+    self:checkLoad()
+  elseif event=="ENCOUNTER_END" then
+    eF.info.encounterID=nil
     self:checkLoad()
   elseif event=="ACTIVE_TALENT_GROUP_CHANGED" then
     self:onGroupUpdate()
