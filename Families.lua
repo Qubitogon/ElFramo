@@ -39,7 +39,7 @@ local function iconAdoptAuraByName(self,name,icon,count,debuffType,duration,expi
     
     self.name=name
     self.icon=icon
-    self.count=count
+    self.count=count or 0 
     self.debuffType=debuffType
     self.duration=duration
     self.expirationTime=expirationTime
@@ -61,7 +61,7 @@ local function iconAdoptAuraBySpellID(self,name,icon,count,debuffType,duration,e
     
     self.name=name
     self.icon=icon
-    self.count=count
+    self.count=count or 0 
     self.debuffType=debuffType
     self.duration=duration
     self.expirationTime=expirationTime
@@ -84,7 +84,7 @@ local function iconUnconditionalAdopt(self,name,icon,count,debuffType,duration,e
 
     self.name=name
     self.icon=icon
-    self.count=count
+    self.count=count or 0 
     self.debuffType=debuffType
     self.duration=duration
     self.expirationTime=expirationTime
@@ -321,7 +321,7 @@ local function iconUpdateText2TypeS(self)
   local s
 
   s=self.count or ""
-  if (s==0) or (s==1) then s="" end
+  if (s==0) then s="" end
   
   self.text2:SetText(s)
 end
@@ -333,7 +333,7 @@ local function iconUpdateTextTypeS(self)
   local s
 
   s=self.count or ""
-  if (s==0) or (s==1) then s="" end
+  if (s==0) then s="" end
   
   self.text:SetText(s)
 end
@@ -397,7 +397,8 @@ eF.rep.statusBarHAbsorbUpdate=statusBarHAbsorbUpdate
 local function createFamilyFrame(self,j)
   local insert=table.insert
   if self[j] then self[j]=nil end
-  self[j]=CreateFrame("Frame",nil,self)
+  local family_name=self:GetName().."family"..tostring(j)
+  self[j]=CreateFrame("Frame",family_name,self)
   local f=self[j]
   f.unitFrame=self
   f.id=self.id
@@ -468,7 +469,7 @@ local function createFamilyFrame(self,j)
       elseif f.para.grow=="left" then xOS=(1-k)*(f.para.spacing+f.para.width) end
         
       if f[k] then f[k]=nil end
-      f[k]=CreateFrame("Frame",nil,f)
+      f[k]=CreateFrame("Frame",family_name..'_'..tostring(k),f)
       local c=f[k]
       c.para=eF.para.families[j]
       c:SetPoint(f.para.growAnchor,f,"CENTER",xOS,yOS)
