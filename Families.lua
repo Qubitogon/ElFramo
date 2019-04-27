@@ -469,7 +469,8 @@ local function createFamilyFrame(self,j)
       elseif f.para.grow=="left" then xOS=(1-k)*(f.para.spacing+f.para.width) end
         
       if f[k] then f[k]=nil end
-      f[k]=CreateFrame("Frame",family_name..'_'..tostring(k),f)
+      local child_name=family_name..'_'..tostring(k)
+      f[k]=CreateFrame("Frame",child_name,f)
       local c=f[k]
       c.para=eF.para.families[j]
       c:SetPoint(f.para.growAnchor,f,"CENTER",xOS,yOS)
@@ -506,7 +507,7 @@ local function createFamilyFrame(self,j)
 
 
       if c.cdFrame then c.cdFrame = nil end 
-      c.cdFrame=CreateFrame("Cooldown",nil,c,"CooldownFrameTemplate")
+      c.cdFrame=CreateFrame("Cooldown",child_name.."CDFrame",c,"CooldownFrameTemplate")
       if f.para.cdReverse then c.cdFrame:SetReverse(true) end
       c.cdFrame:SetAllPoints()
       c.cdFrame:SetFrameLevel( c:GetFrameLevel())
@@ -995,10 +996,12 @@ eF.rep.applyChildParas=applyChildParas
 function createFamilyChild(self,k)
   local insert=table.insert
   if not self.para[k] then return end
+  local family_name=self:GetName()
+  local child_name=family_name..'_'..tostring(k)
   
   if self.para[k].type=="icon" then
     if self[k] then self[k]=nil end
-    self[k]=CreateFrame("Frame",nil,self)
+    self[k]=CreateFrame("Frame",child_name,self)
     local c=self[k]
     c.para=self.para[k]
     c:SetPoint(c.para.anchor,self.unitFrame,c.para.anchorTo,c.para.xPos,c.para.yPos)
@@ -1111,7 +1114,7 @@ function createFamilyChild(self,k)
             
   if self.para[k].type=="bar" then
     if self[k] then self[k]=nil end
-    self[k]=CreateFrame("StatusBar",nil,self.unitFrame,"TextStatusBar")
+    self[k]=CreateFrame("StatusBar",child_name,self.unitFrame,"TextStatusBar")
     local c=self[k]
     c.para=self.para[k]
 
@@ -1177,7 +1180,7 @@ function createFamilyChild(self,k)
   
   if self.para[k].type=="border" then
     if self[k] then self[k]=nil end
-    self[k]=CreateFrame("Frame",nil,self)
+    self[k]=CreateFrame("Frame",child_name,self)
     local c=self[k]
     c.para=self.para[k]
     c:SetPoint("CENTER")
